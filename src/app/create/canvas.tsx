@@ -2,35 +2,77 @@
 
 import React, { useRef, useEffect } from 'react';
 
+import CanvasState from '@/app/create/canvas-state';
+import { PolarCamera } from '@/lib/polar-camera';
+import Scene from '@/lib/renderables/scene';
+import Renderer from "@/lib/renderer";
+import Controls from '@/lib/controls';
+
+import initShaderProgram from "@/lib/utils/shader-helper";
+import { plainVertexShaderSource, plainFragmentShaderSource } from "@/lib/shaders/plain-shader";
+import { tracerVertexSource, tracerFragmentSource } from "@/lib/shaders/tracer-shader";
+import { renderFragmentSource, renderVertexSource } from "@/lib/shaders/render-shader";
+
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const draw = (ctx: CanvasRenderingContext2D, frameCount: number) => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        let radius = 100 * Math.sin(frameCount * 0.01) ** 2;
-        ctx.arc(ctx.canvas.width / 2, ctx.canvas.height / 2, radius, 0, 2 * Math.PI);
-        ctx.fill();
-    }
-
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (canvas == null) return;
+        if (canvas == null) {
+            alert("Couldn't find canvas element.");
+            return;
+        }
+        CanvasState.canvas = canvas;
 
-        const context = canvas.getContext('2d');
+        const gl = canvas.getContext('webgl');
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
-        if (context == null) return;
-
-        let frameCount = 0;
-        let animationFrameId: number;
-        const render = () => {
-            frameCount++;
-            draw(context, frameCount);
-            animationFrameId = window.requestAnimationFrame(render);
+        if (gl == null) {
+            alert("Unable to initialize WebGL context. Your browser or machine may not support it.");
+            return;
         }
-        render();
+
+        const camera = new PolarCamera(CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight);
+        const scene = new Scene(gl);
+        const controls = new Controls();
+        controls.registerControls();
+        CanvasState.camera = camera;
+        CanvasState.scene = scene;
+        CanvasState.controls = controls;
+
+        const plainShaderProgram: WebGLShader | null = initShaderProgram(gl, plainVertexShaderSource, plainFragmentShaderSource);
+        if (plainShaderProgram == null) {
+            alert("Could not compile plain shader program");
+            return;
+        }
+
+        const tracerShaderProgram: WebGLShader | null = initShaderProgram(gl,
+            tracerVertexSource,
+            tracerFragmentSource(CanvasState.divisionFactor));
+        if (tracerShaderProgram == null) {
+            alert("Could not compile tracer shader program");
+            return;
+        }
+
+        const renderShaderProgram: WebGLShader | null = initShaderProgram(gl, renderVertexSource, renderFragmentSource);
+        if (renderShaderProgram == null) {
+            alert("Could not compile render shader program");
+            return;
+        }
+
+        const renderer = new Renderer(gl, tracerShaderProgram, renderShaderProgram, plainShaderProgram);
+        CanvasState.renderer = renderer;
+
+        gl.useProgram(plainShaderProgram);
+
+        let animationFrameId: number;
+        const render = (now: number) => {
+            renderer.tick(now);
+            renderer.render(now);
+            CanvasState.previousTime = now;
+            animationFrameId = requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
 
         return () => {
             window.cancelAnimationFrame(animationFrameId);
