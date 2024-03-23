@@ -1,7 +1,10 @@
+import CanvasState, { TracerMaterial } from "@/app/create/canvas-state"
+
 export const plainVertexShaderSource: string = `
     attribute vec3 aVertexPosition;
     attribute vec3 aVertexColor;
     attribute vec3 aVertexNormal;
+    attribute float aVertexMaterial;
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
@@ -10,6 +13,7 @@ export const plainVertexShaderSource: string = `
     varying lowp vec3 vPos;
     varying lowp vec3 vNorm;
     varying lowp vec3 vColor;
+    varying lowp float vMaterial;
 
     void main() {
         vec4 world_pos = uModelMatrix * vec4(aVertexPosition, 1.0);
@@ -17,6 +21,7 @@ export const plainVertexShaderSource: string = `
         vPos = world_pos.xyz;
         vNorm = aVertexNormal;
         vColor = aVertexColor;
+        vMaterial = aVertexMaterial;
     }
 `;
 
@@ -34,6 +39,7 @@ export const plainFragmentShaderSource: string = `
     varying lowp vec3 vPos;
     varying lowp vec3 vNorm;
     varying lowp vec3 vColor;
+    varying lowp float vMaterial;
 
     void main() {
         if (uUseUniformColor == 1) { 
@@ -47,15 +53,20 @@ export const plainFragmentShaderSource: string = `
             float diffuseCoefficient = max(dot(norm, lightDir), 0.0);
             vec3 diffuse = uSunStrength * diffuseCoefficient * uSunColor;
 
-            float specularStrength = 0.5;
-            vec3 viewDir = normalize(uCameraPosition - vPos);
-            vec3 reflectDir = reflect(-lightDir, norm);  
+            if (vMaterial == ${TracerMaterial.Diffuse.toFixed(1)}) {
+                vec3 result = (ambient + diffuse) * vColor;
+                gl_FragColor = vec4(result, 1.0);
+            } else if (vMaterial == ${TracerMaterial.Mirror.toFixed(1)}) {
+                float specularStrength = 0.75;
+                vec3 viewDir = normalize(uCameraPosition - vPos);
+                vec3 reflectDir = reflect(-lightDir, norm);  
 
-            float specularCoefficient = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-            vec3 specular = uSunStrength * specularStrength * specularCoefficient * uSunColor;
+                float specularCoefficient = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+                vec3 specular = uSunStrength * specularStrength * specularCoefficient * uSunColor;
 
-            vec3 result = (ambient + diffuse + specular) * vColor;
-            gl_FragColor = vec4(result, 1.0);
+                vec3 result = ((ambient + diffuse) * 1.1 + specular) * vColor;
+                gl_FragColor = vec4(result, 1.0);
+            }
         }
     }
 `

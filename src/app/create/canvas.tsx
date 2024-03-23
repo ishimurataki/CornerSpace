@@ -24,6 +24,15 @@ export default function Canvas() {
         }
         CanvasState.canvas = canvas;
 
+        const layerLabel = document.getElementById("layerLabel");
+        const layerContainer = document.getElementById("layerContainer");
+        if (layerLabel == null || layerContainer == null) {
+            alert("Couldn't find layer label element.");
+            return;
+        }
+        CanvasState.layerLabel = layerLabel;
+        CanvasState.layerContainer = layerContainer;
+
         const gl = canvas.getContext('webgl');
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
@@ -79,5 +88,10 @@ export default function Canvas() {
         }
     }, []);
 
-    return <canvas ref={canvasRef} className="border-4 border-pastel-green h-full w-full min-h-0 min-w-0" />
+    return <div className="h-full w-full relative">
+        <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer">Layer:
+            <text className="text-3xl" id="layerLabel"> 1 </text>/ 32
+        </div>
+        <canvas ref={canvasRef} className="border-4 border-pastel-green h-full w-full min-h-0 min-w-0" />
+    </div>
 }

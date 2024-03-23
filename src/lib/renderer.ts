@@ -1,7 +1,7 @@
 import { vec3, vec4, mat4 } from "@/lib/gl-matrix/index";
 import { Mode } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
-import CanvasState from "@/app/create/canvas-state";
+import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
 
 enum ShaderMode {
     Plain,
@@ -20,6 +20,7 @@ export default class Renderer {
             vertexPosition: number;
             vertexColor: number;
             vertexNormal: number;
+            vertexMaterial: number;
         },
         uniformLocations: {
             projectionMatrix: WebGLUniformLocation | null;
@@ -90,7 +91,8 @@ export default class Renderer {
             attribLocations: {
                 vertexPosition: gl.getAttribLocation(plainShaderProgram, 'aVertexPosition'),
                 vertexColor: gl.getAttribLocation(plainShaderProgram, 'aVertexColor'),
-                vertexNormal: gl.getAttribLocation(plainShaderProgram, 'aVertexNormal')
+                vertexNormal: gl.getAttribLocation(plainShaderProgram, 'aVertexNormal'),
+                vertexMaterial: gl.getAttribLocation(plainShaderProgram, 'aVertexMaterial')
             },
             uniformLocations: {
                 projectionMatrix: gl.getUniformLocation(plainShaderProgram, 'uProjectionMatrix'),
@@ -269,6 +271,23 @@ export default class Renderer {
                 this.gl.drawArrays(CanvasState.scene.hoverCube.mesh.drawingMode, 0, CanvasState.scene.hoverCube.mesh.vertices.length / 3);
             }
 
+            // Draw mirror cube markers
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.mirrorMarkerMesh.positionBuffer);
+            this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+            this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
+            for (let cube of CanvasState.scene.cubeLayer.values()) {
+                if (cube.material == TracerMaterial.Mirror) {
+                    let lerpWith = (cube.color[0] + cube.color[1] + cube.color[2]) / 3.0 > 0.5 ?
+                        vec3.fromValues(0.0, 0.0, 0.0) :
+                        vec3.fromValues(1.0, 1.0, 1.0);
+                    let markerColor = vec3.lerp(vec3.create(), cube.color, lerpWith, 0.2);
+                    this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, markerColor);
+                    this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, cube.modelMatrix);
+                    this.gl.drawArrays(CanvasState.scene.mirrorMarkerMesh.drawingMode, 0,
+                        CanvasState.scene.mirrorMarkerMesh.vertices.length / 3);
+                }
+            }
+
             // Draw grid
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.grid.mesh.positionBuffer);
             this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
@@ -314,10 +333,14 @@ export default class Renderer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpaceColorBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexColor, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexColor);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpaceMaterialBuffer);
+        this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexMaterial, 1, this.gl.FLOAT, false, 0, 0);
+        this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexMaterial);
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, mat4.create());
         this.gl.drawArrays(this.gl.TRIANGLES, 0, CanvasState.scene.cubeSpace.cubeSpaceNumberOfVertices);
         this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexNormal);
         this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexColor);
+        this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexMaterial);
 
         // Draw sun
         this.gl.uniform1i(this.plainProgramInfo.uniformLocations.useUniformColor, 1);

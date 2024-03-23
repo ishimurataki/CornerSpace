@@ -21,6 +21,9 @@ export default class CanvasState {
     static backgroundColor = "#8fb1b4";
     static canvas: HTMLCanvasElement;
 
+    static layerLabel: HTMLElement;
+    static layerContainer: HTMLElement;
+
     static divisionFactor: number = 32;
     static sideLength: number = 1 / this.divisionFactor;
     static upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
@@ -67,5 +70,13 @@ export default class CanvasState {
             CanvasState.rayTrace = enableRayTrace;
             CanvasState.sampleCount = 0;
         }
+    }
+
+    public static setLayerLabel(layer: number): void {
+        CanvasState.layerLabel.innerHTML = ` ${layer.toString()} `;
+    }
+
+    public static setLayerVisible(layerVisibility: boolean): void {
+        CanvasState.layerContainer.style.visibility = (layerVisibility) ? "visible" : "hidden";
     }
 }

@@ -7,6 +7,7 @@ export default class CubeSpace {
     cubeSpacePositionBuffer: WebGLBuffer | null = null;
     cubeSpaceNormalBuffer: WebGLBuffer | null = null;
     cubeSpaceColorBuffer: WebGLBuffer | null = null;
+    cubeSpaceMaterialBuffer: WebGLBuffer | null = null;
     cubeSpaceNumberOfVertices: number = 0;
     divisionFactor: number;
     cubeSideLength: number;
@@ -79,6 +80,7 @@ export default class CubeSpace {
         let vertices = [];
         let normals = [];
         let colors = [];
+        let materials = [];
         let xStart = this.upperLeft[0];
         let zStart = this.upperLeft[1];
         let yMin = Number.MAX_SAFE_INTEGER;
@@ -97,10 +99,12 @@ export default class CubeSpace {
                     let zWorldSpace = zStart + z * this.cubeSideLength;
                     let zNextWorldSpace = zStart + (z + 1) * this.cubeSideLength;
                     let cubeColor = this.cubeColorSpace[yPad + xPad + z];
+                    let cubeMaterial = this.cubeMaterialSpace[yPad + xPad + z];
 
                     // Bottom faces
                     let renderBottomFace = false;
                     let renderBottomColor = cubeColor;
+                    let renderBottomMaterial = cubeMaterial;
                     if (y == 0) {
                         renderBottomFace = cubeColor != undefined;
                     } else {
@@ -111,6 +115,7 @@ export default class CubeSpace {
                         } else if (cubeColor == undefined && cubeBelowColor != undefined) {
                             renderBottomFace = true;
                             renderBottomColor = cubeBelowColor;
+                            renderBottomMaterial = this.cubeMaterialSpace[yPadBelow + xPad + z];
                         }
                     }
                     if (renderBottomFace && renderBottomColor != undefined) {
@@ -126,12 +131,14 @@ export default class CubeSpace {
                         for (let i = 0; i < 6; i++) {
                             colors.push(renderBottomColor[0], renderBottomColor[1], renderBottomColor[2]);
                             normals.push(0.0, normal, 0.0);
+                            materials.push(renderBottomMaterial);
                         }
                     }
 
                     // Left faces
                     let renderLeftFace = false;
                     let renderLeftColor = cubeColor;
+                    let renderLeftMaterial = cubeMaterial;
                     if (x == 0) {
                         renderLeftFace = cubeColor != undefined;
                     } else {
@@ -142,6 +149,7 @@ export default class CubeSpace {
                         } else if (cubeColor == undefined && cubeLeftColor != undefined) {
                             renderLeftFace = true;
                             renderLeftColor = cubeLeftColor;
+                            renderLeftMaterial = this.cubeMaterialSpace[yPad + xPadLeft + z];
                         }
                     }
                     if (renderLeftFace && renderLeftColor != undefined) {
@@ -157,12 +165,14 @@ export default class CubeSpace {
                         for (let i = 0; i < 6; i++) {
                             colors.push(renderLeftColor[0], renderLeftColor[1], renderLeftColor[2]);
                             normals.push(normal, 0.0, 0.0);
+                            materials.push(renderLeftMaterial);
                         }
                     }
 
                     // Front faces
                     let renderFrontFace = false;
                     let renderFrontColor = cubeColor;
+                    let renderFrontMaterial = cubeMaterial;
                     if (z == 0) {
                         renderFrontFace = cubeColor != undefined;
                     } else {
@@ -173,6 +183,7 @@ export default class CubeSpace {
                         } else if (cubeColor == undefined && cubeFrontColor != undefined) {
                             renderFrontFace = true;
                             renderFrontColor = cubeFrontColor;
+                            renderFrontMaterial = this.cubeMaterialSpace[yPad + xPad + z - 1];
                         }
                     }
                     if (renderFrontFace && renderFrontColor != undefined) {
@@ -188,6 +199,7 @@ export default class CubeSpace {
                         for (let i = 0; i < 6; i++) {
                             colors.push(renderFrontColor[0], renderFrontColor[1], renderFrontColor[2]);
                             normals.push(0.0, 0.0, normal)
+                            materials.push(renderFrontMaterial);
                         }
                     }
 
@@ -205,6 +217,7 @@ export default class CubeSpace {
                             for (let i = 0; i < 6; i++) {
                                 colors.push(cubeColor[0], cubeColor[1], cubeColor[2]);
                                 normals.push(0.0, 1.0, 0.0);
+                                materials.push(cubeMaterial);
                             }
                         }
                         if (x == this.divisionFactor - 1) {
@@ -219,6 +232,7 @@ export default class CubeSpace {
                             for (let i = 0; i < 6; i++) {
                                 colors.push(cubeColor[0], cubeColor[1], cubeColor[2]);
                                 normals.push(1.0, 0.0, 0.0);
+                                materials.push(cubeMaterial);
                             }
                         }
                         if (z == this.divisionFactor - 1) {
@@ -233,6 +247,7 @@ export default class CubeSpace {
                             for (let i = 0; i < 6; i++) {
                                 colors.push(cubeColor[0], cubeColor[1], cubeColor[2]);
                                 normals.push(0.0, 0.0, 1.0);
+                                materials.push(cubeMaterial);
                             }
                         }
                     }
@@ -253,6 +268,9 @@ export default class CubeSpace {
         this.cubeSpaceColorBuffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.cubeSpaceColorBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
+        this.cubeSpaceMaterialBuffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.cubeSpaceMaterialBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(materials), this.gl.STATIC_DRAW);
         this.cubeSpaceNumberOfVertices = vertices.length / 3;
         return vec2.fromValues(yMin, yMax);
     }

@@ -2,10 +2,10 @@ import Mesh from "@/lib/renderables/mesh";
 import { vec3 } from "@/lib/gl-matrix/index";
 
 export default class Grid extends Mesh {
-    divisionFactor = 2;
+    divisionFactor = 0;
     color = vec3.fromValues(1, 1, 1);
 
-    constructor(glContext: WebGLRenderingContext, divisionFactor = 2) {
+    constructor(glContext: WebGLRenderingContext, divisionFactor: number) {
         super();
         this.divisionFactor = divisionFactor;
         for (let i = 0; i <= divisionFactor; i++) {

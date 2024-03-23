@@ -27,7 +27,6 @@ export default class Controls {
         document.getElementById("closeEditorButton")?.addEventListener('click', this.closeEditorButtonClickHandler, false);
         document.getElementById("openEditorButton")?.addEventListener('click', this.openEditorButtonClickHanlder, false);
         document.getElementById("modelLoadButton")?.addEventListener('click', this.modelLoadButtonClickHandler, false);
-        document.getElementById("tracerMaterial")?.addEventListener('change', this.tracerMaterialChangeHandler, false);
     }
 
     private moveHandler = (e: MouseEvent) => {
@@ -182,10 +181,7 @@ export default class Controls {
             this.layer = Math.min(CanvasState.divisionFactor - 1, Math.max(0, this.layer - layerScroll));
             let currentLayer = Math.round(this.layer);
             if (prevLayer != currentLayer) {
-                let layerLabel = document.getElementById("layerLabel");
-                if (layerLabel != null) {
-                    layerLabel.innerHTML = currentLayer.toString();
-                }
+                CanvasState.setLayerLabel(currentLayer + 1);
                 CanvasState.renderHoverCube = false;
                 console.log("Setting layer to: " + currentLayer);
                 CanvasState.camera.setEditorRef(vec3.fromValues(0.0, currentLayer / CanvasState.divisionFactor, 0.0));
@@ -201,6 +197,7 @@ export default class Controls {
         CanvasState.transitioning = true;
         CanvasState.transitionTime = 0;
         CanvasState.camera.changeToEditor();
+        CanvasState.setLayerVisible(true);
     }
 
     public toggleToViewer = () => {
@@ -212,6 +209,7 @@ export default class Controls {
         CanvasState.camera.setViewerRef(vec3.fromValues(0, viewerRefY, 0));
         CanvasState.camera.changeToViewer();
         CanvasState.scene.cubeSpace.populateTexture();
+        CanvasState.setLayerVisible(false);
     }
 
     private downloadButtonClickHandler = () => {
@@ -270,18 +268,5 @@ export default class Controls {
                 })
                 .catch((e) => console.error(e));
         }
-    }
-
-    private tracerMaterialChangeHandler = () => {
-        let selectElement = document.getElementById("tracerMaterial");
-        if (selectElement != null) {
-            let materialName = (selectElement as HTMLSelectElement).value;
-            if (materialName == "diffuse") {
-                CanvasState.tracerMaterial = TracerMaterial.Diffuse;
-            } else if (materialName == "mirror") {
-                CanvasState.tracerMaterial = TracerMaterial.Mirror;
-            }
-        }
-        CanvasState.sampleCount = 0;
     }
 }

@@ -8,6 +8,7 @@ import CubeSpace from "@/lib/renderables/cube-space";
 
 import { vec2, vec3, mat4 } from "@/lib/gl-matrix/index";
 import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
+import MirrorMarker from "./mirror-marker";
 
 export default class Scene {
     gl: WebGLRenderingContext;
@@ -28,6 +29,7 @@ export default class Scene {
 
     private gridMesh: Mesh;
     private cubeMesh: Mesh;
+    mirrorMarkerMesh: Mesh;
     private squareMesh: Mesh;
     private selectionMesh: Mesh;
     private currentLayer = 0;
@@ -37,6 +39,7 @@ export default class Scene {
         this.squareMesh = new Square(gl, CanvasState.sideLength);
         this.cubeMesh = new Cube(gl, CanvasState.sideLength);
         this.selectionMesh = new SelectionBox(gl, CanvasState.sideLength);
+        this.mirrorMarkerMesh = new MirrorMarker(gl, CanvasState.sideLength);
 
         let gridModelMatrix = mat4.fromTranslation(mat4.create(), vec3.fromValues(CanvasState.upperLeft[0], 0, CanvasState.upperLeft[1]));
         this.grid = new Renderable(this.gridMesh, vec3.fromValues(0.3, 0.3, 0.3), gridModelMatrix);
