@@ -48,7 +48,7 @@ export default function Canvas() {
 
         const tracerShaderProgram: WebGLShader | null = initShaderProgram(gl,
             tracerVertexSource,
-            tracerFragmentSource(CanvasState.divisionFactor));
+            tracerFragmentSource);
         if (tracerShaderProgram == null) {
             alert("Could not compile tracer shader program");
             return;

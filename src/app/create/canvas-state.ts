@@ -5,7 +5,7 @@ import Scene from "@/lib/renderables/scene";
 import Renderer from "@/lib/renderer";
 
 export enum TracerMaterial {
-    Diffuse,
+    Diffuse = 1,
     Mirror
 }
 

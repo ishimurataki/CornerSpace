@@ -27,7 +27,7 @@ export default function Page() {
         return () => {
             document.removeEventListener("keyup", handleKeyUp);
         }
-    })
+    });
 
     return (
         <main className="h-screen p-8 flex flex-col md:overflow-hidden">

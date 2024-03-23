@@ -7,7 +7,7 @@ import SelectionBox from "@/lib/renderables/selection-box";
 import CubeSpace from "@/lib/renderables/cube-space";
 
 import { vec2, vec3, mat4 } from "@/lib/gl-matrix/index";
-import CanvasState from "@/app/create/canvas-state";
+import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
 
 export default class Scene {
     gl: WebGLRenderingContext;
@@ -72,12 +72,13 @@ export default class Scene {
             for (let x = 0; x < CanvasState.divisionFactor; x++) {
                 let xPad = x * CanvasState.divisionFactor;
                 for (let z = 0; z < CanvasState.divisionFactor; z++) {
-                    let cubeColor = this.cubeSpace.cubeSpace[yPad + xPad + z];
+                    let cubeColor = this.cubeSpace.cubeColorSpace[yPad + xPad + z];
                     if (cubeColor != undefined) {
-                        this.addCubeToLayerOnly(x, z, cubeColor)
+                        let cubeMaterial = this.cubeSpace.cubeMaterialSpace[yPad + xPad + z];
+                        this.addCubeToLayerOnly(x, z, cubeColor, cubeMaterial);
                     }
                     if (y >= 1) {
-                        let cubeBelowColor = this.cubeSpace.cubeSpace[yBelowPad + xPad + z];
+                        let cubeBelowColor = this.cubeSpace.cubeColorSpace[yBelowPad + xPad + z];
                         if (cubeBelowColor != undefined) {
                             this.addTile(x, z, cubeBelowColor);
                         }
@@ -127,7 +128,8 @@ export default class Scene {
         return false;
     }
 
-    private addCubeToLayerOnly(x: number, z: number, color: vec3 = Scene.hoverCubeColor): boolean {
+    private addCubeToLayerOnly(x: number, z: number, color: vec3 = Scene.hoverCubeColor,
+        material: TracerMaterial = CanvasState.tracerMaterial): boolean {
         if (x >= 0 && x < CanvasState.divisionFactor && z >= 0 && z < CanvasState.divisionFactor) {
             let cubeModelMatrix = mat4.fromTranslation(mat4.create(), vec3.fromValues(
                 CanvasState.upperLeft[0] + CanvasState.sideLength * x,
@@ -136,17 +138,18 @@ export default class Scene {
             ));
             let cubeKey = this.getCubeString(x, z);
             let cubeColor = vec3.copy(vec3.create(), color);
-            let cubeRenderable = new Renderable(this.cubeMesh, cubeColor, cubeModelMatrix);
+            let cubeRenderable = new Renderable(this.cubeMesh, cubeColor, cubeModelMatrix, material);
             this.cubeLayer.set(cubeKey, cubeRenderable);
             return true;
         }
         return false;
     }
 
-    addCube(x: number, z: number, color: vec3 = Scene.hoverCubeColor): boolean {
-        if (this.addCubeToLayerOnly(x, z, color)) {
+    addCube(x: number, z: number, color: vec3 = Scene.hoverCubeColor,
+        material: TracerMaterial = CanvasState.tracerMaterial): boolean {
+        if (this.addCubeToLayerOnly(x, z, color, material)) {
             let cubeColor = vec3.copy(vec3.create(), color);
-            this.cubeSpace.setCube(x, this.currentLayer, z, cubeColor);
+            this.cubeSpace.setCube(x, this.currentLayer, z, cubeColor, material);
             return true;
         }
         return false;
@@ -163,12 +166,23 @@ export default class Scene {
         return false;
     }
 
-    getCube(x: number, z: number): vec3 | null {
+    getCubeColor(x: number, z: number): vec3 | null {
         if (x >= 0 && x < CanvasState.divisionFactor && z >= 0 && z < CanvasState.divisionFactor) {
             let cubeKey = this.getCubeString(x, z);
             if (this.cubeLayer.has(cubeKey)) {
                 let cubeColor = this.cubeLayer.get(cubeKey)?.color;
                 if (cubeColor != undefined) return cubeColor;
+            }
+        }
+        return null;
+    }
+
+    getCubeMaterial(x: number, z: number): TracerMaterial | null {
+        if (x >= 0 && x < CanvasState.divisionFactor && z >= 0 && z < CanvasState.divisionFactor) {
+            let cubeKey = this.getCubeString(x, z);
+            if (this.cubeLayer.has(cubeKey)) {
+                let cubeMaterial = this.cubeLayer.get(cubeKey)?.material;
+                if (cubeMaterial != undefined) return cubeMaterial;
             }
         }
         return null;

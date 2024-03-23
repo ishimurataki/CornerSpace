@@ -1,5 +1,5 @@
 import { vec3, vec4, mat4 } from "@/lib/gl-matrix/index";
-import { PolarCamera, Mode } from "@/lib/polar-camera";
+import { Mode } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
 import CanvasState from "@/app/create/canvas-state";
 
@@ -45,7 +45,8 @@ export default class Renderer {
             ray11: WebGLUniformLocation | null;
             eye: WebGLUniformLocation | null;
             renderTexture: WebGLUniformLocation | null;
-            cubeSpaceTexture: WebGLUniformLocation | null;
+            cubeColorSpaceTexture: WebGLUniformLocation | null;
+            cubeMaterialSpaceTexture: WebGLUniformLocation | null;
             timeSinceStart: WebGLUniformLocation | null;
             textureWeight: WebGLUniformLocation | null;
             sunPosition: WebGLUniformLocation | null;
@@ -115,7 +116,8 @@ export default class Renderer {
                 ray11: gl.getUniformLocation(tracerShaderProgram, "uRay11"),
                 eye: gl.getUniformLocation(tracerShaderProgram, "uEye"),
                 renderTexture: gl.getUniformLocation(tracerShaderProgram, "uRenderTexture"),
-                cubeSpaceTexture: gl.getUniformLocation(tracerShaderProgram, "uCubeSpaceTexture"),
+                cubeColorSpaceTexture: gl.getUniformLocation(tracerShaderProgram, "uCubeColorSpaceTexture"),
+                cubeMaterialSpaceTexture: gl.getUniformLocation(tracerShaderProgram, "uCubeMaterialSpaceTexture"),
                 timeSinceStart: gl.getUniformLocation(tracerShaderProgram, "uTimeSinceStart"),
                 textureWeight: gl.getUniformLocation(tracerShaderProgram, "uTextureWeight"),
                 sunPosition: gl.getUniformLocation(tracerShaderProgram, "uLightPos"),
@@ -351,7 +353,9 @@ export default class Renderer {
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.ambienceStrength, CanvasState.ambienceStrength);
 
         this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.eye, CanvasState.camera.eye);
-        let jitter: vec3 = vec3.scale(vec3.create(), vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0), 1 / 5000);
+        let jitter: vec3 = vec3.scale(vec3.create(),
+            vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0),
+            1 / (5000 + 5 * Math.max(CanvasState.sampleCount, 0.0)));
         let inverse: mat4 = mat4.invert(
             mat4.create(),
             mat4.translate(mat4.create(), viewProjectionMatrix, jitter)
@@ -383,11 +387,14 @@ export default class Renderer {
         let textureWeight: number = Math.max(CanvasState.sampleCount - 3, 0) / (CanvasState.sampleCount + 1);
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.textureWeight, textureWeight);
 
-        this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.cubeSpaceTexture, 1);
+        this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.cubeColorSpaceTexture, 1);
+        this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.cubeMaterialSpaceTexture, 2);
         this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.renderTexture, 0);
 
         this.gl.activeTexture(this.gl.TEXTURE1);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, CanvasState.scene.cubeSpace.cubeSpaceTexture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, CanvasState.scene.cubeSpace.cubeColorSpaceTexture);
+        this.gl.activeTexture(this.gl.TEXTURE2);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, CanvasState.scene.cubeSpace.cubeMaterialSpaceTexture);
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.tracerTextures[0]);
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.tracerVertexBuffer);

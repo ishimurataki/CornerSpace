@@ -1,3 +1,5 @@
+import CanvasState, { TracerMaterial } from "@/app/create/canvas-state"
+
 export const tracerVertexSource: string = `
     attribute vec3 aVertexPosition;
     uniform vec3 uRay00, uRay01, uRay10, uRay11;
@@ -9,15 +11,15 @@ export const tracerVertexSource: string = `
     }
 `
 
-export const tracerFragmentSource = (divisionFactor: number) => {
-    return `
+export const tracerFragmentSource: string = `
     precision highp float;
     uniform vec3 uEye;
     uniform float uTimeSinceStart; 
     uniform float uTextureWeight;
     uniform vec3 uLightPos;
     uniform sampler2D uRenderTexture;
-    uniform sampler2D uCubeSpaceTexture;
+    uniform sampler2D uCubeColorSpaceTexture;
+    uniform sampler2D uCubeMaterialSpaceTexture;
     uniform float uWidth;
     uniform float uHeight;
     uniform vec3 uBackgroundColor;
@@ -74,7 +76,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
     }
 
     float calculateShadowStrength(vec3 origin, vec3 toLight, float tLight) {
-        int divisionFactor = ${divisionFactor.toFixed(0)};
+        int divisionFactor = ${CanvasState.divisionFactor.toFixed(0)};
 
         int stepX = (toLight.x > 0.0) ? 1 : -1;
         int stepY = (toLight.y > 0.0) ? 1 : -1;
@@ -100,7 +102,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
         float tDeltaY = float(stepY) / toLight.y;
         float tDeltaZ = float(stepZ) / toLight.z;
 
-        for (int i = 0; i < ${(divisionFactor * 3).toFixed(0)}; i++) {
+        for (int i = 0; i < ${(CanvasState.divisionFactor * 3).toFixed(0)}; i++) {
             if (x >= divisionFactor || x < 0 || 
                 y >= divisionFactor || y < 0 || 
                 z >= divisionFactor || z < 0 ||
@@ -110,7 +112,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
             float textureX = float(divisionFactor * x + z) / 
                 float(divisionFactor * divisionFactor);
             float textureY = float(y) / float(divisionFactor);
-            vec4 cubeColor = texture2D(uCubeSpaceTexture, vec2(textureX, textureY));
+            vec4 cubeColor = texture2D(uCubeColorSpaceTexture, vec2(textureX, textureY));
             if (cubeColor.a == 1.0) {
                 return 1.0;
             }
@@ -140,7 +142,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
     }
 
     void main() {
-        int divisionFactor = ${divisionFactor.toFixed(0)};
+        int divisionFactor = ${CanvasState.divisionFactor.toFixed(0)};
         float sideLength = 1.0 / float(divisionFactor);
         vec3 cubeMin = vec3(-0.5, 0.0, -0.5);
         vec3 cubeMax = vec3(0.5, 1.0, 0.5);
@@ -208,7 +210,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
             bool found = false;
             vec3 surfaceColor = uBackgroundColor;
             vec3 normal; 
-            for (int i = 0; i < ${(divisionFactor * 3).toFixed(0)}; i++) {
+            for (int i = 0; i < ${(CanvasState.divisionFactor * 3).toFixed(0)}; i++) {
                 if (x >= divisionFactor || x < 0 || 
                     y >= divisionFactor || y < 0 || 
                     z >= divisionFactor || z < 0) {
@@ -217,7 +219,8 @@ export const tracerFragmentSource = (divisionFactor: number) => {
                 float textureX = float(divisionFactor * x + z) / 
                     float(divisionFactor * divisionFactor);
                 float textureY = float(y) / float(divisionFactor);
-                vec4 cubeColor = texture2D(uCubeSpaceTexture, vec2(textureX, textureY));
+                vec4 cubeColor = texture2D(uCubeColorSpaceTexture, vec2(textureX, textureY));
+                vec4 cubeMaterial = texture2D(uCubeMaterialSpaceTexture, vec2(textureX, textureY));
                 if (cubeColor.a == 1.0) {
                     if (tSun > 0.0 && tSun < t) {
                         sunHit = true;
@@ -237,9 +240,9 @@ export const tracerFragmentSource = (divisionFactor: number) => {
                     }
                     float seed = uTimeSinceStart - (1000.0 * floor(uTimeSinceStart / 1000.0));
                     float rand = random(vec3(12.9898, 78.233, 151.7182), seed);
-                    if (uTracerMaterial == 1 && rand > 0.1) {
+                    if (cubeMaterial.r == ${TracerMaterial.Mirror.toFixed(1)} / 255.0 && rand > 0.05) {
                         ray = reflect(ray, normal);
-                    } else {
+                    } else if (cubeMaterial.r == ${TracerMaterial.Diffuse.toFixed(1)} / 255.0) {
                         ray = cosineWeightedDirection(seed + float(bounce), normal);
                     }
                     break;
@@ -304,4 +307,3 @@ export const tracerFragmentSource = (divisionFactor: number) => {
         gl_FragColor = vec4(mix(accumulatedColor, texture, uTextureWeight), 1.0);
     }
 `
-}

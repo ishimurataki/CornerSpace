@@ -1,7 +1,9 @@
 import { vec2 } from "@/lib/gl-matrix/index";
+import { TracerMaterial } from "@/app/create/canvas-state";
 
 export default class CubeSpace {
-    readonly cubeSpace: (vec3 | undefined)[];
+    readonly cubeColorSpace: (vec3 | undefined)[];
+    readonly cubeMaterialSpace: number[];
     cubeSpacePositionBuffer: WebGLBuffer | null = null;
     cubeSpaceNormalBuffer: WebGLBuffer | null = null;
     cubeSpaceColorBuffer: WebGLBuffer | null = null;
@@ -11,38 +13,44 @@ export default class CubeSpace {
     upperLeft: vec2;
     gl: WebGLRenderingContext
 
-    cubeSpaceTextureData: number[] = [];
-    cubeSpaceTexture: WebGLTexture | null = null;
+    cubeColorSpaceTextureData: number[] = [];
+    cubeColorSpaceTexture: WebGLTexture | null = null;
+    cubeMaterialSpaceTexture: WebGLTexture | null = null;
 
     constructor(gl: WebGLRenderingContext, divisionFactor: number, upperLeft: vec2) {
-        this.cubeSpace = new Array<vec3>(Math.pow(divisionFactor, 3));
-        this.cubeSpace.fill(undefined);
+        this.cubeColorSpace = new Array<vec3>(Math.pow(divisionFactor, 3));
+        this.cubeColorSpace.fill(undefined);
+        this.cubeMaterialSpace = new Array<TracerMaterial>(Math.pow(divisionFactor, 3));
+        this.cubeMaterialSpace.fill(0);
+
         this.divisionFactor = divisionFactor;
         this.cubeSideLength = 1 / this.divisionFactor;
         this.upperLeft = upperLeft;
         this.gl = gl;
 
-        this.cubeSpaceTextureData = new Array<number>(4 * Math.pow(divisionFactor, 3));
-        this.cubeSpaceTextureData.fill(0);
+        this.cubeColorSpaceTextureData = new Array<number>(4 * Math.pow(divisionFactor, 3));
+        this.cubeColorSpaceTextureData.fill(0);
     }
 
     private getCubeIndex(x: number, y: number, z: number): number {
         return (y * Math.pow(this.divisionFactor, 2)) + (x * this.divisionFactor) + z;
     }
 
-    setCube(x: number, y: number, z: number, color: vec3): void {
+    setCube(x: number, y: number, z: number, color: vec3, material: TracerMaterial): void {
         let cubeIndex = this.getCubeIndex(x, y, z);
-        this.cubeSpace[cubeIndex] = color;
-        this.cubeSpaceTextureData[4 * cubeIndex] = 255 * color[0];
-        this.cubeSpaceTextureData[4 * cubeIndex + 1] = 255 * color[1];
-        this.cubeSpaceTextureData[4 * cubeIndex + 2] = 255 * color[2];
-        this.cubeSpaceTextureData[4 * cubeIndex + 3] = 255;
+        this.cubeColorSpace[cubeIndex] = color;
+        this.cubeMaterialSpace[cubeIndex] = material;
+        this.cubeColorSpaceTextureData[4 * cubeIndex] = 255 * color[0];
+        this.cubeColorSpaceTextureData[4 * cubeIndex + 1] = 255 * color[1];
+        this.cubeColorSpaceTextureData[4 * cubeIndex + 2] = 255 * color[2];
+        this.cubeColorSpaceTextureData[4 * cubeIndex + 3] = 255;
     }
 
     deleteCube(x: number, y: number, z: number): void {
         let cubeIndex = this.getCubeIndex(x, y, z);
-        this.cubeSpace[cubeIndex] = undefined;
-        this.cubeSpaceTextureData[4 * cubeIndex + 3] = 0;
+        this.cubeColorSpace[cubeIndex] = undefined;
+        this.cubeMaterialSpace[cubeIndex] = 0;
+        this.cubeColorSpaceTextureData[4 * cubeIndex + 3] = 0;
     }
 
     setCubeSpace(cubeSpace: (vec3 | undefined)[]) {
@@ -53,14 +61,14 @@ export default class CubeSpace {
                 for (let z = 0; z < this.divisionFactor; z++) {
                     let cubeIndex = yIndex + xIndex + z;
                     let color = cubeSpace[cubeIndex];
-                    this.cubeSpace[cubeIndex] = color;
+                    this.cubeColorSpace[cubeIndex] = color;
                     if (color != undefined) {
-                        this.cubeSpaceTextureData[4 * cubeIndex] = 255 * color[0];
-                        this.cubeSpaceTextureData[4 * cubeIndex + 1] = 255 * color[1];
-                        this.cubeSpaceTextureData[4 * cubeIndex + 2] = 255 * color[2];
-                        this.cubeSpaceTextureData[4 * cubeIndex + 3] = 255;
+                        this.cubeColorSpaceTextureData[4 * cubeIndex] = 255 * color[0];
+                        this.cubeColorSpaceTextureData[4 * cubeIndex + 1] = 255 * color[1];
+                        this.cubeColorSpaceTextureData[4 * cubeIndex + 2] = 255 * color[2];
+                        this.cubeColorSpaceTextureData[4 * cubeIndex + 3] = 255;
                     } else {
-                        this.cubeSpaceTextureData[4 * cubeIndex + 3] = 0;
+                        this.cubeColorSpaceTextureData[4 * cubeIndex + 3] = 0;
                     }
                 }
             }
@@ -88,7 +96,7 @@ export default class CubeSpace {
                 for (let z = 0; z < this.divisionFactor; z++) {
                     let zWorldSpace = zStart + z * this.cubeSideLength;
                     let zNextWorldSpace = zStart + (z + 1) * this.cubeSideLength;
-                    let cubeColor = this.cubeSpace[yPad + xPad + z];
+                    let cubeColor = this.cubeColorSpace[yPad + xPad + z];
 
                     // Bottom faces
                     let renderBottomFace = false;
@@ -96,7 +104,7 @@ export default class CubeSpace {
                     if (y == 0) {
                         renderBottomFace = cubeColor != undefined;
                     } else {
-                        let cubeBelowColor = this.cubeSpace[yPadBelow + xPad + z];
+                        let cubeBelowColor = this.cubeColorSpace[yPadBelow + xPad + z];
                         if (cubeColor != undefined && cubeBelowColor == undefined) {
                             renderBottomFace = true;
                             renderBottomColor = cubeColor;
@@ -127,7 +135,7 @@ export default class CubeSpace {
                     if (x == 0) {
                         renderLeftFace = cubeColor != undefined;
                     } else {
-                        let cubeLeftColor = this.cubeSpace[yPad + xPadLeft + z];
+                        let cubeLeftColor = this.cubeColorSpace[yPad + xPadLeft + z];
                         if (cubeColor != undefined && cubeLeftColor == undefined) {
                             renderLeftFace = true;
                             renderLeftColor = cubeColor;
@@ -158,7 +166,7 @@ export default class CubeSpace {
                     if (z == 0) {
                         renderFrontFace = cubeColor != undefined;
                     } else {
-                        let cubeFrontColor = this.cubeSpace[yPad + xPad + z - 1];
+                        let cubeFrontColor = this.cubeColorSpace[yPad + xPad + z - 1];
                         if (cubeColor != undefined && cubeFrontColor == undefined) {
                             renderFrontFace = true;
                             renderFrontColor = cubeColor;
@@ -250,20 +258,28 @@ export default class CubeSpace {
     }
 
     populateTexture() {
-        console.log("populateTexture called");
-        this.cubeSpaceTexture = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.cubeSpaceTexture);
-
         let level = 0;
-        let internalFormat = this.gl.RGBA;
         let width = Math.pow(this.divisionFactor, 2);
         let height = this.divisionFactor;
         let border = 0;
-        let format = this.gl.RGBA;
         let type = this.gl.UNSIGNED_BYTE;
 
-        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, width, height, border, format, type,
-            new Uint8Array(this.cubeSpaceTextureData));
+        this.cubeColorSpaceTexture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.cubeColorSpaceTexture);
+
+        this.gl.texImage2D(this.gl.TEXTURE_2D, level, this.gl.RGBA, width, height, border, this.gl.RGBA, type,
+            new Uint8Array(this.cubeColorSpaceTextureData));
+
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+        this.cubeMaterialSpaceTexture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.cubeMaterialSpaceTexture);
+
+        this.gl.texImage2D(this.gl.TEXTURE_2D, level, this.gl.LUMINANCE,
+            width, height, border, this.gl.LUMINANCE, type, new Uint8Array(this.cubeMaterialSpace));
 
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);

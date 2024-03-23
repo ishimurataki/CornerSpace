@@ -1,12 +1,6 @@
 import CanvasState, { TracerMaterial, EditToolModes } from "@/app/create/canvas-state";
 import { vec3 } from "@/lib/gl-matrix/index";
-import { PolarCamera, Mode } from "@/lib/polar-camera"
-import Scene from "@/lib/renderables/scene";
-
-enum COLOR_MODE {
-    CUBE,
-    BACKGROUND
-};
+import { Mode } from "@/lib/polar-camera"
 
 export default class Controls {
 
@@ -19,14 +13,12 @@ export default class Controls {
     private movementSpeed: number = 0.01;
     private zoomSpeed: number = -0.008;
     private layerScrollSpeed: number = 0.005;
-    private colorMode = COLOR_MODE.CUBE;
 
     constructor() {
     }
 
     registerControls() {
         CanvasState.canvas.addEventListener('mousemove', this.moveHandler, false);
-        CanvasState.canvas.addEventListener('click', this.clickHandler, false);
         CanvasState.canvas.addEventListener('mousedown', this.mouseDownHandler, false);
         CanvasState.canvas.addEventListener('mouseup', this.mouseUpHandler, false);
         CanvasState.canvas.addEventListener('wheel', this.mousewheelHandler, false);
@@ -78,8 +70,10 @@ export default class Controls {
                         break;
                     case EditToolModes.EyeDropper:
                         CanvasState.renderHoverCube = false;
-                        let newCubeColor = CanvasState.scene.getCube(this.xIndex, this.zIndex);
+                        let newCubeColor = CanvasState.scene.getCubeColor(this.xIndex, this.zIndex);
+                        let newCubeMaterial = CanvasState.scene.getCubeMaterial(this.xIndex, this.zIndex);
                         if (newCubeColor != null) CanvasState.scene.setHoverCubeColor(newCubeColor);
+                        if (newCubeMaterial != null) CanvasState.tracerMaterial = newCubeMaterial;
                         break;
                 }
                 this.cubePlacedInCurrentPos = true;
@@ -141,7 +135,12 @@ export default class Controls {
         }
     }
 
-    private clickHandler = () => {
+    private mouseDownHandler = (e: MouseEvent) => {
+        switch (e.button) {
+            case 0:
+                this.mouseDown = true;
+                break;
+        }
         if (CanvasState.camera.getMode() == Mode.Editor) {
             switch (CanvasState.editToolMode) {
                 case EditToolModes.Pencil:
@@ -153,18 +152,12 @@ export default class Controls {
                     break;
                 case EditToolModes.EyeDropper:
                     CanvasState.renderHoverCube = false;
-                    let newCubeColor = CanvasState.scene.getCube(this.xIndex, this.zIndex);
+                    let newCubeColor = CanvasState.scene.getCubeColor(this.xIndex, this.zIndex);
+                    let newCubeMaterial = CanvasState.scene.getCubeMaterial(this.xIndex, this.zIndex);
                     if (newCubeColor != null) CanvasState.scene.setHoverCubeColor(newCubeColor);
+                    if (newCubeMaterial != null) CanvasState.tracerMaterial = newCubeMaterial;
                     break;
             }
-        }
-    }
-
-    private mouseDownHandler = (e: MouseEvent) => {
-        switch (e.button) {
-            case 0:
-                this.mouseDown = true;
-                break;
         }
     }
 
@@ -222,7 +215,7 @@ export default class Controls {
     }
 
     private downloadButtonClickHandler = () => {
-        let cubeSpaceString = JSON.stringify(CanvasState.scene.cubeSpace.cubeSpace);
+        let cubeSpaceString = JSON.stringify(CanvasState.scene.cubeSpace.cubeColorSpace);
         const file = new File([cubeSpaceString], 'voxel_design.txt', {
             type: 'text/plain',
         });
