@@ -12,13 +12,11 @@ import MirrorMarker from "./mirror-marker";
 
 export default class Scene {
     gl: WebGLRenderingContext;
-    static backgroundColor: vec3 = vec3.fromValues(0.15, 0.15, 0.15);
 
     grid: Renderable;
     cubeLayer: Map<string, Renderable>;
     editorTiles: Set<Renderable>;
     hoverCube: Renderable;
-    static hoverCubeColor: vec3 = vec3.fromValues(0.31372, 0.7843, 0.47059);
     cubeSpace: CubeSpace;
 
     sun: Renderable;
@@ -46,7 +44,7 @@ export default class Scene {
         this.editorTiles = new Set<Renderable>();
         this.cubeLayer = new Map<string, Renderable>();
 
-        this.hoverCube = new Renderable(this.cubeMesh, Scene.hoverCubeColor, mat4.create());
+        this.hoverCube = new Renderable(this.cubeMesh, CanvasState.hoverCubeColor, mat4.create());
         this.setHoverCubePosition(0, 0);
 
         this.cubeSpace = new CubeSpace(gl, CanvasState.divisionFactor, CanvasState.upperLeft);
@@ -109,11 +107,11 @@ export default class Scene {
     }
 
     setHoverCubeColor(color: vec3) {
-        Scene.hoverCubeColor = color;
+        CanvasState.hoverCubeColor = color;
     }
 
     setBackgroundColor(color: vec3) {
-        Scene.backgroundColor = color;
+        CanvasState.backgroundColor = color;
     }
 
     addTile(x: number, z: number, color: vec3): boolean {
@@ -131,7 +129,7 @@ export default class Scene {
         return false;
     }
 
-    private addCubeToLayerOnly(x: number, z: number, color: vec3 = Scene.hoverCubeColor,
+    private addCubeToLayerOnly(x: number, z: number, color: vec3 = CanvasState.hoverCubeColor,
         material: TracerMaterial = CanvasState.tracerMaterial): boolean {
         if (x >= 0 && x < CanvasState.divisionFactor && z >= 0 && z < CanvasState.divisionFactor) {
             let cubeModelMatrix = mat4.fromTranslation(mat4.create(), vec3.fromValues(
@@ -148,7 +146,7 @@ export default class Scene {
         return false;
     }
 
-    addCube(x: number, z: number, color: vec3 = Scene.hoverCubeColor,
+    addCube(x: number, z: number, color: vec3 = CanvasState.hoverCubeColor,
         material: TracerMaterial = CanvasState.tracerMaterial): boolean {
         if (this.addCubeToLayerOnly(x, z, color, material)) {
             let cubeColor = vec3.copy(vec3.create(), color);

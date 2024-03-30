@@ -12,6 +12,7 @@ import clsx from 'clsx';
 import CanvasState, { EditToolModes, TracerMaterial } from '@/app/create/canvas-state';
 import { vec3 } from "@/lib/gl-matrix/index";
 import Scene from "@/lib/renderables/scene";
+import { saveCanvas } from "@/backend-lib/data";
 
 const editToolMap = new Map([
     [EditToolModes.Pencil, PencilIcon],
@@ -25,7 +26,7 @@ const materialMap = new Map([
     [TracerMaterial.Mirror, "mirror"]
 ]);
 
-function rgbToHex(rbg: vec3): string {
+export function rgbToHex(rbg: vec3): string {
     const red = Math.round(rbg[0] * 255).toString(16).padStart(2, '0');
     const green = Math.round(rbg[1] * 255).toString(16).padStart(2, '0');
     const blue = Math.round(rbg[2] * 255).toString(16).padStart(2, '0');
@@ -33,7 +34,7 @@ function rgbToHex(rbg: vec3): string {
     return hexString;
 }
 
-function hexToRgb(hexString: string): vec3 | null {
+export function hexToRgb(hexString: string): vec3 | null {
     if (hexString.startsWith('#')) {
         hexString = hexString.slice(1);
     }
@@ -49,9 +50,13 @@ function hexToRgb(hexString: string): vec3 | null {
     return vec3.fromValues(red, green, blue);
 }
 
+function handleSave(): void {
+    saveCanvas();
+}
+
 export default function ToolsMenu({ menuMode }: { menuMode: string }) {
-    const [color, setColor] = useState(rgbToHex(Scene.hoverCubeColor));
-    const [bgColor, setBgColor] = useState(rgbToHex(Scene.backgroundColor));
+    const [color, setColor] = useState(rgbToHex(CanvasState.hoverCubeColor));
+    const [bgColor, setBgColor] = useState(rgbToHex(CanvasState.backgroundColor));
     const [showColor, setShowColor] = useState(false);
     const [showBgColor, setShowBgColor] = useState(false);
     const [showMaterial, setShowMaterial] = useState(false);
@@ -59,12 +64,12 @@ export default function ToolsMenu({ menuMode }: { menuMode: string }) {
     const [toolMode, setToolMode] = useState(CanvasState.editToolMode);
     const [showLighting, setShowLighting] = useState(true);
     const [ambientLight, setAmbientLight] = useState(5);
-    const [pointLight, setPointLight] = useState(5);
+    const [pointLight, setPointLight] = useState(CanvasState.sunStrength);
     const [rayTraceEnabled, setRayTraceEnabled] = useState(false);
 
     const handleMouseUp = () => {
         if (toolMode == EditToolModes.EyeDropper) {
-            setColor(rgbToHex(Scene.hoverCubeColor));
+            setColor(rgbToHex(CanvasState.hoverCubeColor));
             setSelectedMaterial(CanvasState.tracerMaterial);
         }
     }
@@ -115,7 +120,7 @@ export default function ToolsMenu({ menuMode }: { menuMode: string }) {
                         <HexColorPicker className="px-4 max-h-full max-w-full py-4" color={color} onChange={(newColor) => {
                             setColor(newColor);
                             let newColorRGB = hexToRgb(newColor);
-                            Scene.hoverCubeColor = newColorRGB ? newColorRGB : Scene.hoverCubeColor;
+                            CanvasState.hoverCubeColor = newColorRGB ? newColorRGB : CanvasState.hoverCubeColor;
                         }} />
                     </div>
                     <hr className="h-px my-2 bg-gray-100 border-0" />
@@ -136,7 +141,7 @@ export default function ToolsMenu({ menuMode }: { menuMode: string }) {
                             onChange={(newColor) => {
                                 setBgColor(newColor);
                                 let newColorRGB = hexToRgb(newColor);
-                                Scene.backgroundColor = newColorRGB ? newColorRGB : Scene.backgroundColor;
+                                CanvasState.backgroundColor = newColorRGB ? newColorRGB : CanvasState.backgroundColor;
                             }} />
                     </div>
                 </div>
@@ -176,7 +181,7 @@ export default function ToolsMenu({ menuMode }: { menuMode: string }) {
                 </div>
             </div>
             <div className={`${menuMode == "save" ? "visible" : "hidden"} h-full`}>
-                <p>save placeholder</p>
+                <button className="bg-sky-100 rounded-md px-2 m-1" onClick={handleSave}>Save</button>
             </div>
         </div>
     )

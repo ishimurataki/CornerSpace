@@ -152,6 +152,9 @@ export const tracerFragmentSource: string = `
         vec3 colorMask = vec3(1.0);
         bool atLeastOneHit = false;
 
+        float ambienceStrength = (pow(1.63, uAmbienceStrength - 5.3) - 0.122) / 3.0;
+        float diffuseStrength = pow(1.63, uDiffuseStrength - 5.3) - 0.122;
+
         vec3 sunCubeMin = uLightPos + vec3(-sideLength / 2.0, -sideLength / 2.0, -sideLength / 2.0);
         vec3 sunCubeMax = uLightPos + vec3(sideLength / 2.0, sideLength / 2.0, sideLength / 2.0);
         vec2 tSunCube = intersectCube(origin, ray, sunCubeMin, sunCubeMax);
@@ -288,8 +291,8 @@ export const tracerFragmentSource: string = `
             float diffuse = max(0.0, dot(toLightNorm, normal));
 
             colorMask *= surfaceColor;
-            accumulatedColor += colorMask * uAmbienceStrength;
-            accumulatedColor += colorMask * uDiffuseStrength * (1.0 - shadowStrength) * diffuse;
+            accumulatedColor += colorMask * ambienceStrength;
+            accumulatedColor += colorMask * diffuseStrength * (1.0 - shadowStrength) * diffuse;
 
             origin = nextOrigin;
         }

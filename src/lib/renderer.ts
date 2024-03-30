@@ -3,11 +3,6 @@ import { Mode } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
 import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
 
-enum ShaderMode {
-    Plain,
-    Tracer
-}
-
 export default class Renderer {
     private gl: WebGLRenderingContext;
 
@@ -67,8 +62,6 @@ export default class Renderer {
             renderTexture: WebGLUniformLocation | null;
         }
     });
-
-    private activeShader: ShaderMode = ShaderMode.Plain;
 
     private tracerVertexBuffer: WebGLBuffer | null;
     private tracerFrameBuffer: WebGLFramebuffer | null;
@@ -216,9 +209,9 @@ export default class Renderer {
             this.resizeTracerTextures();
         }
 
-        this.gl.clearColor(Scene.backgroundColor[0],
-            Scene.backgroundColor[1],
-            Scene.backgroundColor[2], 1.0);
+        this.gl.clearColor(CanvasState.backgroundColor[0],
+            CanvasState.backgroundColor[1],
+            CanvasState.backgroundColor[2], 1.0);
         this.gl.clearDepth(1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
@@ -228,10 +221,7 @@ export default class Renderer {
         mat4.invert(CanvasState.viewProjectionInverse, viewProjectionMatrix);
 
         if (CanvasState.camera.getMode() == Mode.Editor) {
-            if (this.activeShader != ShaderMode.Plain) {
-                this.gl.useProgram(this.plainShaderProgram);
-                this.activeShader = ShaderMode.Plain;
-            }
+            this.gl.useProgram(this.plainShaderProgram);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
             this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, CanvasState.camera.getPosition());
@@ -266,7 +256,7 @@ export default class Renderer {
                     this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
                     this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
                 }
-                this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, Scene.hoverCubeColor);
+                this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, CanvasState.hoverCubeColor);
                 this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, CanvasState.scene.hoverCube.modelMatrix);
                 this.gl.drawArrays(CanvasState.scene.hoverCube.mesh.drawingMode, 0, CanvasState.scene.hoverCube.mesh.vertices.length / 3);
             }
@@ -298,22 +288,16 @@ export default class Renderer {
         }
         else if (CanvasState.camera.getMode() == Mode.Viewer) {
             if (CanvasState.rayTrace) {
-                if (this.activeShader != ShaderMode.Tracer) {
-                    this.gl.useProgram(this.tracerShaderProgram);
-                    this.activeShader = ShaderMode.Tracer;
-                }
                 this.renderViewerRayTraced(viewProjectionMatrix, currentTime);
             } else {
-                if (this.activeShader != ShaderMode.Plain) {
-                    this.gl.useProgram(this.plainShaderProgram);
-                    this.activeShader = ShaderMode.Plain;
-                }
                 this.renderViewerPlain(projectionMatrix, modelViewMatrix);
             }
         }
     }
 
     renderViewerPlain(projectionMatrix: mat4, modelViewMatrix: mat4) {
+        this.gl.useProgram(this.plainShaderProgram);
+
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
         this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, CanvasState.camera.getPosition());
@@ -369,7 +353,7 @@ export default class Renderer {
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.width, CanvasState.canvas.clientWidth);
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.height, CanvasState.canvas.clientHeight);
 
-        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.backgroundColor, Scene.backgroundColor);
+        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.backgroundColor, CanvasState.backgroundColor);
         this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.tracerMaterial, CanvasState.tracerMaterial);
 
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.diffuseStrength, CanvasState.sunStrength);

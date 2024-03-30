@@ -1,4 +1,4 @@
-import CanvasState, { TracerMaterial } from "@/app/create/canvas-state"
+import { TracerMaterial } from "@/app/create/canvas-state"
 
 export const plainVertexShaderSource: string = `
     attribute vec3 aVertexPosition;
@@ -45,13 +45,15 @@ export const plainFragmentShaderSource: string = `
         if (uUseUniformColor == 1) { 
             gl_FragColor = vec4(uColor, 1.0);
         } else {
-            vec3 ambient = uAmbienceStrength * uSunColor;
+            float ambienceStrength = (pow(1.63, uAmbienceStrength - 5.3) - 0.122) / 3.0;
+            vec3 ambient = ambienceStrength * uSunColor;
 
             vec3 norm = normalize(vNorm);
             vec3 lightDir = normalize(uSunPosition - vPos);
 
             float diffuseCoefficient = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse = uSunStrength * diffuseCoefficient * uSunColor;
+            float sunStrength = pow(1.63, uSunStrength - 5.3) - 0.122;
+            vec3 diffuse = sunStrength * diffuseCoefficient * uSunColor;
 
             if (vMaterial == ${TracerMaterial.Diffuse.toFixed(1)}) {
                 vec3 result = (ambient + diffuse) * vColor;
@@ -62,7 +64,7 @@ export const plainFragmentShaderSource: string = `
                 vec3 reflectDir = reflect(-lightDir, norm);  
 
                 float specularCoefficient = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-                vec3 specular = uSunStrength * specularStrength * specularCoefficient * uSunColor;
+                vec3 specular = sunStrength * specularStrength * specularCoefficient * uSunColor;
 
                 vec3 result = ((ambient + diffuse) * 1.1 + specular) * vColor;
                 gl_FragColor = vec4(result, 1.0);

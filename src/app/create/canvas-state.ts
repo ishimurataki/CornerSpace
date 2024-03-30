@@ -1,5 +1,5 @@
 import Controls from "@/lib/controls";
-import { vec2, mat4 } from "@/lib/gl-matrix/index";
+import { vec2, vec3, mat4 } from "@/lib/gl-matrix/index";
 import { PolarCamera } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
 import Renderer from "@/lib/renderer";
@@ -17,8 +17,6 @@ export enum EditToolModes {
 }
 
 export default class CanvasState {
-
-    static backgroundColor = "#8fb1b4";
     static canvas: HTMLCanvasElement;
 
     static layerLabel: HTMLElement;
@@ -27,6 +25,9 @@ export default class CanvasState {
     static divisionFactor: number = 32;
     static sideLength: number = 1 / this.divisionFactor;
     static upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
+
+    static hoverCubeColor: vec3 = vec3.fromValues(0.31372, 0.7843, 0.47059);
+    static backgroundColor: vec3 = vec3.fromValues(0.15, 0.15, 0.15)
 
     static renderHoverCube: boolean = false;
     static renderSunSelection: boolean = false;
@@ -41,8 +42,8 @@ export default class CanvasState {
     static sampleCount: number = 0;
     static tracerMaterial: TracerMaterial = TracerMaterial.Diffuse;
 
-    static sunStrength: number = 0.75;
-    static ambienceStrength: number = 0.25;
+    static sunStrength: number = 5.0;
+    static ambienceStrength: number = 5.0;
 
     static editToolMode: EditToolModes = EditToolModes.Pencil;
 
@@ -52,15 +53,15 @@ export default class CanvasState {
     static renderer: Renderer;
 
     public static setAmbienceStrength(strength: number): void {
-        strength = Math.max(Math.min(strength, 10), 0);
-        strength = (Math.pow(1.63, strength - 5.3) - 0.122) / 3;
+        // strength = Math.max(Math.min(strength, 10), 0);
+        // strength = (Math.pow(1.63, strength - 5.3) - 0.122) / 3;
         CanvasState.ambienceStrength = strength;
         CanvasState.sampleCount = 0;
     }
 
     public static setPointLightStrength(strength: number): void {
-        strength = Math.max(Math.min(strength, 10), 0);
-        strength = Math.pow(1.63, strength - 5.3) - 0.122;
+        // strength = Math.max(Math.min(strength, 10), 0);
+        // strength = Math.pow(1.63, strength - 5.3) - 0.122;
         CanvasState.sunStrength = strength;
         CanvasState.sampleCount = 0;
     }
