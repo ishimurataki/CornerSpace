@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main>
       <div>
-        <p className="size">Home Page</p>
+        <p className="size">Hello user! Welcome to cubit!</p>
       </div>
     </main>
   );
