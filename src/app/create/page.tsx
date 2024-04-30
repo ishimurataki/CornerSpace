@@ -30,8 +30,8 @@ export default function Page() {
     });
 
     return (
-        <main className="h-screen p-8 flex flex-col md:overflow-hidden">
-            <h1 className={`flex-none mb-2 text-3xl md:text-4xl`}>
+        <main className="h-screen p-2 flex flex-col md:overflow-hidden">
+            <h1 className={`flex-none mb-1 text-3xl md:text-4xl`}>
                 CuBit
             </h1>
             <div className="space-x-1 [&>*]:rounded-t-md [&>*]:px-3 [&>*:hover]:bg-pastel-red">
@@ -61,7 +61,7 @@ export default function Page() {
                     Save
                 </button>
             </div>
-            <div className="flex-1 w-full flex flex-row max-h-[90%] min-h-0 min-w-0">
+            <div className="flex-1 w-full flex flex-row max-h min-h-0 min-w-0">
                 <div className="my-1 bg-sea-green p-1">
                     <ToolsMenu menuMode={toolsMenuMode} />
                 </div>

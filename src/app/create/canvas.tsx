@@ -90,7 +90,7 @@ export default function Canvas() {
 
     return <div className="h-full w-full relative">
         <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer">Layer:
-            <text className="text-3xl" id="layerLabel"> 1 </text>/ 32
+            <text className="text-3xl" id="layerLabel"> 1 </text>/ {CanvasState.divisionFactor}
         </div>
         <canvas ref={canvasRef} className="border-4 border-pastel-green h-full w-full min-h-0 min-w-0" />
     </div>
