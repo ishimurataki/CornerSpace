@@ -1,37 +1,32 @@
-'use client';
+"use client";
 
-import { AuthError, confirmSignUp, signUp } from "aws-amplify/auth";
 import { useFormState, useFormStatus } from "react-dom";
 import { ArrowRightIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { confirmSignUpServer } from "@/backend-lib/actions";
 
-export default function ConfirmSignUpForm({ userId, setToSignIn }: { userId: string | null, setToSignIn: () => void }) {
+export default function ConfirmSignUpForm({ userId, username, setToSignIn }:
+    { userId: string | null, username: string | null, setToSignIn: () => void }) {
     const [errorMessage, confirmSignUpDispatch] = useFormState(confirmSignUpSubmit, null);
 
     async function confirmSignUpSubmit(previousState: string | null, formData: FormData) {
         const confirmationCode = formData.get("confirmationCode")?.toString();
-        if (!userId || !confirmationCode) return "Provide userId and confirmation code.";
-        try {
-            const { isSignUpComplete, nextStep } = await confirmSignUp({
-                username: userId,
-                confirmationCode
-            });
-            if (isSignUpComplete) setToSignIn();
+        if (!userId) return "userId is not specified.";
+        if (!username) return "username is not specified.";
+        if (!confirmationCode) return "Provide confirmation code.";
+        const { isSignedUp, errorMessage } = await confirmSignUpServer(username, userId, confirmationCode);
+        if (isSignedUp) {
+            setToSignIn();
             return null;
-        } catch (error) {
-            if (error instanceof AuthError) {
-                return error.message;
-            } else {
-                return "Something went wrong.";
-            }
         }
+        return errorMessage;
     }
 
     return (
-        <form action={confirmSignUpDispatch} className="flex flex-col gap-4 w-60">
+        <form action={confirmSignUpDispatch} className="flex flex-col gap-4 w-72">
             <label htmlFor="confirmationCode" className="relative text-gray-600 focus-within:text-black block">
                 <CheckCircleIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
                 <input
-                    className="block rounded-lg border w-full border-gray-200 p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
+                    className="block rounded-lg w-full p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
                     id="confirmationCode"
                     type="confirmationCode"
                     name="confirmationCode"
@@ -47,7 +42,7 @@ export default function ConfirmSignUpForm({ userId, setToSignIn }: { userId: str
                 {errorMessage && (
                     <>
                         <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                        <p className="text-sm text-red-500 w-56">{errorMessage}</p>
+                        <p className="text-sm text-red-500">{errorMessage}</p>
                     </>
                 )}
             </div>

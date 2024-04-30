@@ -1,6 +1,5 @@
-'use client';
+"use client";
 
-import { AuthError, signUp } from "aws-amplify/auth";
 import { useFormState, useFormStatus } from "react-dom";
 import {
     UserCircleIcon, LockClosedIcon, EnvelopeIcon, ArrowRightIcon, ExclamationCircleIcon,
@@ -8,6 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { z } from "zod";
+import { signUpServer } from "@/backend-lib/actions";
 
 const signUpSchema = z.object({
     username: z.string()
@@ -31,8 +31,9 @@ type signUpState = {
     message?: string | null;
 };
 
-export default function SignUpForm({ updateUserIdHandler }: { updateUserIdHandler: (newUserId: string | null) => void }) {
-    const initialState = { message: null, errors: {} };
+export default function SignUpForm({ updateUserIdHandler, updateUsernameHandler }:
+    { updateUserIdHandler: (newUserId: string | null) => void, updateUsernameHandler: (newUsername: string | null) => void }) {
+    const initialState = { message: null, errors: undefined };
     const [signUpFormState, signUpDispatch] = useFormState(signUpSubmit, initialState);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -53,33 +54,15 @@ export default function SignUpForm({ updateUserIdHandler }: { updateUserIdHandle
 
         const { username, email, password } = validatedSignUpFields.data;
 
-        try {
-            const { isSignUpComplete, userId, nextStep } = await signUp({
-                username: email,
-                password,
-                options: {
-                    userAttributes: {
-                        preferred_username: username,
-                        email: email
-                    },
-                    autoSignIn: true
-                }
-            });
-            if (userId) {
-                updateUserIdHandler(userId);
-            }
-            return previousState;
-        } catch (error) {
-            if (error instanceof AuthError) {
-                return {
-                    message: error.message
-                };
-            } else {
-                return {
-                    message: "Something went wrong."
-                };
-            }
+        const { isSignedUp, userId, errorMessage } = await signUpServer(username, email, password);
+        if (isSignedUp && userId && username) {
+            updateUsernameHandler(username);
+            updateUserIdHandler(userId);
+            return initialState;
         }
+        return {
+            message: errorMessage
+        };
     }
     return (<form action={signUpDispatch} className="flex flex-col gap-4 w-72">
         <label htmlFor="username" className="relative text-gray-600 focus-within:text-black block" >

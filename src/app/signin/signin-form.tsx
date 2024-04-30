@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
 import { useFormState, useFormStatus } from "react-dom";
 import { EnvelopeIcon, LockClosedIcon, ExclamationCircleIcon, ArrowRightIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { AuthError, signIn } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
 
 export default function SignInForm() {
     const [errorMessage, signInDispatch] = useFormState(signInSubmit, null);
@@ -24,7 +23,7 @@ export default function SignInForm() {
             if (error instanceof AuthError) {
                 return error.message;
             } else {
-                return "Something went wrong.";
+                return "500 - Internal Server Error.";
             }
         }
     }

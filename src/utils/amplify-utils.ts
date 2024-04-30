@@ -41,7 +41,7 @@ export async function fetchUserAttributesServer() {
         return currentUserAttributes;
     } catch (error) {
         if (error instanceof AuthError) {
-            console.log("fetUserAttributesServer failed, no user is authenticated");
+            console.log("fetchUserAttributesServer failed, no user is authenticated");
         } else {
             console.log(error);
         }
