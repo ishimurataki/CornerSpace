@@ -6,16 +6,16 @@ import { createServerRunner } from "@aws-amplify/adapter-nextjs";
 import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/api";
 import { getCurrentUser, fetchUserAttributes } from "aws-amplify/auth/server";
 import { type Schema } from "@/../../amplify/data/resource";
-import config from "@/../../amplifyconfiguration.json";
+import outputs from "@/../../amplify_outputs.json";
 import { unstable_noStore as noStore } from 'next/cache';
 import { AuthError } from "aws-amplify/auth";
 
 const { runWithAmplifyServerContext } = createServerRunner({
-    config,
+    config: outputs
 });
 
 const cookiesClient = generateServerClientUsingCookies<Schema>({
-    config,
+    config: outputs,
     cookies,
 });
 

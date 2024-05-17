@@ -2,7 +2,7 @@
 
 import { type Schema } from "@/../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data'
-import config from "@/../../amplifyconfiguration.json";
+import outputs from "@/../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { AuthError, confirmSignUp, fetchAuthSession, signUp } from "aws-amplify/auth";
 import { uploadData } from 'aws-amplify/storage';
@@ -10,7 +10,7 @@ import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import { CanvasData } from "./data";
 import { v4 as uuidv4 } from 'uuid';
 
-Amplify.configure(config, { ssr: true });
+Amplify.configure(outputs, { ssr: true });
 
 const client = generateClient<Schema>();
 
@@ -149,8 +149,9 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
             console.log(usersGetErrors);
             return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." };
         }
-        let numberOfCanvases = (user as User).numberOfCanvases;
-        if (canvases.length > numberOfCanvases) {
+        const maxNumberOfCanvases = (user as User).numberOfCanvases;
+        const currentNumberOfCanvases = Object.keys(canvases).length;
+        if (currentNumberOfCanvases >= maxNumberOfCanvases) {
             return { isCanvasSaved: false, errorMessage: "Max number of canvases reached." }
         }
         canvasId = uuidv4();
@@ -224,14 +225,9 @@ export async function testServer() {
         return;
     }
 
-    const { data, errors } = await client.queries.getCanvasesForUser({ user: username });
-    if (data) {
-        console.log("logging data");
-        console.log(data);
-    }
-    if (errors) {
-        console.log("logging errors");
-        console.log(errors);
+    const { data: canvases, errors } = await client.queries.getCanvasesForUser({ user: username });
+    if (canvases) {
+        console.log(Object.keys(canvases));
     }
     // const { errors, data: user } = await client.models.Users.get({ username });
     // let numberOfCanvases = (user as User).numberOfCanvases;
