@@ -7,7 +7,26 @@ const schema = a.schema({
       numberOfCanvases: a.integer().default(3)
     })
     .authorization(allow => [allow.publicApiKey()])
-    .identifier(["username"])
+    .identifier(["username"]),
+  Canvases: a
+    .model({
+      owner: a.id().required(),
+      canvasId: a.string().required(),
+      name: a.string().required(),
+      description: a.string(),
+      publicity: a.enum(["PRIVATE", "PUBLIC"])
+    })
+    .identifier(["owner", "canvasId"])
+    .authorization(allow => [allow.publicApiKey()]),
+  getCanvasesForUser: a
+    .query()
+    .arguments({ user: a.string().required() })
+    .returns(a.ref("Canvases").array())
+    .authorization(allow => [allow.publicApiKey()])
+    .handler(a.handler.custom({
+      dataSource: a.ref("Canvases"),
+      entry: "./get-canvases-for-user.js"
+    }))
 });
 
 export type Schema = ClientSchema<typeof schema>;

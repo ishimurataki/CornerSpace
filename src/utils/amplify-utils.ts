@@ -1,3 +1,5 @@
+"use server";
+
 // utils/amplify-utils.ts
 import { cookies } from "next/headers";
 import { createServerRunner } from "@aws-amplify/adapter-nextjs";
@@ -8,11 +10,11 @@ import config from "@/../../amplifyconfiguration.json";
 import { unstable_noStore as noStore } from 'next/cache';
 import { AuthError } from "aws-amplify/auth";
 
-export const { runWithAmplifyServerContext } = createServerRunner({
+const { runWithAmplifyServerContext } = createServerRunner({
     config,
 });
 
-export const cookiesClient = generateServerClientUsingCookies<Schema>({
+const cookiesClient = generateServerClientUsingCookies<Schema>({
     config,
     cookies,
 });

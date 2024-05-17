@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import clsx from 'clsx';
 import CanvasState, { EditToolModes, TracerMaterial } from '@/app/create/canvas-state';
 import { vec3 } from "@/lib/gl-matrix/index";
-import Scene from "@/lib/renderables/scene";
 import { saveCanvas } from "@/backend-lib/data";
+import { testServer } from "@/backend-lib/actions";
 
 const editToolMap = new Map([
     [EditToolModes.Pencil, PencilIcon],
@@ -182,6 +182,7 @@ export default function ToolsMenu({ menuMode }: { menuMode: string }) {
             </div>
             <div className={`${menuMode == "save" ? "visible" : "hidden"} h-full`}>
                 <button className="bg-sky-100 rounded-md px-2 m-1" onClick={handleSave}>Save</button>
+                <button className="bg-sky-100 rounded-md px-2 m-1" onClick={() => testServer()}>test</button>
             </div>
         </div>
     )

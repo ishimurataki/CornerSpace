@@ -1,3 +1,5 @@
+"use server";
+
 import SignOutButton from "@/components/sign-out-button";
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import SignInUpAggregate from "./signinup-aggregate";

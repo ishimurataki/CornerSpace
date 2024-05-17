@@ -22,7 +22,7 @@ export default class CanvasState {
     static layerLabel: HTMLElement;
     static layerContainer: HTMLElement;
 
-    static divisionFactor: number = 32;
+    static divisionFactor: number = 16;
     static sideLength: number = 1 / this.divisionFactor;
     static upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
 
