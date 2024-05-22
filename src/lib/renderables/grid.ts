@@ -5,7 +5,7 @@ export default class Grid extends Mesh {
     divisionFactor = 0;
     color = vec3.fromValues(1, 1, 1);
 
-    constructor(glContext: WebGLRenderingContext, divisionFactor: number) {
+    constructor(divisionFactor: number) {
         super();
         this.divisionFactor = divisionFactor;
         for (let i = 0; i <= divisionFactor; i++) {
@@ -26,10 +26,5 @@ export default class Grid extends Mesh {
             this.vertices.push(delta, sideLength + 0.001, 1.0);
             this.vertices.push(delta, sideLength + 0.001, 0.0);
         }
-
-        this.positionBuffer = glContext.createBuffer();
-        glContext.bindBuffer(glContext.ARRAY_BUFFER, this.positionBuffer);
-        glContext.bufferData(glContext.ARRAY_BUFFER, new Float32Array(this.vertices), glContext.STATIC_DRAW);
-        this.drawingMode = glContext.LINES;
     }
 }

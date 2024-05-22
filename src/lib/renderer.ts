@@ -5,6 +5,7 @@ import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
 
 export default class Renderer {
     private gl: WebGLRenderingContext;
+    private canvasState: CanvasState;
 
     private plainShaderProgram: WebGLShader;
     private tracerShaderProgram: WebGLShader;
@@ -71,12 +72,13 @@ export default class Renderer {
     private screen10: vec4 = vec4.fromValues(+1, -1, 0, 1);
     private screen11: vec4 = vec4.fromValues(+1, +1, 0, 1);
 
-    private previousCanvasWidth: number;
-    private previousCanvasHeight: number;
+    private previousCanvasWidth: number = 0;
+    private previousCanvasHeight: number = 0;
 
-    constructor(gl: WebGLRenderingContext,
+    constructor(gl: WebGLRenderingContext, canvasState: CanvasState,
         tracerShaderProgram: WebGLShader, renderShaderProgram: WebGLShader, plainShaderProgram: WebGLShader) {
         this.gl = gl;
+        this.canvasState = canvasState;
         this.tracerShaderProgram = tracerShaderProgram;
         this.renderShaderProgram = renderShaderProgram;
         this.plainShaderProgram = plainShaderProgram;
@@ -145,24 +147,29 @@ export default class Renderer {
 
         this.tracerFrameBuffer = gl.createFramebuffer();
         this.tracerTextures = [];
-        for (let i = 0; i < 2; i++) {
-            this.tracerTextures.push(gl.createTexture());
-            gl.bindTexture(gl.TEXTURE_2D, this.tracerTextures[i]);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.bindTexture(gl.TEXTURE_2D, null);
+        if (this.canvasState.canvas) {
+            for (let i = 0; i < 2; i++) {
+                this.tracerTextures.push(gl.createTexture());
+                gl.bindTexture(gl.TEXTURE_2D, this.tracerTextures[i]);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.canvasState.canvas.clientWidth, this.canvasState.canvas.clientHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+            }
+
+            this.previousCanvasWidth = this.canvasState.canvas.clientWidth;
+            this.previousCanvasHeight = this.canvasState.canvas.clientHeight;
+
+            this.gl.viewport(0, 0, this.canvasState.canvas.clientWidth, this.canvasState.canvas.clientHeight);
         }
-
-        this.previousCanvasWidth = CanvasState.canvas.clientWidth;
-        this.previousCanvasHeight = CanvasState.canvas.clientHeight;
-
-        this.gl.viewport(0, 0, CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight);
     }
 
     resizeTracerTextures() {
+        if (!this.canvasState.canvas) {
+            return;
+        }
         this.tracerFrameBuffer = this.gl.createFramebuffer();
         this.tracerTextures = [];
         for (let i = 0; i < 2; i++) {
@@ -172,62 +179,66 @@ export default class Renderer {
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.canvasState.canvas.clientWidth, this.canvasState.canvas.clientHeight, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
             this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         }
-        CanvasState.sampleCount = 0;
+        this.canvasState.sampleCount = 0;
     }
 
     tick(currentTime: number) {
-        let deltaTime = currentTime - CanvasState.previousTime;
-        if (CanvasState.transitioning) {
-            let a = CanvasState.transitionTime / 1000;
+        let deltaTime = currentTime - this.canvasState.previousTime;
+        if (this.canvasState.transitioning) {
+            let a = this.canvasState.transitionTime / 1000;
             if (a > 1) {
-                CanvasState.transitioning = false;
-                CanvasState.transitionTime = 0;
+                this.canvasState.transitioning = false;
+                this.canvasState.transitionTime = 0;
             }
-            CanvasState.camera.transition(a);
-            CanvasState.transitionTime += deltaTime;
-            CanvasState.sampleCount = 0;
+            this.canvasState.camera.transition(a);
+            this.canvasState.transitionTime += deltaTime;
+            this.canvasState.sampleCount = 0;
         }
     }
 
     render(currentTime: number) {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+
         this.gl.enable(this.gl.DEPTH_TEST);
 
-        CanvasState.canvas.width = CanvasState.canvas.clientWidth;
-        CanvasState.canvas.height = CanvasState.canvas.clientHeight;
+        this.canvasState.canvas.width = this.canvasState.canvas.clientWidth;
+        this.canvasState.canvas.height = this.canvasState.canvas.clientHeight;
 
-        if (CanvasState.canvas.clientWidth != this.previousCanvasWidth ||
-            CanvasState.canvas.clientHeight != this.previousCanvasHeight) {
-            CanvasState.camera.changeWidthHeight(CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight);
-            this.gl.viewport(0, 0, CanvasState.canvas.clientWidth, CanvasState.canvas.clientHeight);
+        if (this.canvasState.canvas.clientWidth != this.previousCanvasWidth ||
+            this.canvasState.canvas.clientHeight != this.previousCanvasHeight) {
+            this.canvasState.camera.changeWidthHeight(this.canvasState.canvas.clientWidth, this.canvasState.canvas.clientHeight);
+            this.gl.viewport(0, 0, this.canvasState.canvas.clientWidth, this.canvasState.canvas.clientHeight);
 
-            this.previousCanvasWidth = CanvasState.canvas.clientWidth;
-            this.previousCanvasHeight = CanvasState.canvas.clientHeight;
+            this.previousCanvasWidth = this.canvasState.canvas.clientWidth;
+            this.previousCanvasHeight = this.canvasState.canvas.clientHeight;
 
             this.resizeTracerTextures();
         }
 
-        this.gl.clearColor(CanvasState.backgroundColor[0],
-            CanvasState.backgroundColor[1],
-            CanvasState.backgroundColor[2], 1.0);
+        this.gl.clearColor(this.canvasState.backgroundColor[0],
+            this.canvasState.backgroundColor[1],
+            this.canvasState.backgroundColor[2], 1.0);
         this.gl.clearDepth(1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-        let projectionMatrix = CanvasState.camera.getProjMatrix();
-        let modelViewMatrix = CanvasState.camera.getViewMatrix();
+        let projectionMatrix = this.canvasState.camera.getProjMatrix();
+        let modelViewMatrix = this.canvasState.camera.getViewMatrix();
         let viewProjectionMatrix = mat4.multiply(mat4.create(), projectionMatrix, modelViewMatrix);
-        mat4.invert(CanvasState.viewProjectionInverse, viewProjectionMatrix);
+        mat4.invert(this.canvasState.viewProjectionInverse, viewProjectionMatrix);
 
-        if (CanvasState.camera.getMode() == Mode.Editor) {
+        if (this.canvasState.camera.getMode() == Mode.Editor) {
             this.gl.useProgram(this.plainShaderProgram);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, CanvasState.camera.getPosition());
+            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, this.canvasState.camera.getPosition());
             this.gl.uniform1i(this.plainProgramInfo.uniformLocations.useUniformColor, 1);
             // Draw tiles
-            for (let tile of CanvasState.scene.editorTiles) {
+            for (let tile of this.canvasState.scene.editorTiles) {
                 this.gl.bindBuffer(this.gl.ARRAY_BUFFER, tile.mesh.positionBuffer);
                 this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
                 this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
@@ -237,7 +248,7 @@ export default class Renderer {
             }
             // Draw cubes
             let firstCube = true
-            for (let cube of CanvasState.scene.cubeLayer.values()) {
+            for (let cube of this.canvasState.scene.cubeLayer.values()) {
                 if (firstCube) {
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, cube.mesh.positionBuffer);
                     this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
@@ -250,22 +261,22 @@ export default class Renderer {
             }
 
             // Draw hover cube
-            if (CanvasState.renderHoverCube) {
+            if (this.canvasState.renderHoverCube) {
                 if (firstCube) {
-                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.hoverCube.mesh.positionBuffer);
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.hoverCube.mesh.positionBuffer);
                     this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
                     this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
                 }
-                this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, CanvasState.hoverCubeColor);
-                this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, CanvasState.scene.hoverCube.modelMatrix);
-                this.gl.drawArrays(CanvasState.scene.hoverCube.mesh.drawingMode, 0, CanvasState.scene.hoverCube.mesh.vertices.length / 3);
+                this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.hoverCubeColor);
+                this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.hoverCube.modelMatrix);
+                this.gl.drawArrays(this.canvasState.scene.hoverCube.mesh.drawingMode, 0, this.canvasState.scene.hoverCube.mesh.vertices.length / 3);
             }
 
             // Draw mirror cube markers
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.mirrorMarkerMesh.positionBuffer);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.mirrorMarkerMesh.positionBuffer);
             this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
             this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
-            for (let cube of CanvasState.scene.cubeLayer.values()) {
+            for (let cube of this.canvasState.scene.cubeLayer.values()) {
                 if (cube.material == TracerMaterial.Mirror) {
                     let lerpWith = (cube.color[0] + cube.color[1] + cube.color[2]) / 3.0 > 0.5 ?
                         vec3.fromValues(0.0, 0.0, 0.0) :
@@ -273,21 +284,21 @@ export default class Renderer {
                     let markerColor = vec3.lerp(vec3.create(), cube.color, lerpWith, 0.2);
                     this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, markerColor);
                     this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, cube.modelMatrix);
-                    this.gl.drawArrays(CanvasState.scene.mirrorMarkerMesh.drawingMode, 0,
-                        CanvasState.scene.mirrorMarkerMesh.vertices.length / 3);
+                    this.gl.drawArrays(this.canvasState.scene.mirrorMarkerMesh.drawingMode, 0,
+                        this.canvasState.scene.mirrorMarkerMesh.vertices.length / 3);
                 }
             }
 
             // Draw grid
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.grid.mesh.positionBuffer);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.grid.mesh.positionBuffer);
             this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
             this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
-            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, CanvasState.scene.grid.color);
-            this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, CanvasState.scene.grid.modelMatrix);
-            this.gl.drawArrays(CanvasState.scene.grid.mesh.drawingMode, 0, CanvasState.scene.grid.mesh.vertices.length / 3);
+            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.scene.grid.color);
+            this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.grid.modelMatrix);
+            this.gl.drawArrays(this.canvasState.scene.grid.mesh.drawingMode, 0, this.canvasState.scene.grid.mesh.vertices.length / 3);
         }
-        else if (CanvasState.camera.getMode() == Mode.Viewer) {
-            if (CanvasState.rayTrace) {
+        else if (this.canvasState.camera.getMode() == Mode.Viewer) {
+            if (this.canvasState.rayTrace) {
                 this.renderViewerRayTraced(viewProjectionMatrix, currentTime);
             } else {
                 this.renderViewerPlain(projectionMatrix, modelViewMatrix);
@@ -296,73 +307,81 @@ export default class Renderer {
     }
 
     renderViewerPlain(projectionMatrix: mat4, modelViewMatrix: mat4) {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+
         this.gl.useProgram(this.plainShaderProgram);
 
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, CanvasState.camera.getPosition());
-        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.sunColor, CanvasState.scene.sun.color);
-        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.sunPosition, CanvasState.scene.sunCenter);
-        this.gl.uniform1f(this.plainProgramInfo.uniformLocations.sunStrength, CanvasState.sunStrength);
-        this.gl.uniform1f(this.plainProgramInfo.uniformLocations.ambienceStrength, CanvasState.ambienceStrength);
+        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.cameraPosition, this.canvasState.camera.getPosition());
+        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.sunColor, this.canvasState.scene.sun.color);
+        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.sunPosition, this.canvasState.scene.sunCenter);
+        this.gl.uniform1f(this.plainProgramInfo.uniformLocations.sunStrength, this.canvasState.sunStrength);
+        this.gl.uniform1f(this.plainProgramInfo.uniformLocations.ambienceStrength, this.canvasState.ambienceStrength);
         this.gl.uniform1i(this.plainProgramInfo.uniformLocations.useUniformColor, 0);
 
         // Draw cube space
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpacePositionBuffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.cubeSpace.cubeSpacePositionBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpaceNormalBuffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.cubeSpace.cubeSpaceNormalBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexNormal, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexNormal);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpaceColorBuffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.cubeSpace.cubeSpaceColorBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexColor, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexColor);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.cubeSpace.cubeSpaceMaterialBuffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.cubeSpace.cubeSpaceMaterialBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexMaterial, 1, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexMaterial);
         this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, mat4.create());
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, CanvasState.scene.cubeSpace.cubeSpaceNumberOfVertices);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, this.canvasState.scene.cubeSpace.cubeSpaceNumberOfVertices);
         this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexNormal);
         this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexColor);
         this.gl.disableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexMaterial);
 
         // Draw sun
         this.gl.uniform1i(this.plainProgramInfo.uniformLocations.useUniformColor, 1);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.sun.mesh.positionBuffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.sun.mesh.positionBuffer);
         this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
-        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, CanvasState.scene.sun.color);
-        this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, CanvasState.scene.sun.modelMatrix);
-        this.gl.drawArrays(CanvasState.scene.sun.mesh.drawingMode, 0, CanvasState.scene.sun.mesh.vertices.length / 3);
+        this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.scene.sun.color);
+        this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.sun.modelMatrix);
+        this.gl.drawArrays(this.canvasState.scene.sun.mesh.drawingMode, 0, this.canvasState.scene.sun.mesh.vertices.length / 3);
 
         // Draw sun selection
-        if (CanvasState.renderSunSelection) {
+        if (this.canvasState.renderSunSelection) {
             this.gl.disable(this.gl.DEPTH_TEST);
-            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, CanvasState.scene.sunSelection.mesh.positionBuffer);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.sunSelection.mesh.positionBuffer);
             this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
             this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
-            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, CanvasState.scene.sunSelection.color);
-            this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, CanvasState.scene.sunSelection.modelMatrix);
-            this.gl.drawArrays(CanvasState.scene.sunSelection.mesh.drawingMode, 0, CanvasState.scene.sunSelection.mesh.vertices.length / 3);
+            this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.scene.sunSelection.color);
+            this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.sunSelection.modelMatrix);
+            this.gl.drawArrays(this.canvasState.scene.sunSelection.mesh.drawingMode, 0, this.canvasState.scene.sunSelection.mesh.vertices.length / 3);
         }
     }
 
     renderViewerRayTraced(viewProjectionMatrix: mat4, currentTime: number) {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+
         this.gl.useProgram(this.tracerShaderProgram);
 
-        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.width, CanvasState.canvas.clientWidth);
-        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.height, CanvasState.canvas.clientHeight);
+        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.width, this.canvasState.canvas.clientWidth);
+        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.height, this.canvasState.canvas.clientHeight);
 
-        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.backgroundColor, CanvasState.backgroundColor);
-        this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.tracerMaterial, CanvasState.tracerMaterial);
+        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.backgroundColor, this.canvasState.backgroundColor);
+        this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.tracerMaterial, this.canvasState.tracerMaterial);
 
-        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.diffuseStrength, CanvasState.sunStrength);
-        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.ambienceStrength, CanvasState.ambienceStrength);
+        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.diffuseStrength, this.canvasState.sunStrength);
+        this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.ambienceStrength, this.canvasState.ambienceStrength);
 
-        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.eye, CanvasState.camera.eye);
+        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.eye, this.canvasState.camera.eye);
         let jitter: vec3 = vec3.scale(vec3.create(),
             vec3.fromValues(Math.random() * 2 - 1, Math.random() * 2 - 1, 0),
-            1 / (5000 + 5 * Math.max(CanvasState.sampleCount, 0.0)));
+            1 / (5000 + 5 * Math.max(this.canvasState.sampleCount, 0.0)));
         let inverse: mat4 = mat4.invert(
             mat4.create(),
             mat4.translate(mat4.create(), viewProjectionMatrix, jitter)
@@ -378,20 +397,20 @@ export default class Renderer {
         let ray10_i2: vec4 = vec4.scale(vec4.create(), ray10_i1, 1 / ray10_i1[3]);
         let ray11_i2: vec4 = vec4.scale(vec4.create(), ray11_i1, 1 / ray11_i1[3]);
 
-        let ray00: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray00_i2[0], ray00_i2[1], ray00_i2[2]), CanvasState.camera.eye);
-        let ray01: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray01_i2[0], ray01_i2[1], ray01_i2[2]), CanvasState.camera.eye);
-        let ray10: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray10_i2[0], ray10_i2[1], ray10_i2[2]), CanvasState.camera.eye);
-        let ray11: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray11_i2[0], ray11_i2[1], ray11_i2[2]), CanvasState.camera.eye);
+        let ray00: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray00_i2[0], ray00_i2[1], ray00_i2[2]), this.canvasState.camera.eye);
+        let ray01: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray01_i2[0], ray01_i2[1], ray01_i2[2]), this.canvasState.camera.eye);
+        let ray10: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray10_i2[0], ray10_i2[1], ray10_i2[2]), this.canvasState.camera.eye);
+        let ray11: vec3 = vec3.subtract(vec3.create(), vec3.fromValues(ray11_i2[0], ray11_i2[1], ray11_i2[2]), this.canvasState.camera.eye);
 
         this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.ray00, ray00);
         this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.ray01, ray01);
         this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.ray10, ray10);
         this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.ray11, ray11);
 
-        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.sunPosition, CanvasState.scene.sunCenter);
+        this.gl.uniform3fv(this.tracerProgramInfo.uniformLocations.sunPosition, this.canvasState.scene.sunCenter);
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.timeSinceStart, currentTime);
 
-        let textureWeight: number = Math.max(CanvasState.sampleCount - 3, 0) / (CanvasState.sampleCount + 1);
+        let textureWeight: number = Math.max(this.canvasState.sampleCount - 3, 0) / (this.canvasState.sampleCount + 1);
         this.gl.uniform1f(this.tracerProgramInfo.uniformLocations.textureWeight, textureWeight);
 
         this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.cubeColorSpaceTexture, 1);
@@ -399,9 +418,9 @@ export default class Renderer {
         this.gl.uniform1i(this.tracerProgramInfo.uniformLocations.renderTexture, 0);
 
         this.gl.activeTexture(this.gl.TEXTURE1);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, CanvasState.scene.cubeSpace.cubeColorSpaceTexture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.canvasState.scene.cubeSpace.cubeColorSpaceTexture);
         this.gl.activeTexture(this.gl.TEXTURE2);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, CanvasState.scene.cubeSpace.cubeMaterialSpaceTexture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.canvasState.scene.cubeSpace.cubeMaterialSpaceTexture);
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.tracerTextures[0]);
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.tracerVertexBuffer);
@@ -421,6 +440,6 @@ export default class Renderer {
         this.gl.enableVertexAttribArray(this.renderProgramInfo.attribLocations.vertexPosition);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 
-        CanvasState.sampleCount++;
+        this.canvasState.sampleCount++;
     }
 }

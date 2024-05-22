@@ -1,6 +1,5 @@
 import CanvasState from "@/app/create/canvas-state";
-import { rgbToHex } from "@/app/create/tools-menu";
-import { saveCanvasServer } from "./actions";
+import { loadCanvasSever, saveCanvasServer } from "./actions";
 
 export type Voxel = {
     x: number,
@@ -10,7 +9,15 @@ export type Voxel = {
     cubeMaterial: number
 }
 
+export enum Publicity {
+    Public,
+    Private
+}
+
 export type CanvasData = {
+    name: string,
+    description: string,
+    publicity: Publicity
     version: string,
     dimension: number,
     pointLightPosition: vec3,
@@ -20,19 +27,48 @@ export type CanvasData = {
     voxels: Voxel[]
 }
 
-export async function saveCanvas() {
+// export async function loadCanvas(id: string):
+//     Promise<{ canvasData: CanvasData | null; errorMessage: string | null; }> {
+//     console.log("Loading canvas...");
+
+//     const { isCanvasLoaded, canvasData, errorMessage } = await loadCanvasSever(id);
+
+//     if (isCanvasLoaded && canvasData) {
+//         CanvasState.divisionFactor = canvasData.dimension;
+//         CanvasState.scene.setSunCenter(canvasData.pointLightPosition);
+//         CanvasState.backgroundColor = canvasData.backgroundColor;
+//         CanvasState.ambienceStrength = canvasData.ambientStrength;
+//         CanvasState.sunStrength = canvasData.pointLightStrength;
+
+//         canvasData.voxels.forEach((voxel: Voxel) => {
+//             CanvasState.scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
+//         });
+
+//         CanvasState.controls.toggleToViewer();
+//         console.log("Canvas loaded...");
+//         return { canvasData, errorMessage: null };
+//     }
+//     return { canvasData: null, errorMessage };
+// }
+
+export async function saveCanvas(canvasId: string | null, name: string, description: string, publicity: Publicity, canvasState: CanvasState) {
     console.log('Saving canvas...');
 
+    if (!canvasState.scene) {
+        console.log('No scene attached.');
+        return;
+    }
+
     const voxels: Voxel[] = [];
-    for (let y = 0; y < CanvasState.divisionFactor; y++) {
-        let yIndex = y * Math.pow(CanvasState.divisionFactor, 2);
-        for (let x = 0; x < CanvasState.divisionFactor; x++) {
-            let xIndex = x * CanvasState.divisionFactor;
-            for (let z = 0; z < CanvasState.divisionFactor; z++) {
+    for (let y = 0; y < canvasState.divisionFactor; y++) {
+        let yIndex = y * Math.pow(canvasState.divisionFactor, 2);
+        for (let x = 0; x < canvasState.divisionFactor; x++) {
+            let xIndex = x * canvasState.divisionFactor;
+            for (let z = 0; z < canvasState.divisionFactor; z++) {
                 let cubeIndex = yIndex + xIndex + z;
-                let cubeColor = CanvasState.scene.cubeSpace.cubeColorSpace[cubeIndex];
+                let cubeColor = canvasState.scene.cubeSpace.cubeColorSpace[cubeIndex];
                 if (!cubeColor) continue;
-                let cubeMaterial = CanvasState.scene.cubeSpace.cubeMaterialSpace[cubeIndex];
+                let cubeMaterial = canvasState.scene.cubeSpace.cubeMaterialSpace[cubeIndex];
                 voxels.push({
                     x,
                     y,
@@ -40,49 +76,27 @@ export async function saveCanvas() {
                     cubeColor,
                     cubeMaterial
                 });
-                // let cubeString = `${x},${y},${z}:${cubeColor}:${cubeMaterial}`;
-                // voxels.push(cubeString);
             }
         }
     }
 
-
-    // let voxels: String[] = [];
-    // for (let y = 0; y < CanvasState.divisionFactor; y++) {
-    //     let yIndex = y * Math.pow(CanvasState.divisionFactor, 2);
-    //     for (let x = 0; x < CanvasState.divisionFactor; x++) {
-    //         let xIndex = x * CanvasState.divisionFactor;
-    //         for (let z = 0; z < CanvasState.divisionFactor; z++) {
-    //             let cubeIndex = yIndex + xIndex + z;
-    //             let cubeColor = CanvasState.scene.cubeSpace.cubeColorSpace[cubeIndex];
-    //             if (!cubeColor) continue;
-    //             let cubeMaterial = CanvasState.scene.cubeSpace.cubeMaterialSpace[cubeIndex];
-    //             let cubeString = `${x},${y},${z}:${rgbToHex(cubeColor)}:${cubeMaterial}`;
-    //             voxels.push(cubeString);
-    //         }
-    //     }
-    // }
-    let backgroundColor = rgbToHex(CanvasState.backgroundColor);
-    let pointLightPosition = CanvasState.scene.sunCenter.toString();
-
     let canvasData: CanvasData = {
+        "name": name,
+        "description": description,
+        "publicity": publicity,
         "version": "0.1.0",
-        "dimension": CanvasState.divisionFactor,
-        "pointLightPosition": CanvasState.scene.sunCenter,
-        "backgroundColor": CanvasState.backgroundColor,
-        "ambientStrength": CanvasState.ambienceStrength,
-        "pointLightStrength": CanvasState.sunStrength,
+        "dimension": canvasState.divisionFactor,
+        "pointLightPosition": canvasState.scene.sunCenter,
+        "backgroundColor": canvasState.backgroundColor,
+        "ambientStrength": canvasState.ambienceStrength,
+        "pointLightStrength": canvasState.sunStrength,
         "voxels": voxels,
     };
-    // let canvasObjectString = JSON.stringify(canvasObject);
-    // console.log(JSON.parse(canvasObjectString));
-    const { isCanvasSaved, errorMessage } = await saveCanvasServer(canvasData);
+    const { isCanvasSaved, errorMessage } = await saveCanvasServer(canvasData, canvasId);
 
-    if (!isCanvasSaved) {
+    if (isCanvasSaved) {
+        console.log("Saved!");
+    } else {
         console.log(errorMessage);
     }
-
-    console.log("Saved!");
 }
-
-// "1.1.1:#hexColor:material,"

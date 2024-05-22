@@ -17,67 +17,78 @@ export enum EditToolModes {
 }
 
 export default class CanvasState {
-    static canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement | null = null;
 
-    static layerLabel: HTMLElement;
-    static layerContainer: HTMLElement;
+    layerLabel: HTMLElement | null = null;
+    layerContainer: HTMLElement | null = null;
 
-    static divisionFactor: number = 16;
-    static sideLength: number = 1 / this.divisionFactor;
-    static upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
+    divisionFactor: number = 32;
+    sideLength: number = 1 / this.divisionFactor;
+    upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
 
-    static hoverCubeColor: vec3 = vec3.fromValues(0.31372, 0.7843, 0.47059);
-    static backgroundColor: vec3 = vec3.fromValues(0.15, 0.15, 0.15)
+    hoverCubeColor: vec3 = vec3.fromValues(0.31372, 0.7843, 0.47059);
+    backgroundColor: vec3 = vec3.fromValues(0.15, 0.15, 0.15);
 
-    static renderHoverCube: boolean = false;
-    static renderSunSelection: boolean = false;
+    renderHoverCube: boolean = false;
+    renderSunSelection: boolean = false;
 
-    static viewProjectionInverse: mat4 = mat4.create();
+    viewProjectionInverse: mat4 = mat4.create();
 
-    static transitioning: boolean = false;
-    static transitionTime: number = 0;
-    static previousTime: number = performance.now();
+    transitioning: boolean = false;
+    transitionTime: number = 0;
+    previousTime: number = performance.now();
 
-    static rayTrace: boolean = false;
-    static sampleCount: number = 0;
-    static tracerMaterial: TracerMaterial = TracerMaterial.Diffuse;
+    rayTrace: boolean = true;
+    sampleCount: number = 0;
+    tracerMaterial: TracerMaterial = TracerMaterial.Diffuse;
 
-    static sunStrength: number = 5.0;
-    static ambienceStrength: number = 5.0;
+    sunStrength: number = 5.0;
+    ambienceStrength: number = 5.0;
 
-    static editToolMode: EditToolModes = EditToolModes.Pencil;
+    editToolMode: EditToolModes = EditToolModes.Pencil;
 
-    static scene: Scene;
-    static controls: Controls;
-    static camera: PolarCamera;
-    static renderer: Renderer;
+    scene: Scene | null = null;
+    controls: Controls | null = null;
+    camera: PolarCamera = new PolarCamera(0, 0);
+    renderer: Renderer | null = null;
 
-    public static setAmbienceStrength(strength: number): void {
-        // strength = Math.max(Math.min(strength, 10), 0);
-        // strength = (Math.pow(1.63, strength - 5.3) - 0.122) / 3;
-        CanvasState.ambienceStrength = strength;
-        CanvasState.sampleCount = 0;
+    constructor() {
     }
 
-    public static setPointLightStrength(strength: number): void {
-        // strength = Math.max(Math.min(strength, 10), 0);
-        // strength = Math.pow(1.63, strength - 5.3) - 0.122;
-        CanvasState.sunStrength = strength;
-        CanvasState.sampleCount = 0;
+    bindScene(scene: Scene) {
+        this.scene = scene;
     }
 
-    public static toggleRayTracing(enableRayTrace: boolean): void {
-        if (enableRayTrace != CanvasState.rayTrace) {
-            CanvasState.rayTrace = enableRayTrace;
-            CanvasState.sampleCount = 0;
+    bindControls(controls: Controls) {
+        this.controls = controls;
+    }
+
+    setAmbienceStrength(strength: number): void {
+        this.ambienceStrength = strength;
+        this.sampleCount = 0;
+    }
+
+    setPointLightStrength(strength: number): void {
+        this.sunStrength = strength;
+        this.sampleCount = 0;
+    }
+
+    toggleRayTracing(enableRayTrace: boolean): void {
+        if (enableRayTrace != this.rayTrace) {
+            this.rayTrace = enableRayTrace;
+            this.sampleCount = 0;
         }
     }
 
-    public static setLayerLabel(layer: number): void {
-        CanvasState.layerLabel.innerHTML = ` ${layer.toString()} `;
+    setLayerLabel(layer: number): void {
+        if (this.layerLabel) {
+            this.layerLabel.innerHTML = ` ${layer.toString()} `;
+        }
     }
 
-    public static setLayerVisible(layerVisibility: boolean): void {
-        CanvasState.layerContainer.style.visibility = (layerVisibility) ? "visible" : "hidden";
+    setLayerVisible(layerVisibility: boolean): void {
+        if (this.layerContainer) {
+            this.layerContainer.style.visibility = (layerVisibility) ? "visible" : "hidden";
+        }
     }
 }

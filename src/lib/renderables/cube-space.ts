@@ -1,5 +1,6 @@
 import { vec2 } from "@/lib/gl-matrix/index";
 import { TracerMaterial } from "@/app/create/canvas-state";
+import { Voxel } from "@/backend-lib/data";
 
 export default class CubeSpace {
     readonly cubeColorSpace: (vec3 | undefined)[];
@@ -12,13 +13,13 @@ export default class CubeSpace {
     divisionFactor: number;
     cubeSideLength: number;
     upperLeft: vec2;
-    gl: WebGLRenderingContext
+    gl: WebGLRenderingContext | null = null;
 
     cubeColorSpaceTextureData: number[] = [];
     cubeColorSpaceTexture: WebGLTexture | null = null;
     cubeMaterialSpaceTexture: WebGLTexture | null = null;
 
-    constructor(gl: WebGLRenderingContext, divisionFactor: number, upperLeft: vec2) {
+    constructor(divisionFactor: number, upperLeft: vec2) {
         this.cubeColorSpace = new Array<vec3>(Math.pow(divisionFactor, 3));
         this.cubeColorSpace.fill(undefined);
         this.cubeMaterialSpace = new Array<TracerMaterial>(Math.pow(divisionFactor, 3));
@@ -27,10 +28,13 @@ export default class CubeSpace {
         this.divisionFactor = divisionFactor;
         this.cubeSideLength = 1 / this.divisionFactor;
         this.upperLeft = upperLeft;
-        this.gl = gl;
 
         this.cubeColorSpaceTextureData = new Array<number>(4 * Math.pow(divisionFactor, 3));
         this.cubeColorSpaceTextureData.fill(0);
+    }
+
+    bindToGLContext(gl: WebGLRenderingContext) {
+        this.gl = gl;
     }
 
     private getCubeIndex(x: number, y: number, z: number): number {
@@ -77,6 +81,10 @@ export default class CubeSpace {
     }
 
     populateBuffers(): vec2 {
+        if (!this.gl) {
+            throw new Error("No GL context bound.");
+        }
+
         let vertices = [];
         let normals = [];
         let colors = [];
@@ -276,6 +284,10 @@ export default class CubeSpace {
     }
 
     populateTexture() {
+        if (!this.gl) {
+            throw new Error("No GL context bound.");
+        }
+
         let level = 0;
         let width = Math.pow(this.divisionFactor, 2);
         let height = this.divisionFactor;

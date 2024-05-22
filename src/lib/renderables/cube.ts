@@ -2,7 +2,7 @@ import Mesh from "@/lib/renderables/mesh";
 
 export default class Cube extends Mesh {
 
-    constructor(glContext: WebGLRenderingContext, sideLength = 1.0) {
+    constructor(sideLength = 1.0) {
         super();
         this.vertices = [
             // Bottom face
@@ -53,9 +53,5 @@ export default class Cube extends Mesh {
             0.0, sideLength, sideLength,
             0.0, 0.0, sideLength,
         ];
-        this.positionBuffer = glContext.createBuffer();
-        glContext.bindBuffer(glContext.ARRAY_BUFFER, this.positionBuffer);
-        glContext.bufferData(glContext.ARRAY_BUFFER, new Float32Array(this.vertices), glContext.STATIC_DRAW);
-        this.drawingMode = glContext.TRIANGLES
     }
 }

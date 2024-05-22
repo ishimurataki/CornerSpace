@@ -11,7 +11,8 @@ export const tracerVertexSource: string = `
     }
 `
 
-export const tracerFragmentSource: string = `
+export const tracerFragmentSource = (divisionFactor: number) => {
+    return `
     precision highp float;
     uniform vec3 uEye;
     uniform float uTimeSinceStart; 
@@ -76,7 +77,7 @@ export const tracerFragmentSource: string = `
     }
 
     float calculateShadowStrength(vec3 origin, vec3 toLight, float tLight) {
-        int divisionFactor = ${CanvasState.divisionFactor.toFixed(0)};
+        int divisionFactor = ${divisionFactor.toFixed(0)};
 
         int stepX = (toLight.x > 0.0) ? 1 : -1;
         int stepY = (toLight.y > 0.0) ? 1 : -1;
@@ -102,7 +103,7 @@ export const tracerFragmentSource: string = `
         float tDeltaY = float(stepY) / toLight.y;
         float tDeltaZ = float(stepZ) / toLight.z;
 
-        for (int i = 0; i < ${(CanvasState.divisionFactor * 3).toFixed(0)}; i++) {
+        for (int i = 0; i < ${(divisionFactor * 3).toFixed(0)}; i++) {
             if (x >= divisionFactor || x < 0 || 
                 y >= divisionFactor || y < 0 || 
                 z >= divisionFactor || z < 0 ||
@@ -142,7 +143,7 @@ export const tracerFragmentSource: string = `
     }
 
     void main() {
-        int divisionFactor = ${CanvasState.divisionFactor.toFixed(0)};
+        int divisionFactor = ${divisionFactor.toFixed(0)};
         float sideLength = 1.0 / float(divisionFactor);
         vec3 cubeMin = vec3(-0.5, 0.0, -0.5);
         vec3 cubeMax = vec3(0.5, 1.0, 0.5);
@@ -213,7 +214,7 @@ export const tracerFragmentSource: string = `
             bool found = false;
             vec3 surfaceColor = uBackgroundColor;
             vec3 normal; 
-            for (int i = 0; i < ${(CanvasState.divisionFactor * 3).toFixed(0)}; i++) {
+            for (int i = 0; i < ${(divisionFactor * 3).toFixed(0)}; i++) {
                 if (x >= divisionFactor || x < 0 || 
                     y >= divisionFactor || y < 0 || 
                     z >= divisionFactor || z < 0) {
@@ -310,3 +311,4 @@ export const tracerFragmentSource: string = `
         gl_FragColor = vec4(mix(accumulatedColor, texture, uTextureWeight), 1.0);
     }
 `
+}

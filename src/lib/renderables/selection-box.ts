@@ -2,7 +2,7 @@ import Mesh from "@/lib/renderables/mesh";
 
 export default class SelectionBox extends Mesh {
 
-    constructor(glContext: WebGLRenderingContext, sideLength: number) {
+    constructor(sideLength: number) {
         super();
         let v1 = [0.0, 0.0, 0.0];
         let v2 = [sideLength, 0.0, 0.0];
@@ -27,9 +27,5 @@ export default class SelectionBox extends Mesh {
             ...v3, ...v7,
             ...v4, ...v8
         );
-        this.positionBuffer = glContext.createBuffer();
-        glContext.bindBuffer(glContext.ARRAY_BUFFER, this.positionBuffer);
-        glContext.bufferData(glContext.ARRAY_BUFFER, new Float32Array(this.vertices), glContext.STATIC_DRAW);
-        this.drawingMode = glContext.LINES;
     }
 }

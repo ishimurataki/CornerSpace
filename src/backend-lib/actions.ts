@@ -5,10 +5,11 @@ import { generateClient } from 'aws-amplify/data'
 import outputs from "@/../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { AuthError, confirmSignUp, fetchAuthSession, signUp } from "aws-amplify/auth";
-import { uploadData } from 'aws-amplify/storage';
+import { downloadData, uploadData } from 'aws-amplify/storage';
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
-import { CanvasData } from "./data";
+import { CanvasData, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
+import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 
 Amplify.configure(outputs, { ssr: true });
 
@@ -105,18 +106,76 @@ function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMess
     return { valid: true, errorMessage: null };
 }
 
-function rgbToHex(rbg: vec3): string {
-    const red = Math.round(rbg[0] * 255).toString(16).padStart(2, '0');
-    const green = Math.round(rbg[1] * 255).toString(16).padStart(2, '0');
-    const blue = Math.round(rbg[2] * 255).toString(16).padStart(2, '0');
-    const hexString = ("#" + red + green + blue).toLowerCase();
-    return hexString;
+export async function loadCanvasSever(canvasId: string):
+    Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
+
+    // Confirm that user is signed in
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "User not authenticated." }
+    }
+
+    // Obtain correct canvasId
+    const { data: canvasesData, errors: getCanvasForUserErrors } =
+        await client.queries.getCanvasesForUser({ user: username });
+    if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
+        console.log(getCanvasForUserErrors);
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "500 - Internal Server Error." };
+    }
+
+    let canvases = Object.values(canvasesData);
+    let canvas = canvases.find((canvas) => canvas?.canvasId === canvasId);
+    if (!canvas) {
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "User is not authorized." };
+    }
+
+    try {
+        const canvasDataDownloadResult = await downloadData({
+            path: `canvases/${username}/${canvasId}`,
+        }).result;
+        const canvasDataJson = await canvasDataDownloadResult.body.json();
+
+        const voxels = canvasDataJson.voxels.map((voxelString: string) => {
+            const voxelStringParts = voxelString.split(":");
+            const voxelCoords = stringToVec3(voxelStringParts[0]);
+            return {
+                x: voxelCoords[0],
+                y: voxelCoords[1],
+                z: voxelCoords[2],
+                cubeColor: hexToRgb(voxelStringParts[1]),
+                cubeMaterial: Number(voxelStringParts[2])
+            };
+        });
+
+        const canvasData: CanvasData = {
+            name: canvas.name,
+            description: canvas.description ? canvas.description : "",
+            publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
+            version: canvasDataJson.version,
+            dimension: canvasDataJson.dimension,
+            pointLightPosition: stringToVec3(canvasDataJson.pointLightPosition),
+            backgroundColor: hexToRgb(canvasDataJson.backgroundColor),
+            ambientStrength: canvasDataJson.ambientStrength,
+            pointLightStrength: canvasDataJson.pointLightStrength,
+            voxels: voxels
+        };
+
+        return { isCanvasLoaded: true, canvasData: canvasData, errorMessage: null }
+    } catch (e) {
+        console.log(e);
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "500 - Internal Server Error." }
+    }
 }
 
 export async function saveCanvasServer(canvasData: CanvasData, canvasId: string | null = null):
     Promise<{ isCanvasSaved: boolean, errorMessage: string | null }> {
 
     const isNewCanvas = !canvasId;
+    console.log('CanvasID: ' + canvasId);
+    console.log('Is new canvas: ' + isNewCanvas);
 
     // Confirm that user is signed in
     const currentUser = await fetchUserAttributesServer();
@@ -134,23 +193,24 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
     }
 
     // Obtain correct canvasId
-    const { data: canvases, errors: getCanvasForUserErrors } =
+    const { data: canvasesData, errors: getCanvasForUserErrors } =
         await client.queries.getCanvasesForUser({ user: username });
-    if (getCanvasForUserErrors || canvases == undefined || canvases == null) {
+    if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
         console.log(getCanvasForUserErrors);
         return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." };
     }
 
+    const canvases = Object.values(canvasesData);
     if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
         return { isCanvasSaved: false, errorMessage: "Invalid canvas ID." }
-    } else {
+    } else if (!canvasId) {
         const { data: user, errors: usersGetErrors } = await client.models.Users.get({ username });
         if (usersGetErrors) {
             console.log(usersGetErrors);
             return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." };
         }
         const maxNumberOfCanvases = (user as User).numberOfCanvases;
-        const currentNumberOfCanvases = Object.keys(canvases).length;
+        const currentNumberOfCanvases = canvases.length;
         if (currentNumberOfCanvases >= maxNumberOfCanvases) {
             return { isCanvasSaved: false, errorMessage: "Max number of canvases reached." }
         }
@@ -167,37 +227,38 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
     const canvasDataString = JSON.stringify({
         "version": canvasData.version,
         "dimension": canvasData.dimension,
-        "pointLightPosition": canvasData.pointLightPosition,
+        "pointLightPosition": canvasData.pointLightPosition.toString(),
         "backgroundColor": rgbToHex(canvasData.backgroundColor),
         "ambientStrength": canvasData.ambientStrength,
         "pointLightStrength": canvasData.pointLightStrength,
         "voxels": voxelsString,
-    })
+    });
+
+    const publicity = canvasData.publicity == Publicity.Public ? "PUBLIC" : "PRIVATE";
 
     // Save canvas to data
     if (isNewCanvas) {
         const { errors, data: newCanvas } = await client.models.Canvases.create({
             owner: username,
             canvasId: canvasId,
-            name: "Test canvas",
-            description: "Test description",
-            publicity: "PUBLIC"
+            name: canvasData.name,
+            description: canvasData.description,
+            publicity: publicity
         });
 
         if (errors) {
             console.log(errors);
             return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." }
         }
+    } else {
+        await client.models.Canvases.update({
+            owner: username,
+            canvasId: canvasId,
+            name: canvasData.name,
+            description: canvasData.description,
+            publicity: publicity
+        })
     }
-    // else {
-    //     await client.models.Canvases.update({
-    //         owner: username,
-    //         canvasId: canvasId,
-    //         name: "Test canvas",
-    //         description: "Test description resaved",
-    //         publicity: "PUBLIC"
-    //     })
-    // }
 
     // Save canvas to storage
     try {
@@ -229,8 +290,4 @@ export async function testServer() {
     if (canvases) {
         console.log(Object.keys(canvases));
     }
-    // const { errors, data: user } = await client.models.Users.get({ username });
-    // let numberOfCanvases = (user as User).numberOfCanvases;
-
-    // console.log(numberOfCanvases);
 }
