@@ -27,16 +27,16 @@ export default function SignInUpAggregate() {
                 <button
                     className="flex flex-row bg-blue-400 rounded-lg p-1.5 text-white hover:font-bold hover:bg-blue-500"
                     onClick={() => { setMode(Mode.SignIn) }}>
-                    Let's get you signed in!
+                    Let&apos;s get you signed in!
                 </button>
             </div>
             <div className={`absolute flex flex-col gap-4 bg-white/50 w-1/2 h-full left-1/2 backdrop-blur-md z-50 rounded-r-2xl p-10
                         ${mode === Mode.SignIn ? "visible" : "invisible"}`}>
-                <text className="text-2xl">Don't have an account?</text>
+                <text className="text-2xl">Don&apos;t have an account?</text>
                 <button
                     className="flex flex-row bg-blue-400 rounded-lg p-1.5 text-white hover:font-bold hover:bg-blue-500"
                     onClick={() => { setMode(Mode.SignUp) }}>
-                    Let's get you signed up!
+                    Let&apos;s get you signed up!
                 </button>
             </div>
         </div>
