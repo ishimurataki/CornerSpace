@@ -17,6 +17,7 @@ const schema = a.schema({
       publicity: a.enum(["PRIVATE", "PUBLIC"])
     })
     .identifier(["owner", "canvasId"])
+    .secondaryIndexes((index) => [index("canvasId")])
     .authorization(allow => [allow.publicApiKey()]),
   getCanvasesForUser: a
     .query()

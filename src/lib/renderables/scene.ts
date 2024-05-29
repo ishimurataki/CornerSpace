@@ -203,11 +203,6 @@ export default class Scene {
         return null;
     }
 
-    toggleSun(): void {
-        this.sunOn = !this.sunOn;
-        this.sun.color = this.sunOn ? vec3.fromValues(1, 1, 1) : vec3.fromValues(0.1, 0.1, 0.1);
-    }
-
     setSunCenter(position: vec3): void {
         this.sunCenter = position;
         this.sunCorner = vec3.subtract(vec3.create(), this.sunCenter,

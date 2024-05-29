@@ -27,9 +27,6 @@ export default class Controls {
             this.canvasState.canvas.addEventListener('mouseup', this.mouseUpHandler, false);
             this.canvasState.canvas.addEventListener('wheel', this.mousewheelHandler, false);
         }
-        document.getElementById("toggleSunButton")?.addEventListener('click', this.toggleSunButtonClickHandler, false);
-        document.getElementById("closeEditorButton")?.addEventListener('click', this.closeEditorButtonClickHandler, false);
-        document.getElementById("openEditorButton")?.addEventListener('click', this.openEditorButtonClickHanlder, false);
     }
 
     private moveHandler = (e: MouseEvent) => {
@@ -229,30 +226,5 @@ export default class Controls {
         this.canvasState.camera.changeToViewer();
         this.canvasState.scene.cubeSpace.populateTexture();
         this.canvasState.setLayerVisible(false);
-    }
-
-    private toggleSunButtonClickHandler = () => {
-        if (!this.canvasState.scene) {
-            return;
-        }
-        this.canvasState.scene.toggleSun();
-        let toggleSunButton = document.getElementById("toggleSunButton");
-        if (toggleSunButton != null) {
-            toggleSunButton.innerHTML = (this.canvasState.scene.sunOn) ? "Turn Off" : "Turn On"
-        }
-    }
-
-    private closeEditorButtonClickHandler = () => {
-        let editorPaneElement = document.getElementById("editorPane");
-        if (editorPaneElement != null) {
-            editorPaneElement.style.display = "none";
-        }
-    }
-
-    private openEditorButtonClickHanlder = () => {
-        let editorPaneElement = document.getElementById("editorPane");
-        if (editorPaneElement != null) {
-            editorPaneElement.style.display = "block";
-        }
     }
 }

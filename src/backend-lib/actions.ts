@@ -10,6 +10,7 @@ import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import { CanvasData, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
+import { unstable_noStore } from "next/cache";
 
 Amplify.configure(outputs, { ssr: true });
 
@@ -109,28 +110,19 @@ function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMess
 export async function loadCanvasSever(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
 
-    // Confirm that user is signed in
-    const currentUser = await fetchUserAttributesServer();
-    const signedIn = currentUser != undefined;
-    const username = currentUser?.preferred_username;
+    unstable_noStore();
 
-    if (!signedIn || !username) {
-        return { isCanvasLoaded: false, canvasData: null, errorMessage: "User not authenticated." }
-    }
+    const { data: canvasData, errors: getCanvasErrors } =
+        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
 
-    // Obtain correct canvasId
-    const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await client.queries.getCanvasesForUser({ user: username });
-    if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
-        console.log(getCanvasForUserErrors);
-        return { isCanvasLoaded: false, canvasData: null, errorMessage: "500 - Internal Server Error." };
+    if (getCanvasErrors) {
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "500 - Internal Server Error." }
     }
-
-    let canvases = Object.values(canvasesData);
-    let canvas = canvases.find((canvas) => canvas?.canvasId === canvasId);
-    if (!canvas) {
-        return { isCanvasLoaded: false, canvasData: null, errorMessage: "User is not authorized." };
+    if (canvasData.length == 0) {
+        return { isCanvasLoaded: false, canvasData: null, errorMessage: "Invalid canvasId." }
     }
+    const canvas = canvasData[0];
+    const username = canvas.owner;
 
     try {
         const canvasDataDownloadResult = await downloadData({
@@ -174,8 +166,6 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
     Promise<{ isCanvasSaved: boolean, errorMessage: string | null }> {
 
     const isNewCanvas = !canvasId;
-    console.log('CanvasID: ' + canvasId);
-    console.log('Is new canvas: ' + isNewCanvas);
 
     // Confirm that user is signed in
     const currentUser = await fetchUserAttributesServer();
@@ -290,4 +280,28 @@ export async function testServer() {
     if (canvases) {
         console.log(Object.keys(canvases));
     }
+}
+
+export async function getCanvasIdsForUserServer():
+    Promise<{ areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "User not authenticated." }
+    }
+
+    const { data: canvasesData, errors: getCanvasForUserErrors } =
+        await client.queries.getCanvasesForUser({ user: username });
+
+    if (canvasesData) {
+        const canvasIds = Object.values(canvasesData).filter((canvas) => canvas !== null)
+            .map((canvas) => {
+                return canvas.canvasId
+            });
+        return { areCanvasIdsLoaded: true, canvasIds, errorMessage: null };
+    }
+    console.log(getCanvasForUserErrors);
+    return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." }
 }

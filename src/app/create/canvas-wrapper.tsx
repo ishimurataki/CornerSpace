@@ -52,8 +52,11 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         canvasData.voxels.forEach((voxel: Voxel) => {
             scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
         });
+
+        console.log("again, canvas description is: " + canvasData.description);
     }
 
+    const [showTools, setShowTools] = useState(true);
     const [toolsMenuMode, setToolsMenuMode] = useState("edit");
     const [color, setColor] = useState(rgbToHex(canvasState.hoverCubeColor));
     const [bgColor, setBgColor] = useState(rgbToHex(canvasState.backgroundColor));
@@ -209,8 +212,12 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     return (
         <div className="flex-1 w-full flex flex-row max-h min-h-0 min-w-0">
-            <div className="p-1 max-h flex flex-col gap-1">
-                <div className="space-x-1 [&>*]:rounded-t-md [&>*]:px-3 [&>*:hover]:bg-pastel-red flex-none">
+            <div className={`flex relative p-1 max-h flex-col gap-1`}>
+                <div className="absolute right-0 h-full flex flex-col justify-center">
+                    <button className={`text-xl text-gray-600 hover:text-gray-900 hover:text-2xl ${showTools ? "mr-1.5" : ""}`}
+                        onClick={() => setShowTools(!showTools)}>||</button>
+                </div>
+                <div className={`${showTools ? "" : "hidden"} space-x-1 [&>*]:rounded-t-md [&>*]:px-3 [&>*:hover]:bg-pastel-red flex-none`}>
                     <button
                         className={`${toolsMenuMode == "edit" ? "bg-pastel-red" : "bg-pastel-orange"}`}
                         onClick={() => {
@@ -237,7 +244,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         Save
                     </button>
                 </div>
-                <div className=" bg-sea-green px-1 w-[12.5rem] flex-1">
+                <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1`}>
                     <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"} h-full`}>
                         <div className="mt-1 grid grid-cols-4 gap-1">
                             {editToolButtons}
@@ -337,14 +344,13 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         </div>
                         <button className="bg-sky-100 rounded-md px-2 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={saving} onClick={handleSave}>Save</button>
                         {/* <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => testServer()}>test</button> */}
-                        {/* <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => loadCanvas("cc6a85a5-9581-469e-9d2b-8d96403b9b7c")}>test</button> */}
                     </div>
                 </div>
             </div>
             <div className="flex-1 p-1">
                 <div className="h-full w-full relative">
                     <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer">Layer:
-                        <text className="text-3xl" id="layerLabel"> 1 </text>/ 32
+                        <text className="text-3xl" id="layerLabel"> 1 </text>/ {canvasState.divisionFactor}
                     </div>
                     <canvas ref={canvasRef} className="border-4 border-pastel-green h-full w-full min-h-0 min-w-0" />
                 </div>

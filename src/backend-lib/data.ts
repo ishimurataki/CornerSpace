@@ -27,30 +27,6 @@ export type CanvasData = {
     voxels: Voxel[]
 }
 
-// export async function loadCanvas(id: string):
-//     Promise<{ canvasData: CanvasData | null; errorMessage: string | null; }> {
-//     console.log("Loading canvas...");
-
-//     const { isCanvasLoaded, canvasData, errorMessage } = await loadCanvasSever(id);
-
-//     if (isCanvasLoaded && canvasData) {
-//         CanvasState.divisionFactor = canvasData.dimension;
-//         CanvasState.scene.setSunCenter(canvasData.pointLightPosition);
-//         CanvasState.backgroundColor = canvasData.backgroundColor;
-//         CanvasState.ambienceStrength = canvasData.ambientStrength;
-//         CanvasState.sunStrength = canvasData.pointLightStrength;
-
-//         canvasData.voxels.forEach((voxel: Voxel) => {
-//             CanvasState.scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
-//         });
-
-//         CanvasState.controls.toggleToViewer();
-//         console.log("Canvas loaded...");
-//         return { canvasData, errorMessage: null };
-//     }
-//     return { canvasData: null, errorMessage };
-// }
-
 export async function saveCanvas(canvasId: string | null, name: string, description: string, publicity: Publicity, canvasState: CanvasState) {
     console.log('Saving canvas...');
 
