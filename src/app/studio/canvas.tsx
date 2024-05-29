@@ -11,7 +11,7 @@ import { renderFragmentSource, renderVertexSource } from "@/lib/shaders/render-s
 import { tracerFragmentSource, tracerVertexSource } from "@/lib/shaders/tracer-shader";
 import { plainFragmentShaderSource, plainVertexShaderSource } from "@/lib/shaders/plain-shader";
 
-export default async function Canvas({ canvasData }: { canvasData: CanvasData }) {
+export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -74,16 +74,13 @@ export default async function Canvas({ canvasData }: { canvasData: CanvasData })
             alert("Could not compile render shader program");
             return;
         }
+        controls.toggleToViewer();
+        canvasState.rayTrace = false;
 
         const renderer = new Renderer(gl, canvasState, tracerShaderProgram, renderShaderProgram, plainShaderProgram);
         canvasState.renderer = renderer;
 
         gl.useProgram(plainShaderProgram);
-
-        if (canvasData) {
-            controls.toggleToViewer();
-            canvasState.rayTrace = false;
-        }
 
         let animationFrameId: number;
         const render = (now: number) => {

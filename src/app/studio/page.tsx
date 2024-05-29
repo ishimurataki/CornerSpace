@@ -18,7 +18,7 @@ export default async function App() {
       <p className="text-lg mx-10 mt-5">Your canvases!</p>
       <div className="grid grid-cols-1 gap-4 mx-10 my-5 overflow-scroll">
         {canvasIds.map((canvasId) => {
-          return <CanvasCard canvasId={canvasId} />
+          return <CanvasCard canvasId={canvasId} key={canvasId} />
         })}
       </div>
     </main>

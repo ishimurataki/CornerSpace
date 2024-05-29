@@ -109,7 +109,6 @@ function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMess
 
 export async function loadCanvasSever(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
-
     unstable_noStore();
 
     const { data: canvasData, errors: getCanvasErrors } =
@@ -164,6 +163,7 @@ export async function loadCanvasSever(canvasId: string):
 
 export async function saveCanvasServer(canvasData: CanvasData, canvasId: string | null = null):
     Promise<{ isCanvasSaved: boolean, errorMessage: string | null }> {
+    unstable_noStore();
 
     const isNewCanvas = !canvasId;
 
@@ -284,6 +284,8 @@ export async function testServer() {
 
 export async function getCanvasIdsForUserServer():
     Promise<{ areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null }> {
+    unstable_noStore();
+
     const currentUser = await fetchUserAttributesServer();
     const signedIn = currentUser != undefined;
     const username = currentUser?.preferred_username;

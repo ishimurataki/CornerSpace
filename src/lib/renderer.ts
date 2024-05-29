@@ -363,7 +363,7 @@ export default class Renderer {
     }
 
     renderViewerRayTraced(viewProjectionMatrix: mat4, currentTime: number) {
-        if (!this.canvasState.canvas || !this.canvasState.scene) {
+        if (!this.canvasState.canvas || !this.canvasState.scene || !this.canvasState.rayTrace) {
             return;
         }
 

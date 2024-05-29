@@ -52,8 +52,6 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         canvasData.voxels.forEach((voxel: Voxel) => {
             scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
         });
-
-        console.log("again, canvas description is: " + canvasData.description);
     }
 
     const [showTools, setShowTools] = useState(true);
