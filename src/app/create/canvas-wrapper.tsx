@@ -184,6 +184,14 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         return <button onClick={() => {
             setToolMode(mode);
             canvasState.editToolMode = mode;
+            if (canvasState.scene) {
+                if (mode === EditToolModes.Selector || mode === EditToolModes.Eraser) {
+                    canvasState.renderHoverCube = false;
+                }
+                if (mode !== EditToolModes.Selector) {
+                    canvasState.scene.unsetSelector();
+                }
+            }
         }} key={"editTool-" + mode}
             className={`${toolMode == mode ? "bg-pastel-green p-1" : "bg-sky-100 p-2"}
                         w-full h-full rounded-md hover:bg-pastel-green hover:p-1`}>
@@ -249,6 +257,17 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         </div>
                         <hr className="h-px my-2 bg-gray-100 border-0" />
                         <div className="h-[calc(100%-90px)] overflow-auto">
+                            <div className={`${toolMode == EditToolModes.Selector ? "visible" : "hidden"} grid grid-cols-2 gap-2 h-8`}>
+                                <button className="bg-sky-100 text-sm rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base"
+                                    onClick={() => canvasState.scene?.selectorFill()}>
+                                    Fill
+                                </button>
+                                <button className="bg-sky-100 text-sm rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base"
+                                    onClick={() => canvasState.scene?.selectorClear()}>
+                                    Clear
+                                </button>
+                            </div>
+                            <hr className={`${toolMode == EditToolModes.Selector ? "visible" : "hidden"} h-px my-2 bg-gray-100 border-0`} />
                             <p className="text-sm cursor-pointer hover:bg-pastel-green p-1 rounded-md"
                                 onClick={() => setShowColor(!showColor)}>
                                 <b>Color:</b> {color}

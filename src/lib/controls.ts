@@ -1,5 +1,5 @@
 import CanvasState, { TracerMaterial, EditToolModes } from "@/app/create/canvas-state";
-import { vec3 } from "@/lib/gl-matrix/index";
+import { vec2, vec3 } from "@/lib/gl-matrix/index";
 import { Mode } from "@/lib/polar-camera"
 
 export default class Controls {
@@ -56,11 +56,15 @@ export default class Controls {
             let zIndexNow = Math.floor((cursorZWorld - this.canvasState.upperLeft[1]) / this.canvasState.sideLength);
 
             if (xIndexNow != this.xIndex || zIndexNow != this.zIndex) {
-                this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(xIndexNow, zIndexNow);
+                if (this.canvasState.editToolMode === EditToolModes.Pencil ||
+                    this.canvasState.editToolMode === EditToolModes.EyeDropper) {
+                    this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(xIndexNow, zIndexNow);
+                }
                 this.cubePlacedInCurrentPos = false;
                 this.xIndex = xIndexNow;
                 this.zIndex = zIndexNow;
             }
+
             if (this.mouseDown && !this.cubePlacedInCurrentPos) {
                 switch (this.canvasState.editToolMode) {
                     case EditToolModes.Pencil:
@@ -77,6 +81,8 @@ export default class Controls {
                         if (newCubeColor != null) this.canvasState.scene.setHoverCubeColor(newCubeColor);
                         if (newCubeMaterial != null) this.canvasState.tracerMaterial = newCubeMaterial;
                         break;
+                    case EditToolModes.Selector:
+                        this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
                 }
                 this.cubePlacedInCurrentPos = true;
             }
@@ -162,6 +168,10 @@ export default class Controls {
                     if (newCubeColor != null) this.canvasState.scene.setHoverCubeColor(newCubeColor);
                     if (newCubeMaterial != null) this.canvasState.tracerMaterial = newCubeMaterial;
                     break;
+                case EditToolModes.Selector:
+                    this.canvasState.scene.setSelectorDragStart(this.xIndex, this.zIndex);
+                    this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
+                    break;
             }
         }
     }
@@ -184,6 +194,7 @@ export default class Controls {
             let zoom = this.zoomSpeed * e.deltaY;
             this.canvasState.camera.zoom(zoom);
             this.canvasState.sampleCount = 0;
+
         } else if (this.canvasState.camera.getMode() == Mode.Editor) {
             let prevLayer = Math.round(this.layer);
             let layerScroll = this.layerScrollSpeed * e.deltaY;
@@ -192,11 +203,11 @@ export default class Controls {
             if (prevLayer != currentLayer) {
                 this.canvasState.setLayerLabel(currentLayer + 1);
                 this.canvasState.renderHoverCube = false;
-                console.log("Setting layer to: " + currentLayer);
                 this.canvasState.camera.setEditorRef(vec3.fromValues(0.0, currentLayer / this.canvasState.divisionFactor, 0.0));
                 this.canvasState.transitioning = true;
                 this.canvasState.transitionTime = 0;
                 this.canvasState.scene.setCubeLayer(currentLayer);
+                this.canvasState.scene.unsetSelector();
             }
         }
     }

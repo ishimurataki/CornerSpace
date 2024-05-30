@@ -26,6 +26,10 @@ export default class Scene {
     sunOn: boolean;
     sunSelection: Renderable;
 
+    selector: Renderable;
+    selectorDragStart: vec2 | null = null;
+    selectorDragEnd: vec2 | null = null;
+
     private gridMesh: Mesh;
     private cubeMesh: Mesh;
     mirrorMarkerMesh: Mesh;
@@ -49,6 +53,8 @@ export default class Scene {
         this.hoverCube = new Renderable(this.cubeMesh, canvasState.hoverCubeColor, mat4.create());
         this.setHoverCubePosition(0, 0);
 
+        this.selector = new Renderable(this.selectionMesh, vec3.fromValues(0.2, 0.8, 1.0), mat4.create());
+
         this.cubeSpace = new CubeSpace(canvasState.divisionFactor, canvasState.upperLeft);
         this.sunOn = true;
         this.sun = new Renderable(this.cubeMesh,
@@ -71,6 +77,7 @@ export default class Scene {
         this.selectionMesh.setDrawingMode(gl.LINES);
         this.gridMesh.setDrawingMode(gl.LINES);
         this.mirrorMarkerMesh.setDrawingMode(gl.TRIANGLES);
+        this.cubeMesh.setDrawingMode(gl.TRIANGLES);
     }
 
     private getCubeString(x: number, z: number): string {
@@ -111,7 +118,7 @@ export default class Scene {
         if (x >= 0 && x < this.canvasState.divisionFactor && z >= 0 && z < this.canvasState.divisionFactor) {
             let hoverCubeModelMatrix = mat4.fromTranslation(mat4.create(), vec3.fromValues(
                 this.canvasState.upperLeft[0] + this.canvasState.sideLength * x,
-                this.currentLayer * this.canvasState.sideLength,
+                (this.currentLayer + 0.1) * this.canvasState.sideLength,
                 this.canvasState.upperLeft[1] + this.canvasState.sideLength * z
             ));
             this.hoverCube.modelMatrix = hoverCubeModelMatrix;
@@ -209,5 +216,87 @@ export default class Scene {
             vec3.fromValues(this.canvasState.sideLength / 2, this.canvasState.sideLength / 2, this.canvasState.sideLength / 2));
         this.sun.modelMatrix = mat4.fromTranslation(mat4.create(), this.sunCorner);
         this.sunSelection.modelMatrix = mat4.fromTranslation(mat4.create(), this.sunCorner);
+    }
+
+    setSelectorDragStart(x: number, z: number): void {
+        let xCoord = Math.max(0, Math.min(this.canvasState.divisionFactor - 1, x));
+        let zCoord = Math.max(0, Math.min(this.canvasState.divisionFactor - 1, z));
+        this.selectorDragStart = vec2.fromValues(xCoord, zCoord);
+        this.updateSelectorPosition();
+    }
+
+    setSelectorDragEnd(x: number, z: number): void {
+        let xCoord = Math.max(0, Math.min(this.canvasState.divisionFactor - 1, x));
+        let zCoord = Math.max(0, Math.min(this.canvasState.divisionFactor - 1, z));
+        this.selectorDragEnd = vec2.fromValues(xCoord, zCoord);
+        this.updateSelectorPosition();
+    }
+
+    unsetSelector(): void {
+        this.selectorDragStart = null;
+        this.selectorDragEnd = null;
+    }
+
+    private updateSelectorPosition(): void {
+        if (!this.selectorDragStart || !this.selectorDragEnd) {
+            return;
+        }
+        const [x1, z1] = this.selectorDragStart;
+        const [x2, z2] = this.selectorDragEnd;
+
+        const x = (x1 < x2) ? x1 : x2;
+        const z = (z1 < z2) ? z1 : z2;
+
+        const width = Math.abs(x1 - x2) + 1;
+        const height = Math.abs(z1 - z2) + 1;
+
+        const selectorTranslate = mat4.fromTranslation(mat4.create(), vec3.fromValues(
+            this.canvasState.upperLeft[0] + this.canvasState.sideLength * x,
+            (this.currentLayer + 0.1) * this.canvasState.sideLength,
+            this.canvasState.upperLeft[1] + this.canvasState.sideLength * z
+        ));
+        const selectorModelMatrix = mat4.scale(mat4.create(), selectorTranslate, vec3.fromValues(width, 1, height));
+
+        this.selector.modelMatrix = selectorModelMatrix;
+    }
+
+    selectorFill(): void {
+        if (!this.selectorDragStart || !this.selectorDragEnd) {
+            return;
+        }
+        const [x1, z1] = this.selectorDragStart;
+        const [x2, z2] = this.selectorDragEnd;
+
+        const xMin = Math.min(x1, x2);
+        const xMax = Math.max(x1, x2);
+
+        const zMin = Math.min(z1, z2);
+        const zMax = Math.max(z1, z2);
+
+        for (let x = xMin; x <= xMax; x++) {
+            for (let z = zMin; z <= zMax; z++) {
+                this.addCube(x, z, this.canvasState.hoverCubeColor, this.canvasState.tracerMaterial);
+            }
+        }
+    }
+
+    selectorClear(): void {
+        if (!this.selectorDragStart || !this.selectorDragEnd) {
+            return;
+        }
+        const [x1, z1] = this.selectorDragStart;
+        const [x2, z2] = this.selectorDragEnd;
+
+        const xMin = Math.min(x1, x2);
+        const xMax = Math.max(x1, x2);
+
+        const zMin = Math.min(z1, z2);
+        const zMax = Math.max(z1, z2);
+
+        for (let x = xMin; x <= xMax; x++) {
+            for (let z = zMin; z <= zMax; z++) {
+                this.deleteCube(x, z);
+            }
+        }
     }
 }

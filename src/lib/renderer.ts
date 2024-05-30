@@ -1,7 +1,7 @@
 import { vec3, vec4, mat4 } from "@/lib/gl-matrix/index";
 import { Mode } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
-import CanvasState, { TracerMaterial } from "@/app/create/canvas-state";
+import CanvasState, { EditToolModes, TracerMaterial } from "@/app/create/canvas-state";
 
 export default class Renderer {
     private gl: WebGLRenderingContext;
@@ -296,6 +296,17 @@ export default class Renderer {
             this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.scene.grid.color);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.grid.modelMatrix);
             this.gl.drawArrays(this.canvasState.scene.grid.mesh.drawingMode, 0, this.canvasState.scene.grid.mesh.vertices.length / 3);
+
+            // Draw selector
+            if (this.canvasState.editToolMode == EditToolModes.Selector && this.canvasState.scene.selectorDragStart) {
+                this.gl.disable(this.gl.DEPTH_TEST);
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.canvasState.scene.selector.mesh.positionBuffer);
+                this.gl.vertexAttribPointer(this.plainProgramInfo.attribLocations.vertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+                this.gl.enableVertexAttribArray(this.plainProgramInfo.attribLocations.vertexPosition);
+                this.gl.uniform3fv(this.plainProgramInfo.uniformLocations.color, this.canvasState.scene.selector.color);
+                this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelMatrix, false, this.canvasState.scene.selector.modelMatrix);
+                this.gl.drawArrays(this.canvasState.scene.selector.mesh.drawingMode, 0, this.canvasState.scene.selector.mesh.vertices.length / 3);
+            }
         }
         else if (this.canvasState.camera.getMode() == Mode.Viewer) {
             if (this.canvasState.rayTrace) {
