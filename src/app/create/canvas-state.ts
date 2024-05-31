@@ -1,6 +1,6 @@
 import Controls from "@/lib/controls";
 import { vec2, vec3, mat4 } from "@/lib/gl-matrix/index";
-import { PolarCamera } from "@/lib/polar-camera";
+import { Axis, PolarCamera } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
 import Renderer from "@/lib/renderer";
 
@@ -24,7 +24,7 @@ export default class CanvasState {
 
     divisionFactor: number = 32;
     sideLength: number = 1 / this.divisionFactor;
-    upperLeft: vec2 = vec2.fromValues(-0.5, -0.5);
+    upperBackLeft: vec2 = vec3.fromValues(-0.5, -0.5, -0.5);
 
     hoverCubeColor: vec3 = vec3.fromValues(0.31372, 0.7843, 0.47059);
     backgroundColor: vec3 = vec3.fromValues(0.15, 0.15, 0.15);
@@ -51,6 +51,8 @@ export default class CanvasState {
     controls: Controls | null = null;
     camera: PolarCamera = new PolarCamera(0, 0);
     renderer: Renderer | null = null;
+
+    editorAxis: Axis = Axis.Y;
 
     constructor() {
     }

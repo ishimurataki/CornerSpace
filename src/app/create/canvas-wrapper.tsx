@@ -19,6 +19,7 @@ import {
 import { hexToRgb, rgbToHex } from "@/utils/functions";
 import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
+import { Axis } from "@/lib/polar-camera";
 
 const editToolMap = new Map([
     [EditToolModes.Pencil, PencilIcon],
@@ -71,6 +72,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [description, setDescription] = useState(canvasData ? canvasData.description : "");
     const [publicity, setPublicity] = useState(canvasData ? canvasData.publicity : Publicity.Public);
     const [saving, setSaving] = useState(false);
+    const [editorAxis, setEditorAxis] = useState(canvasState.editorAxis);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     function handleKeyUp(e: KeyboardEvent) {
@@ -252,6 +254,36 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                 </div>
                 <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1`}>
                     <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"} h-full`}>
+                        <div className="grid grid-cols-3 gap-1 h-8 my-2">
+                            <button className={`${editorAxis == Axis.X ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
+                                rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base`}
+                                onClick={() => {
+                                    setEditorAxis(Axis.X);
+                                    canvasState.editorAxis = Axis.X;
+                                    canvasState.controls?.toggleToEditor();
+                                }}>
+                                X
+                            </button>
+                            <button className={`${editorAxis == Axis.Y ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
+                                rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base`}
+                                onClick={() => {
+                                    setEditorAxis(Axis.Y);
+                                    canvasState.editorAxis = Axis.Y;
+                                    canvasState.controls?.toggleToEditor();
+                                }}>
+                                Y
+                            </button>
+                            <button className={`${editorAxis == Axis.Z ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
+                                rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base`}
+                                onClick={() => {
+                                    setEditorAxis(Axis.Z);
+                                    canvasState.editorAxis = Axis.Z;
+                                    canvasState.controls?.toggleToEditor();
+                                }}>
+                                Z
+                            </button>
+                        </div>
+                        <hr className="h-px my-2 bg-gray-100 border-0" />
                         <div className="mt-1 grid grid-cols-4 gap-1">
                             {editToolButtons}
                         </div>
@@ -360,7 +392,9 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             </select>
                         </div>
                         <button className="bg-sky-100 rounded-md px-2 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={saving} onClick={handleSave}>Save</button>
-                        {/* <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => testServer()}>test</button> */}
+                        <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => {
+                            canvasState.camera.debug();
+                        }}>test</button>
                     </div>
                 </div>
             </div>

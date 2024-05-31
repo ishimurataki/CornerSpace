@@ -231,7 +231,9 @@ export default class Renderer {
         let viewProjectionMatrix = mat4.multiply(mat4.create(), projectionMatrix, modelViewMatrix);
         mat4.invert(this.canvasState.viewProjectionInverse, viewProjectionMatrix);
 
-        if (this.canvasState.camera.getMode() == Mode.Editor) {
+        if (this.canvasState.camera.getMode() == Mode.EditorY ||
+            this.canvasState.camera.getMode() == Mode.EditorX ||
+            this.canvasState.camera.getMode() == Mode.EditorZ) {
             this.gl.useProgram(this.plainShaderProgram);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
             this.gl.uniformMatrix4fv(this.plainProgramInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);

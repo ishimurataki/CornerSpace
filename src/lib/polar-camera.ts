@@ -1,7 +1,15 @@
 import { vec3, vec4, mat4 } from "@/lib/gl-matrix/index";
 
+export enum Axis {
+    X,
+    Y,
+    Z
+}
+
 enum Mode {
-    Editor,
+    EditorY,
+    EditorX,
+    EditorZ,
     Viewer
 }
 
@@ -18,14 +26,24 @@ class PolarCamera {
 
     theta: number = 0;                // theta ranges from 0 to 2pi
     phi: number = 0.5 * Math.PI;   // phi ranges from 0 to pi
-    r: number = 1.5;
+    r: number = 1.0;
 
-    private mode: Mode = Mode.Editor;
+    private mode: Mode = Mode.EditorY;
 
-    private editorRef = vec3.fromValues(0.0, 0.0, 0.0);
-    private readonly EDITOR_THETA: number = 0;
-    private readonly EDITOR_PHI: number = 0.499 * Math.PI;
-    private readonly EDITOR_R: number = 1.5;
+    private editorRefY = vec3.fromValues(0.0, 0.0, 0.0);
+    private readonly EDITOR_THETA_Y: number = 0;
+    private readonly EDITOR_PHI_Y: number = 0.499 * Math.PI;
+    private readonly EDITOR_R_Y: number = 1.0;
+
+    private editorRefX = vec3.fromValues(0.0, 0.0, 0.0);
+    private readonly EDITOR_THETA_X: number = 0;
+    private readonly EDITOR_PHI_X: number = 0;
+    private readonly EDITOR_R_X: number = 1.0;
+
+    private editorRefZ = vec3.fromValues(0.0, 0.0, 0.0);
+    private readonly EDITOR_THETA_Z: number = 0.5 * Math.PI;
+    private readonly EDITOR_PHI_Z: number = 0;
+    private readonly EDITOR_R_Z: number = 1.0;
 
     private viewerRef = vec3.fromValues(0.0, 0.0, 0.0);
     private viewerTheta: number = 0.25 * Math.PI;
@@ -117,6 +135,10 @@ class PolarCamera {
     debug(): void {
         console.log('Eye: ' + this.eye);
         console.log('Up: ' + this.up);
+        console.log('Ref: ' + this.ref);
+        console.log('Theta: ' + this.theta);
+        console.log('Phi: ' + this.phi);
+        console.log('R: ' + this.r);
     }
 
     getMode(): Mode {
@@ -127,12 +149,30 @@ class PolarCamera {
         this.mode = Mode.Viewer;
     }
 
-    changeToEditor(): void {
-        this.mode = Mode.Editor;
+    changeToEditor(axis: Axis) {
+        switch (axis) {
+            case Axis.X:
+                this.mode = Mode.EditorX;
+                break;
+            case Axis.Y:
+                this.mode = Mode.EditorY;
+                break;
+            case Axis.Z:
+                this.mode = Mode.EditorZ;
+                break;
+        }
     }
 
-    setEditorRef(ref: vec3): void {
-        this.editorRef = ref;
+    setEditorRefY(ref: vec3): void {
+        this.editorRefY = ref;
+    }
+
+    setEditorRefX(ref: vec3): void {
+        this.editorRefX = ref;
+    }
+
+    setEditorRefZ(ref: vec3): void {
+        this.editorRefZ = ref;
     }
 
     setViewerRef(ref: vec3): void {
@@ -141,15 +181,25 @@ class PolarCamera {
 
     transition(a: number): void {
         a = Math.min(1, Math.max(0, a));
-        let refDesired: vec3 = this.editorRef;
+        let refDesired: vec3 = this.viewerRef;
         let rDesired: number = 0;
         let thetaDesired: number = 0;
         let phiDesired: number = 0;
-        if (this.mode == Mode.Editor) {
-            refDesired = this.editorRef;
-            rDesired = this.EDITOR_R;
-            thetaDesired = this.EDITOR_THETA;
-            phiDesired = this.EDITOR_PHI;
+        if (this.mode == Mode.EditorY) {
+            refDesired = this.editorRefY;
+            rDesired = this.EDITOR_R_Y;
+            thetaDesired = this.EDITOR_THETA_Y;
+            phiDesired = this.EDITOR_PHI_Y;
+        } else if (this.mode == Mode.EditorX) {
+            refDesired = this.editorRefX;
+            rDesired = this.EDITOR_R_X;
+            thetaDesired = this.EDITOR_THETA_X;
+            phiDesired = this.EDITOR_PHI_X;
+        } else if (this.mode == Mode.EditorZ) {
+            refDesired = this.editorRefZ;
+            rDesired = this.EDITOR_R_Z;
+            thetaDesired = this.EDITOR_THETA_Z;
+            phiDesired = this.EDITOR_PHI_Z;
         } else if (this.mode == Mode.Viewer) {
             refDesired = this.viewerRef;
             rDesired = this.viewerR;

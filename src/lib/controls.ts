@@ -1,6 +1,6 @@
 import CanvasState, { TracerMaterial, EditToolModes } from "@/app/create/canvas-state";
 import { vec2, vec3 } from "@/lib/gl-matrix/index";
-import { Mode } from "@/lib/polar-camera"
+import { Axis, Mode } from "@/lib/polar-camera"
 
 export default class Controls {
 
@@ -11,7 +11,10 @@ export default class Controls {
     private cubePlacedInCurrentPos: boolean = false;
     private xIndex: number = -1;
     private zIndex: number = -1;
-    private layer: number = 0;
+    private yIndex: number = -1;
+    private xLayer: number = 0;
+    private zLayer: number = 0;
+    private yLayer: number = 0;
     private movementSpeed: number = 0.01;
     private zoomSpeed: number = -0.008;
     private layerScrollSpeed: number = 0.005;
@@ -44,45 +47,83 @@ export default class Controls {
         const end: vec3 = vec3.transformMat4(vec3.create(), vec3.fromValues(clipX, clipY, 1), this.canvasState.viewProjectionInverse);
 
         const v: vec3 = vec3.sub(vec3.create(), end, start);
-        if (this.canvasState.camera.getMode() == Mode.Editor) {
+        if (this.canvasState.camera.getMode() == Mode.EditorY ||
+            this.canvasState.camera.getMode() == Mode.EditorX ||
+            this.canvasState.camera.getMode() == Mode.EditorZ) {
 
-            let currentLayerY = Math.round(this.layer) / this.canvasState.divisionFactor;
-            let t = (currentLayerY - start[1]) / v[1];
-
+            let currentLayer = 0;
+            let t = 0;
+            switch (this.canvasState.editorAxis) {
+                case Axis.X:
+                    currentLayer = (Math.round(this.xLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[0];
+                    t = (currentLayer - start[0]) / v[0];
+                    break;
+                case Axis.Y:
+                    currentLayer = (Math.round(this.yLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[1];
+                    t = (currentLayer - start[1]) / v[1];
+                    break;
+                case Axis.Z:
+                    currentLayer = (Math.round(this.zLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[2];
+                    t = (currentLayer - start[2]) / v[2];
+                    break;
+            }
             let cursorXWorld = start[0] + t * v[0];
+            let cursorYWorld = start[1] + t * v[1];
             let cursorZWorld = start[2] + t * v[2];
 
-            let xIndexNow = Math.floor((cursorXWorld - this.canvasState.upperLeft[0]) / this.canvasState.sideLength);
-            let zIndexNow = Math.floor((cursorZWorld - this.canvasState.upperLeft[1]) / this.canvasState.sideLength);
+            let xIndexNow = Math.floor((cursorXWorld - this.canvasState.upperBackLeft[0]) / this.canvasState.sideLength);
+            let yIndexNow = Math.floor((cursorYWorld - this.canvasState.upperBackLeft[1]) / this.canvasState.sideLength);
+            let zIndexNow = Math.floor((cursorZWorld - this.canvasState.upperBackLeft[2]) / this.canvasState.sideLength);
 
-            if (xIndexNow != this.xIndex || zIndexNow != this.zIndex) {
+            if (xIndexNow != this.xIndex || yIndexNow != this.yIndex || zIndexNow != this.zIndex) {
                 if (this.canvasState.editToolMode === EditToolModes.Pencil ||
                     this.canvasState.editToolMode === EditToolModes.EyeDropper) {
-                    this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(xIndexNow, zIndexNow);
+                    switch (this.canvasState.editorAxis) {
+                        case Axis.X:
+                            this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(yIndexNow, zIndexNow);
+                            break;
+                        case Axis.Y:
+                            this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(xIndexNow, zIndexNow);
+                            break;
+                        case Axis.Z:
+                            this.canvasState.renderHoverCube = this.canvasState.scene.setHoverCubePosition(xIndexNow, yIndexNow);
+                            break;
+                    }
                 }
                 this.cubePlacedInCurrentPos = false;
                 this.xIndex = xIndexNow;
+                this.yIndex = yIndexNow;
                 this.zIndex = zIndexNow;
             }
 
             if (this.mouseDown && !this.cubePlacedInCurrentPos) {
                 switch (this.canvasState.editToolMode) {
                     case EditToolModes.Pencil:
-                        this.canvasState.scene.addCube(this.xIndex, this.zIndex);
+                        this.canvasState.scene.addCube(this.xIndex, this.yIndex, this.zIndex);
                         break;
                     case EditToolModes.Eraser:
                         this.canvasState.renderHoverCube = false;
-                        this.canvasState.scene.deleteCube(this.xIndex, this.zIndex);
+                        this.canvasState.scene.deleteCube(this.xIndex, this.yIndex, this.zIndex);
                         break;
                     case EditToolModes.EyeDropper:
                         this.canvasState.renderHoverCube = false;
-                        let newCubeColor = this.canvasState.scene.getCubeColor(this.xIndex, this.zIndex);
-                        let newCubeMaterial = this.canvasState.scene.getCubeMaterial(this.xIndex, this.zIndex);
+                        let newCubeColor = this.canvasState.scene.getCubeColor(this.xIndex, this.yIndex, this.zIndex);
+                        let newCubeMaterial = this.canvasState.scene.getCubeMaterial(this.xIndex, this.yIndex, this.zIndex);
                         if (newCubeColor != null) this.canvasState.scene.setHoverCubeColor(newCubeColor);
                         if (newCubeMaterial != null) this.canvasState.tracerMaterial = newCubeMaterial;
                         break;
                     case EditToolModes.Selector:
-                        this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
+                        switch (this.canvasState.editorAxis) {
+                            case Axis.X:
+                                this.canvasState.scene.setSelectorDragEnd(this.yIndex, this.zIndex);
+                                break;
+                            case Axis.Y:
+                                this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
+                                break;
+                            case Axis.Z:
+                                this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.yIndex);
+                                break;
+                        }
                 }
                 this.cubePlacedInCurrentPos = true;
             }
@@ -152,25 +193,39 @@ export default class Controls {
         if (!this.canvasState.scene) {
             return;
         }
-        if (this.canvasState.camera.getMode() == Mode.Editor) {
+        if (this.canvasState.camera.getMode() == Mode.EditorY ||
+            this.canvasState.camera.getMode() == Mode.EditorX ||
+            this.canvasState.camera.getMode() == Mode.EditorZ) {
             switch (this.canvasState.editToolMode) {
                 case EditToolModes.Pencil:
-                    this.canvasState.scene.addCube(this.xIndex, this.zIndex);
+                    this.canvasState.scene.addCube(this.xIndex, this.yIndex, this.zIndex);
                     break;
                 case EditToolModes.Eraser:
                     this.canvasState.renderHoverCube = false;
-                    this.canvasState.scene.deleteCube(this.xIndex, this.zIndex);
+                    this.canvasState.scene.deleteCube(this.xIndex, this.yIndex, this.zIndex);
                     break;
                 case EditToolModes.EyeDropper:
                     this.canvasState.renderHoverCube = false;
-                    let newCubeColor = this.canvasState.scene.getCubeColor(this.xIndex, this.zIndex);
-                    let newCubeMaterial = this.canvasState.scene.getCubeMaterial(this.xIndex, this.zIndex);
+                    let newCubeColor = this.canvasState.scene.getCubeColor(this.xIndex, this.yIndex, this.zIndex);
+                    let newCubeMaterial = this.canvasState.scene.getCubeMaterial(this.xIndex, this.yIndex, this.zIndex);
                     if (newCubeColor != null) this.canvasState.scene.setHoverCubeColor(newCubeColor);
                     if (newCubeMaterial != null) this.canvasState.tracerMaterial = newCubeMaterial;
                     break;
                 case EditToolModes.Selector:
-                    this.canvasState.scene.setSelectorDragStart(this.xIndex, this.zIndex);
-                    this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
+                    switch (this.canvasState.editorAxis) {
+                        case Axis.X:
+                            this.canvasState.scene.setSelectorDragStart(this.yIndex, this.zIndex);
+                            this.canvasState.scene.setSelectorDragEnd(this.yIndex, this.zIndex);
+                            break;
+                        case Axis.Y:
+                            this.canvasState.scene.setSelectorDragStart(this.xIndex, this.zIndex);
+                            this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.zIndex);
+                            break;
+                        case Axis.Z:
+                            this.canvasState.scene.setSelectorDragStart(this.xIndex, this.yIndex);
+                            this.canvasState.scene.setSelectorDragEnd(this.xIndex, this.yIndex);
+                            break;
+                    }
                     break;
             }
         }
@@ -194,16 +249,47 @@ export default class Controls {
             let zoom = this.zoomSpeed * e.deltaY;
             this.canvasState.camera.zoom(zoom);
             this.canvasState.sampleCount = 0;
-
-        } else if (this.canvasState.camera.getMode() == Mode.Editor) {
-            let prevLayer = Math.round(this.layer);
+        } else if (this.canvasState.camera.getMode() == Mode.EditorY ||
+            this.canvasState.camera.getMode() == Mode.EditorX ||
+            this.canvasState.camera.getMode() == Mode.EditorZ) {
             let layerScroll = this.layerScrollSpeed * e.deltaY;
-            this.layer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.layer - layerScroll));
-            let currentLayer = Math.round(this.layer);
+            let prevLayer = 0;
+            let currentLayer = 0;
+            let x = 0, y = 0, z = 0;
+            switch (this.canvasState.editorAxis) {
+                case Axis.X:
+                    prevLayer = Math.round(this.xLayer);
+                    this.xLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.xLayer - layerScroll));
+                    currentLayer = Math.round(this.xLayer);
+                    x = currentLayer / this.canvasState.divisionFactor;
+                    break;
+                case Axis.Y:
+                    prevLayer = Math.round(this.yLayer);
+                    this.yLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.yLayer - layerScroll));
+                    currentLayer = Math.round(this.yLayer);
+                    y = currentLayer / this.canvasState.divisionFactor;
+                    break;
+                case Axis.Z:
+                    prevLayer = Math.round(this.zLayer);
+                    this.zLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.zLayer - layerScroll));
+                    currentLayer = Math.round(this.zLayer);
+                    z = currentLayer / this.canvasState.divisionFactor;
+                    break;
+            }
             if (prevLayer != currentLayer) {
                 this.canvasState.setLayerLabel(currentLayer + 1);
                 this.canvasState.renderHoverCube = false;
-                this.canvasState.camera.setEditorRef(vec3.fromValues(0.0, currentLayer / this.canvasState.divisionFactor, 0.0));
+                switch (this.canvasState.editorAxis) {
+                    case Axis.X:
+                        this.canvasState.camera.setEditorRefX(vec3.fromValues(x, y, z));
+                        break;
+                    case Axis.Y:
+                        this.canvasState.camera.setEditorRefY(vec3.fromValues(x, y, z));
+                        break;
+                    case Axis.Z:
+                        this.canvasState.camera.setEditorRefZ(vec3.fromValues(x, y, z));
+                        break;
+                }
                 this.canvasState.transitioning = true;
                 this.canvasState.transitionTime = 0;
                 this.canvasState.scene.setCubeLayer(currentLayer);
@@ -216,11 +302,25 @@ export default class Controls {
         if (!this.canvasState.scene) {
             return;
         }
-        this.canvasState.scene.setCubeLayer(Math.round(this.layer));
+        let currentLayer = 0;
+        switch (this.canvasState.editorAxis) {
+            case Axis.X:
+                currentLayer = Math.round(this.xLayer);
+                break;
+            case Axis.Y:
+                currentLayer = Math.round(this.yLayer);
+                break;
+            case Axis.Z:
+                currentLayer = Math.round(this.zLayer);
+                break;
+        }
+        this.canvasState.scene.setCubeLayer(currentLayer);
+        this.canvasState.setLayerLabel(currentLayer + 1);
         this.canvasState.renderHoverCube = false;
         this.canvasState.transitioning = true;
         this.canvasState.transitionTime = 0;
-        this.canvasState.camera.changeToEditor();
+        this.canvasState.camera.changeToEditor(this.canvasState.editorAxis);
+        this.canvasState.scene.updateEditorAxis();
         this.canvasState.setLayerVisible(true);
     }
 

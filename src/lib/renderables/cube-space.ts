@@ -12,14 +12,14 @@ export default class CubeSpace {
     cubeSpaceNumberOfVertices: number = 0;
     divisionFactor: number;
     cubeSideLength: number;
-    upperLeft: vec2;
+    upperBackLeft: vec3;
     gl: WebGLRenderingContext | null = null;
 
     cubeColorSpaceTextureData: number[] = [];
     cubeColorSpaceTexture: WebGLTexture | null = null;
     cubeMaterialSpaceTexture: WebGLTexture | null = null;
 
-    constructor(divisionFactor: number, upperLeft: vec2) {
+    constructor(divisionFactor: number, upperBackLeft: vec2) {
         this.cubeColorSpace = new Array<vec3>(Math.pow(divisionFactor, 3));
         this.cubeColorSpace.fill(undefined);
         this.cubeMaterialSpace = new Array<TracerMaterial>(Math.pow(divisionFactor, 3));
@@ -27,7 +27,7 @@ export default class CubeSpace {
 
         this.divisionFactor = divisionFactor;
         this.cubeSideLength = 1 / this.divisionFactor;
-        this.upperLeft = upperLeft;
+        this.upperBackLeft = upperBackLeft;
 
         this.cubeColorSpaceTextureData = new Array<number>(4 * Math.pow(divisionFactor, 3));
         this.cubeColorSpaceTextureData.fill(0);
@@ -89,15 +89,16 @@ export default class CubeSpace {
         let normals = [];
         let colors = [];
         let materials = [];
-        let xStart = this.upperLeft[0];
-        let zStart = this.upperLeft[1];
+        let xStart = this.upperBackLeft[0];
+        let yStart = this.upperBackLeft[1];
+        let zStart = this.upperBackLeft[2];
         let yMin = Number.MAX_SAFE_INTEGER;
         let yMax = -1;
         for (let y = 0; y < this.divisionFactor; y++) {
             let yPad = this.divisionFactor * this.divisionFactor * y;
             let yPadBelow = this.divisionFactor * this.divisionFactor * (y - 1);
-            let yWorldSpace = y * this.cubeSideLength;
-            let yNextWorldSpace = (y + 1) * this.cubeSideLength;
+            let yWorldSpace = yStart + y * this.cubeSideLength;
+            let yNextWorldSpace = yStart + (y + 1) * this.cubeSideLength;
             for (let x = 0; x < this.divisionFactor; x++) {
                 let xPad = this.divisionFactor * x;
                 let xPadLeft = this.divisionFactor * (x - 1);
