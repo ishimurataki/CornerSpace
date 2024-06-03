@@ -299,9 +299,12 @@ export async function getCanvasIdsForUserServer():
 
     if (canvasesData) {
         const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
-        const canvasIds = canvasDataValues.map((canvas) => {
-            return canvas.canvasId
-        });
+        const canvasIds: string[] = [];
+        for (const canvas of canvasDataValues) {
+            if (canvas) {
+                canvasIds.push(canvas.canvasId);
+            }
+        }
         return { areCanvasIdsLoaded: true, canvasIds, errorMessage: null };
     }
     console.log(getCanvasForUserErrors);
