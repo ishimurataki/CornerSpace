@@ -298,10 +298,10 @@ export async function getCanvasIdsForUserServer():
         await client.queries.getCanvasesForUser({ user: username });
 
     if (canvasesData) {
-        const canvasIds = Object.values(canvasesData).filter((canvas) => canvas !== null)
-            .map((canvas) => {
-                return canvas.canvasId
-            });
+        const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
+        const canvasIds = canvasDataValues.map((canvas) => {
+            return canvas.canvasId
+        });
         return { areCanvasIdsLoaded: true, canvasIds, errorMessage: null };
     }
     console.log(getCanvasForUserErrors);
