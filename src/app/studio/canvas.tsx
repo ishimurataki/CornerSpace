@@ -94,7 +94,7 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         }
-    }, [])
+    }, [canvasData])
 
     return (
         <canvas ref={canvasRef} className="border-4 border-green-400 h-60 w-80" />

@@ -298,6 +298,40 @@ export default class Controls {
         }
     }
 
+    public increaseCurrentLayer = (decrement = false) => {
+        if (!this.canvasState.scene) {
+            return;
+        }
+        let currentLayer = 0;
+        const incrementor = decrement ? -1 : 1;
+        switch (this.canvasState.editorAxis) {
+            case Axis.X:
+                this.xLayer = Math.max(0, Math.min(this.xLayer + incrementor, this.canvasState.divisionFactor - 1));
+                currentLayer = Math.round(this.xLayer);
+                let x = currentLayer / this.canvasState.divisionFactor;
+                this.canvasState.camera.setEditorRefX(vec3.fromValues(x, 0, 0));
+                break;
+            case Axis.Y:
+                this.yLayer = Math.max(0, Math.min(this.yLayer + incrementor, this.canvasState.divisionFactor - 1));
+                currentLayer = Math.round(this.yLayer);
+                let y = currentLayer / this.canvasState.divisionFactor;
+                this.canvasState.camera.setEditorRefY(vec3.fromValues(0, y, 0));
+                break;
+            case Axis.Z:
+                this.zLayer = Math.max(0, Math.min(this.zLayer + incrementor, this.canvasState.divisionFactor - 1));
+                currentLayer = Math.round(this.zLayer);
+                let z = currentLayer / this.canvasState.divisionFactor;
+                this.canvasState.camera.setEditorRefZ(vec3.fromValues(0, 0, z));
+                break;
+        }
+        this.canvasState.setLayerLabel(currentLayer + 1);
+        this.canvasState.renderHoverCube = false;
+        this.canvasState.transitioning = true;
+        this.canvasState.transitionTime = 0;
+        this.canvasState.scene.setCubeLayer(currentLayer);
+        this.canvasState.scene.unsetSelector();
+    }
+
     public toggleToEditor = () => {
         if (!this.canvasState.scene) {
             return;

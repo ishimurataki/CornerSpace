@@ -14,7 +14,9 @@ import {
     PencilIcon,
     XMarkIcon,
     EyeDropperIcon,
-    CubeTransparentIcon
+    CubeTransparentIcon,
+    ChevronUpIcon,
+    ChevronDownIcon
 } from "@heroicons/react/24/outline";
 import { hexToRgb, rgbToHex } from "@/utils/functions";
 import clsx from 'clsx';
@@ -171,7 +173,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         }
-    }, []);
+    }, [canvasData]);
 
     useEffect(() => {
         document.addEventListener("mouseup", handleMouseUp);
@@ -254,7 +256,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                 </div>
                 <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1`}>
                     <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"} h-full`}>
-                        <div className="grid grid-cols-3 gap-1 h-8 my-2">
+                        <div className="grid grid-cols-4 gap-1 h-8 my-2">
                             <button className={`${editorAxis == Axis.X ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
                                 rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base`}
                                 onClick={() => {
@@ -282,6 +284,12 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                                 }}>
                                 Z
                             </button>
+                            <div className="flex flex-col h-8 gap-1">
+                                <ChevronUpIcon className="bg-sky-100 rounded-md hover:bg-pastel-green"
+                                    onClick={() => { canvasState.controls?.increaseCurrentLayer() }} />
+                                <ChevronDownIcon className="bg-sky-100 rounded-md hover:bg-pastel-green"
+                                    onClick={() => { canvasState.controls?.increaseCurrentLayer(true) }} />
+                            </div>
                         </div>
                         <hr className="h-px my-2 bg-gray-100 border-0" />
                         <div className="mt-1 grid grid-cols-4 gap-1">
