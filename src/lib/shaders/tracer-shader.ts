@@ -85,7 +85,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
 
         float t = 0.0;
         vec3 intersectPoint = origin;
-        vec3 intersectPointLocalized = float(divisionFactor) * vec3(intersectPoint.x + 0.5, intersectPoint.y, intersectPoint.z + 0.5);
+        vec3 intersectPointLocalized = float(divisionFactor) * vec3(intersectPoint.x + 0.5, intersectPoint.y + 0.5, intersectPoint.z + 0.5);
 
         int x = int(floor(intersectPointLocalized.x));
         int y = int(floor(intersectPointLocalized.y));
@@ -145,8 +145,8 @@ export const tracerFragmentSource = (divisionFactor: number) => {
     void main() {
         int divisionFactor = ${divisionFactor.toFixed(0)};
         float sideLength = 1.0 / float(divisionFactor);
-        vec3 cubeMin = vec3(-0.5, 0.0, -0.5);
-        vec3 cubeMax = vec3(0.5, 1.0, 0.5);
+        vec3 cubeMin = vec3(-0.5, -0.5, -0.5);
+        vec3 cubeMax = vec3(0.5, 0.5, 0.5);
         vec3 accumulatedColor = vec3(0.0);
         vec3 ray = normalize(initialRay);
         vec3 origin = uEye;
@@ -182,7 +182,7 @@ export const tracerFragmentSource = (divisionFactor: number) => {
 
             vec3 intersectPoint = (t + 0.00001) * ray + origin;
             vec3 nextOrigin = (t - 0.00001) * ray + origin;
-            vec3 intersectPointLocalized = float(divisionFactor) * vec3(intersectPoint.x + 0.5, intersectPoint.y, intersectPoint.z + 0.5);
+            vec3 intersectPointLocalized = float(divisionFactor) * vec3(intersectPoint.x + 0.5, intersectPoint.y + 0.5, intersectPoint.z + 0.5);
 
             int x = int(intersectPointLocalized.x);
             int y = int(intersectPointLocalized.y);

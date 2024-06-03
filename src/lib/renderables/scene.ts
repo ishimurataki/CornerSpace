@@ -66,7 +66,7 @@ export default class Scene {
             mat4.create());
         this.sunSelection = new Renderable(this.selectionMesh, vec3.fromValues(1.0, 0.0, 0.0),
             mat4.create());
-        this.setSunCenter(vec3.fromValues(0.0, 0.5, 0.0));
+        this.setSunCenter(vec3.fromValues(0.0, 0.0, 0.0));
     }
 
     bindToGLContext(gl: WebGLRenderingContext) {

@@ -332,7 +332,8 @@ export default class Controls {
         this.canvasState.transitioning = true;
         this.canvasState.transitionTime = 0;
         let yRange: vec2 = this.canvasState.scene.cubeSpace.populateBuffers();
-        let viewerRefY = (yRange[0] + yRange[1]) / (2 * this.canvasState.divisionFactor);
+        let viewerRefY = (yRange[0] + yRange[1]) / (2 * this.canvasState.divisionFactor) +
+            this.canvasState.upperBackLeft[1];
         this.canvasState.camera.setViewerRef(vec3.fromValues(0, viewerRefY, 0));
         this.canvasState.camera.changeToViewer();
         this.canvasState.scene.cubeSpace.populateTexture();

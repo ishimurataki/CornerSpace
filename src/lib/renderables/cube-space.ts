@@ -216,12 +216,12 @@ export default class CubeSpace {
                     if (cubeColor != undefined) {
                         if (y == this.divisionFactor - 1) {
                             vertices.push(
-                                xWorldSpace, 1.0, zWorldSpace,
-                                xWorldSpace, 1.0, zNextWorldSpace,
-                                xNextWorldSpace, 1.0, zNextWorldSpace,
-                                xNextWorldSpace, 1.0, zNextWorldSpace,
-                                xNextWorldSpace, 1.0, zWorldSpace,
-                                xWorldSpace, 1.0, zWorldSpace
+                                xWorldSpace, yStart + 1.0, zWorldSpace,
+                                xWorldSpace, yStart + 1.0, zNextWorldSpace,
+                                xNextWorldSpace, yStart + 1.0, zNextWorldSpace,
+                                xNextWorldSpace, yStart + 1.0, zNextWorldSpace,
+                                xNextWorldSpace, yStart + 1.0, zWorldSpace,
+                                xWorldSpace, yStart + 1.0, zWorldSpace
                             );
                             for (let i = 0; i < 6; i++) {
                                 colors.push(cubeColor[0], cubeColor[1], cubeColor[2]);
