@@ -55,7 +55,6 @@ class PolarCamera {
     }
 
     changeWidthHeight(w: number, h: number): void {
-        console.log("width: " + w + " height: " + h);
         this.width = w;
         this.height = h;
 

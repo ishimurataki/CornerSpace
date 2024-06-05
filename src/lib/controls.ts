@@ -19,6 +19,10 @@ export default class Controls {
     private zoomSpeed: number = -0.008;
     private layerScrollSpeed: number = 0.005;
 
+    private singleTouchDown: boolean = false;
+    private previousTouchCoords: vec2 | null = null;
+    private previousPinchDistance: number | null = null;
+
     constructor(canvasState: CanvasState) {
         this.canvasState = canvasState;
     }
@@ -29,6 +33,58 @@ export default class Controls {
             this.canvasState.canvas.addEventListener('mousedown', this.mouseDownHandler, false);
             this.canvasState.canvas.addEventListener('mouseup', this.mouseUpHandler, false);
             this.canvasState.canvas.addEventListener('wheel', this.mousewheelHandler, false);
+            this.canvasState.canvas.addEventListener('touchmove', this.touchMoveHandler, false);
+            this.canvasState.canvas.addEventListener('touchend', this.touchEndHandler, false);
+        }
+    }
+
+    private touchEndHandler = () => {
+        this.previousTouchCoords = null;
+        this.previousPinchDistance = null;
+        this.singleTouchDown = false;
+        this.moveSun = false;
+    }
+
+    private touchMoveHandler = (e: TouchEvent) => {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+
+        if (e.touches.length == 1) {
+            this.singleTouchDown = true;
+            const touch = e.touches[0];
+
+            const x = touch.clientX;
+            const y = touch.clientY;
+
+            let xMove = this.previousTouchCoords ? x - this.previousTouchCoords[0] : 0;
+            let yMove = this.previousTouchCoords ? y - this.previousTouchCoords[1] : 0;
+            xMove *= this.movementSpeed;
+            yMove *= this.movementSpeed;
+
+            this.previousTouchCoords = vec2.fromValues(x, y);
+
+            this.insideCanvasMoveHandler(x, y, xMove, yMove);
+        } else if (e.touches.length == 2) {
+            e.preventDefault();
+
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+
+            const xDiff = touch1.clientX - touch2.clientX;
+            const yDiff = touch1.clientY - touch2.clientY;
+
+            const pinchDistance = xDiff * xDiff + yDiff * yDiff;
+
+            let zoom = this.previousPinchDistance ? pinchDistance - this.previousPinchDistance : 0;
+
+            this.previousPinchDistance = pinchDistance;
+
+            if (this.canvasState.camera.getMode() == Mode.Viewer) {
+                zoom *= this.zoomSpeed;
+                this.canvasState.camera.zoom(zoom);
+                this.canvasState.sampleCount = 0;
+            }
         }
     }
 
@@ -36,12 +92,24 @@ export default class Controls {
         if (!this.canvasState.canvas || !this.canvasState.scene) {
             return;
         }
-        const rect = this.canvasState.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = e.clientX;
+        const y = e.clientY;
 
-        const clipX = x / rect.width * 2 - 1;
-        const clipY = y / rect.height * -2 + 1;
+        const xMove = e.movementX * this.movementSpeed;
+        const yMove = e.movementY * this.movementSpeed;
+
+        this.insideCanvasMoveHandler(x, y, xMove, yMove);
+    }
+
+    private insideCanvasMoveHandler(x: number, y: number, xMove: number, yMove: number) {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+
+        const rect = this.canvasState.canvas.getBoundingClientRect();
+
+        const clipX = (x - rect.left) / rect.width * 2 - 1;
+        const clipY = (y - rect.top) / rect.height * -2 + 1;
 
         const start: vec3 = vec3.transformMat4(vec3.create(), vec3.fromValues(clipX, clipY, -1), this.canvasState.viewProjectionInverse);
         const end: vec3 = vec3.transformMat4(vec3.create(), vec3.fromValues(clipX, clipY, 1), this.canvasState.viewProjectionInverse);
@@ -96,7 +164,7 @@ export default class Controls {
                 this.zIndex = zIndexNow;
             }
 
-            if (this.mouseDown && !this.cubePlacedInCurrentPos) {
+            if ((this.mouseDown || this.singleTouchDown) && !this.cubePlacedInCurrentPos) {
                 switch (this.canvasState.editToolMode) {
                     case EditToolModes.Pencil:
                         this.canvasState.scene.addCube(this.xIndex, this.yIndex, this.zIndex);
@@ -156,9 +224,7 @@ export default class Controls {
             }
             this.canvasState.renderSunSelection = sunHit;
 
-            if (this.mouseDown) {
-                let xMove = e.movementX * this.movementSpeed;
-                let yMove = e.movementY * this.movementSpeed;
+            if ((this.mouseDown || this.singleTouchDown)) {
                 if (sunHit) {
                     this.moveSun = true;
                 }
