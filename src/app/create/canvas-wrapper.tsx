@@ -222,9 +222,9 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     return (
         <div className="flex-1 w-full flex flex-row max-h min-h-0 min-w-0">
-            <div className={`flex relative p-1 max-h flex-col gap-1`}>
+            <div className={`flex relative pb-1 max-h flex-col gap-1 border-x-pastel-red ${showTools ? "pl-1 pr-1" : ""}`}>
                 <div className="absolute right-0 h-full flex flex-col justify-center">
-                    <button className={`text-xl text-gray-600 hover:text-gray-900 hover:text-2xl ${showTools ? "mr-1.5" : ""}`}
+                    <button className={`text-xl text-gray-600 hover:text-gray-900 hover:text-3xl z-10 ${showTools ? "mr-1.5" : "-mr-8"}`}
                         onClick={() => setShowTools(!showTools)}>||</button>
                 </div>
                 <div className={`${showTools ? "" : "hidden"} space-x-1 [&>*]:rounded-t-md [&>*]:px-3 [&>*:hover]:bg-pastel-red flex-none`}>
@@ -406,7 +406,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                     </div>
                 </div>
             </div>
-            <div className="flex-1 p-1">
+            <div className="flex-1 z-0">
                 <div className="h-full w-full relative">
                     <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer">Layer:
                         <text className="text-3xl" id="layerLabel"> 1 </text>/ {canvasState.divisionFactor}

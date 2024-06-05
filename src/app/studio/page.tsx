@@ -2,14 +2,14 @@
 
 import CanvasCard from "./canvas-card";
 import { getCanvasIdsForUserServer } from "@/backend-lib/actions";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function App() {
 
   const { areCanvasIdsLoaded, canvasIds, errorMessage } = await getCanvasIdsForUserServer();
   if (!areCanvasIdsLoaded || canvasIds == null) {
     console.log(errorMessage);
-    notFound();
+    redirect('signin');
   }
 
   return (

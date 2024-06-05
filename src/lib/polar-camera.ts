@@ -30,20 +30,19 @@ class PolarCamera {
 
     private mode: Mode = Mode.EditorY;
 
+    private editorR: number = 1.0;
+
     private editorRefY = vec3.fromValues(0.0, 0.0, 0.0);
     private readonly EDITOR_THETA_Y: number = 0;
     private readonly EDITOR_PHI_Y: number = 0.499 * Math.PI;
-    private readonly EDITOR_R_Y: number = 1.0;
 
     private editorRefX = vec3.fromValues(0.0, 0.0, 0.0);
     private readonly EDITOR_THETA_X: number = 0;
     private readonly EDITOR_PHI_X: number = 0;
-    private readonly EDITOR_R_X: number = 1.0;
 
     private editorRefZ = vec3.fromValues(0.0, 0.0, 0.0);
     private readonly EDITOR_THETA_Z: number = 0.5 * Math.PI;
     private readonly EDITOR_PHI_Z: number = 0;
-    private readonly EDITOR_R_Z: number = 1.0;
 
     private viewerRef = vec3.fromValues(0.0, 0.0, 0.0);
     private viewerTheta: number = 0.25 * Math.PI;
@@ -56,8 +55,18 @@ class PolarCamera {
     }
 
     changeWidthHeight(w: number, h: number): void {
+        console.log("width: " + w + " height: " + h);
         this.width = w;
         this.height = h;
+
+        if (this.width > this.height) {
+            this.editorR = 1.0;
+        } else {
+            this.editorR = this.height / this.width;
+        }
+        if (this.mode != Mode.Viewer) {
+            this.r = this.editorR;
+        }
     }
 
     getPosition(): vec3 {
@@ -182,22 +191,19 @@ class PolarCamera {
     transition(a: number): void {
         a = Math.min(1, Math.max(0, a));
         let refDesired: vec3 = this.viewerRef;
-        let rDesired: number = 0;
+        let rDesired: number = this.editorR;
         let thetaDesired: number = 0;
         let phiDesired: number = 0;
         if (this.mode == Mode.EditorY) {
             refDesired = this.editorRefY;
-            rDesired = this.EDITOR_R_Y;
             thetaDesired = this.EDITOR_THETA_Y;
             phiDesired = this.EDITOR_PHI_Y;
         } else if (this.mode == Mode.EditorX) {
             refDesired = this.editorRefX;
-            rDesired = this.EDITOR_R_X;
             thetaDesired = this.EDITOR_THETA_X;
             phiDesired = this.EDITOR_PHI_X;
         } else if (this.mode == Mode.EditorZ) {
             refDesired = this.editorRefZ;
-            rDesired = this.EDITOR_R_Z;
             thetaDesired = this.EDITOR_THETA_Z;
             phiDesired = this.EDITOR_PHI_Z;
         } else if (this.mode == Mode.Viewer) {
