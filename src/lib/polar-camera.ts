@@ -20,27 +20,20 @@ class PolarCamera {
     nearClip: number = 0.1;
     farClip: number = 100;
 
-    eye: vec3 = vec3.fromValues(0.0, 1.0, 0.0);
-    ref: vec3 = vec3.fromValues(0.0, 0.0, 0.0);
-    up: vec3 = vec3.fromValues(0.0, 1.0, 0.0);
-
-    theta: number = 0;                // theta ranges from 0 to 2pi
-    phi: number = 0.5 * Math.PI;   // phi ranges from 0 to pi
-    r: number = 1.0;
-
     private mode: Mode = Mode.EditorY;
 
-    private editorR: number = 1.0;
+    private editorR: number = 1.5;
+    private maxEditorR: number = 1.5;
 
-    private editorRefY = vec3.fromValues(0.0, 0.0, 0.0);
+    private editorRefY = vec3.fromValues(0.0, -0.5, 0.0);
     private readonly EDITOR_THETA_Y: number = 0;
     private readonly EDITOR_PHI_Y: number = 0.499 * Math.PI;
 
-    private editorRefX = vec3.fromValues(0.0, 0.0, 0.0);
+    private editorRefX = vec3.fromValues(-0.5, 0.0, 0.0);
     private readonly EDITOR_THETA_X: number = 0;
     private readonly EDITOR_PHI_X: number = 0;
 
-    private editorRefZ = vec3.fromValues(0.0, 0.0, 0.0);
+    private editorRefZ = vec3.fromValues(0.0, 0.0, -0.5);
     private readonly EDITOR_THETA_Z: number = 0.5 * Math.PI;
     private readonly EDITOR_PHI_Z: number = 0;
 
@@ -48,6 +41,16 @@ class PolarCamera {
     private viewerTheta: number = 0.25 * Math.PI;
     private viewerPhi: number = 0.15 * Math.PI;
     private viewerR: number = 1.5;
+
+    private readonly maxViewerR = 10;
+
+    eye: vec3 = vec3.fromValues(0.0, 1.0, 0.0);
+    ref: vec3 = this.editorRefY;
+    up: vec3 = vec3.fromValues(0.0, 1.0, 0.0);
+
+    theta: number = this.EDITOR_THETA_Y;                // theta ranges from 0 to 2pi
+    phi: number = this.EDITOR_PHI_Y;   // phi ranges from 0 to pi
+    r: number = this.editorR;
 
     constructor(width: number, height: number) {
         this.width = width;
@@ -58,13 +61,33 @@ class PolarCamera {
         this.width = w;
         this.height = h;
 
+        const change = this.editorR == this.maxEditorR;
+
         if (this.width > this.height) {
-            this.editorR = 1.0;
+            this.maxEditorR = 1.5;
         } else {
-            this.editorR = this.height / this.width;
+            this.maxEditorR = this.height / this.width * 1.5;
         }
-        if (this.mode != Mode.Viewer) {
-            this.r = this.editorR;
+
+        if (change) {
+            this.editorR = this.maxEditorR;
+            this.editorRefX = [this.editorRefX[0], 0, 0];
+            this.editorRefY = [0, this.editorRefY[1], 0];
+            this.editorRefZ = [0, 0, this.editorRefZ[2]];
+            switch (this.mode) {
+                case Mode.EditorY:
+                    this.setRef(this.editorRefY);
+                    this.r = this.editorR;
+                    break;
+                case Mode.EditorX:
+                    this.setRef(this.editorRefX);
+                    this.r = this.editorR;
+                    break;
+                case Mode.EditorZ:
+                    this.setRef(this.editorRefZ);
+                    this.r = this.editorR;
+                    break;
+            }
         }
     }
 
@@ -127,6 +150,7 @@ class PolarCamera {
     zoom(amt: number): void {
         if (this.mode == Mode.Viewer) {
             this.r += amt * this.r * 0.1;
+            this.r = Math.min(this.maxViewerR, this.r);
             this.viewerR = this.r;
         }
     }
@@ -158,29 +182,36 @@ class PolarCamera {
     }
 
     changeToEditor(axis: Axis) {
+        this.editorR = this.maxEditorR;
         switch (axis) {
             case Axis.X:
                 this.mode = Mode.EditorX;
+                this.editorRefX[1] = 0;
+                this.editorRefX[2] = 0;
                 break;
             case Axis.Y:
                 this.mode = Mode.EditorY;
+                this.editorRefY[0] = 0;
+                this.editorRefY[2] = 0;
                 break;
             case Axis.Z:
                 this.mode = Mode.EditorZ;
+                this.editorRefZ[0] = 0;
+                this.editorRefZ[1] = 0;
                 break;
         }
     }
 
-    setEditorRefY(ref: vec3): void {
-        this.editorRefY = ref;
+    setEditorRefY(y: number): void {
+        this.editorRefY[1] = y;
     }
 
-    setEditorRefX(ref: vec3): void {
-        this.editorRefX = ref;
+    setEditorRefX(x: number): void {
+        this.editorRefX[0] = x;
     }
 
-    setEditorRefZ(ref: vec3): void {
-        this.editorRefZ = ref;
+    setEditorRefZ(z: number): void {
+        this.editorRefZ[2] = z;
     }
 
     setViewerRef(ref: vec3): void {
@@ -217,6 +248,39 @@ class PolarCamera {
         this.r = this.r * (1 - a) + rDesired * a;
         this.theta = this.theta * (1 - a) + thetaDesired * a;
         this.phi = this.phi * (1 - a) + phiDesired * a;
+    }
+
+    editorZoomTowards(target: vec3, distance: number) {
+        if (this.mode == Mode.Viewer) return;
+
+        this.editorR += distance;
+        this.editorR = Math.min(this.maxEditorR, Math.max(0.2, this.editorR));
+
+        const ratio = 1.0 - (this.editorR / this.maxEditorR);
+        switch (this.mode) {
+            case Mode.EditorY:
+                this.editorRefY = vec3.fromValues(ratio * target[0],
+                    this.editorRefY[1],
+                    ratio * target[2]
+                );
+                this.setRef(this.editorRefY);
+                break;
+            case Mode.EditorX:
+                this.editorRefX = vec3.fromValues(this.editorRefX[0],
+                    ratio * target[1],
+                    ratio * target[2]
+                );
+                this.setRef(this.editorRefX);
+                break;
+            case Mode.EditorZ:
+                this.editorRefZ = vec3.fromValues(ratio * target[0],
+                    ratio * target[1],
+                    this.editorRefZ[2]
+                );
+                this.setRef(this.editorRefZ);
+                break;
+        }
+        this.r = this.editorR;
     }
 }
 

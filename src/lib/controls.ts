@@ -21,7 +21,17 @@ export default class Controls {
 
     private singleTouchDown: boolean = false;
     private previousTouchCoords: vec2 | null = null;
+    private readonly startPinchThreshold = 5000.0;
+    private readonly startScrollThreshold = 100.0;
+    private startPinchDistance: number | null = null;
+    private startScrollPosition: number | null = null;
+    private editorPinchZooming: boolean = false;
+    private editorPinchScrolling: boolean = false;
     private previousPinchDistance: number | null = null;
+    private previousScrollPosition: number | null = null;
+    private touchZoomSpeed: number = -0.0001;
+
+    private shiftDown: boolean = false;
 
     constructor(canvasState: CanvasState) {
         this.canvasState = canvasState;
@@ -33,24 +43,78 @@ export default class Controls {
             this.canvasState.canvas.addEventListener('mousedown', this.mouseDownHandler, false);
             this.canvasState.canvas.addEventListener('mouseup', this.mouseUpHandler, false);
             this.canvasState.canvas.addEventListener('wheel', this.mousewheelHandler, false);
+            this.canvasState.canvas.addEventListener('touchstart', this.touchStartHandler, false);
             this.canvasState.canvas.addEventListener('touchmove', this.touchMoveHandler, false);
             this.canvasState.canvas.addEventListener('touchend', this.touchEndHandler, false);
+            document.addEventListener('keydown', this.keyDownHandler, false);
+            document.addEventListener('keyup', this.keyUpHandler, false);
         }
     }
 
-    private touchEndHandler = () => {
+    private keyDownHandler = (e: KeyboardEvent) => {
+        if (e.shiftKey) {
+            this.shiftDown = true;
+        }
+    }
+
+    private keyUpHandler = (e: KeyboardEvent) => {
+        if (e.key == 'Shift') {
+            this.shiftDown = false;
+        }
+    }
+
+    private touchEndHandler = (e: TouchEvent) => {
+        if (e.touches.length == 0) {
+            this.editorPinchZooming = false;
+            this.editorPinchScrolling = false;
+        }
         this.previousTouchCoords = null;
         this.previousPinchDistance = null;
+        this.previousScrollPosition = null;
+        this.startPinchDistance = null;
+        this.startScrollPosition = null;
         this.singleTouchDown = false;
         this.moveSun = false;
     }
 
+    private touchStartHandler = (e: TouchEvent) => {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+        if (e.touches.length == 1) {
+            if (this.canvasState.editToolMode == EditToolModes.Selector) {
+                const [cursorXWorld, cursorYWorld, cursorZWorld] = this.getEditorCursorGlobalCoordinates(e.touches[0].clientX, e.touches[0].clientY);
+
+                let xIndexNow = Math.floor((cursorXWorld - this.canvasState.upperBackLeft[0]) / this.canvasState.sideLength);
+                let yIndexNow = Math.floor((cursorYWorld - this.canvasState.upperBackLeft[1]) / this.canvasState.sideLength);
+                let zIndexNow = Math.floor((cursorZWorld - this.canvasState.upperBackLeft[2]) / this.canvasState.sideLength);
+
+                switch (this.canvasState.editorAxis) {
+                    case Axis.X:
+                        this.canvasState.scene.setSelectorDragStart(yIndexNow, zIndexNow);
+                        this.canvasState.scene.setSelectorDragEnd(yIndexNow, zIndexNow);
+                        break;
+                    case Axis.Y:
+                        this.canvasState.scene.setSelectorDragStart(xIndexNow, zIndexNow);
+                        this.canvasState.scene.setSelectorDragEnd(xIndexNow, zIndexNow);
+                        break;
+                    case Axis.Z:
+                        this.canvasState.scene.setSelectorDragStart(xIndexNow, yIndexNow);
+                        this.canvasState.scene.setSelectorDragEnd(xIndexNow, yIndexNow);
+                        break;
+                }
+            }
+        }
+    }
+
     private touchMoveHandler = (e: TouchEvent) => {
+        e.preventDefault();
         if (!this.canvasState.canvas || !this.canvasState.scene) {
             return;
         }
 
         if (e.touches.length == 1) {
+            if (this.editorPinchZooming || this.editorPinchScrolling) return;
             this.singleTouchDown = true;
             const touch = e.touches[0];
 
@@ -66,8 +130,6 @@ export default class Controls {
 
             this.insideCanvasMoveHandler(x, y, xMove, yMove);
         } else if (e.touches.length == 2) {
-            e.preventDefault();
-
             const touch1 = e.touches[0];
             const touch2 = e.touches[1];
 
@@ -76,15 +138,103 @@ export default class Controls {
 
             const pinchDistance = xDiff * xDiff + yDiff * yDiff;
 
-            let zoom = this.previousPinchDistance ? pinchDistance - this.previousPinchDistance : 0;
+            const yMean = touch1.clientY + touch2.clientY / 2.0;
 
-            this.previousPinchDistance = pinchDistance;
+            if (!this.startPinchDistance) {
+                this.startPinchDistance = pinchDistance;
+            }
+            if (!this.startScrollPosition) {
+                this.startScrollPosition = yMean;
+            }
 
             if (this.canvasState.camera.getMode() == Mode.Viewer) {
-                zoom *= this.zoomSpeed;
+                let zoom = this.previousPinchDistance ? pinchDistance - this.previousPinchDistance : 0;
+
+                this.previousPinchDistance = pinchDistance;
+
+                zoom *= this.touchZoomSpeed;
                 this.canvasState.camera.zoom(zoom);
                 this.canvasState.sampleCount = 0;
+            } else if (this.canvasState.camera.getMode() == Mode.EditorY ||
+                this.canvasState.camera.getMode() == Mode.EditorX ||
+                this.canvasState.camera.getMode() == Mode.EditorZ) {
+
+                if (this.editorPinchZooming) {
+                    // execute pinch zooming
+                    const pinchDistanceDelta = this.previousPinchDistance ? this.previousPinchDistance - pinchDistance : 0;
+                    this.previousPinchDistance = pinchDistance;
+
+                    const xClientCoord = (touch1.clientX + touch2.clientX) / 2.0;
+                    const yClientCoord = (touch1.clientY + touch2.clientY) / 2.0;
+
+                    const editorPinchTowards = this.getEditorCursorGlobalCoordinates(xClientCoord, yClientCoord);
+                    this.canvasState.camera.editorZoomTowards(editorPinchTowards, 0.00005 * pinchDistanceDelta);
+                    return;
+                }
+                if (this.editorPinchScrolling) {
+                    const yDelta = this.previousScrollPosition ? this.previousScrollPosition - yMean : 0;
+                    this.previousScrollPosition = yMean;
+
+                    let layerScroll = this.layerScrollSpeed * yDelta * 10;
+                    this.scrollLayers(layerScroll);
+                    return;
+                }
+
+                // Otherwise, neither pinch zooming or scrolling has been set yet, and the race is on
+                if (Math.abs(pinchDistance - this.startPinchDistance) > this.startPinchThreshold) {
+                    this.editorPinchZooming = true;
+                } else if (Math.abs(yMean - this.startScrollPosition) > this.startScrollThreshold) {
+                    this.editorPinchScrolling = true;
+                }
             }
+        }
+    }
+
+    private scrollLayers(layerScroll: number) {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return;
+        }
+        let prevLayer = 0;
+        let currentLayer = 0;
+        let x = 0, y = 0, z = 0;
+        switch (this.canvasState.editorAxis) {
+            case Axis.X:
+                prevLayer = Math.round(this.xLayer);
+                this.xLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.xLayer - layerScroll));
+                currentLayer = Math.round(this.xLayer);
+                x = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[0];
+                break;
+            case Axis.Y:
+                prevLayer = Math.round(this.yLayer);
+                this.yLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.yLayer - layerScroll));
+                currentLayer = Math.round(this.yLayer);
+                y = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[1];
+                break;
+            case Axis.Z:
+                prevLayer = Math.round(this.zLayer);
+                this.zLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.zLayer - layerScroll));
+                currentLayer = Math.round(this.zLayer);
+                z = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[2];
+                break;
+        }
+        if (prevLayer != currentLayer) {
+            this.canvasState.setLayerLabel(currentLayer + 1);
+            this.canvasState.renderHoverCube = false;
+            switch (this.canvasState.editorAxis) {
+                case Axis.X:
+                    this.canvasState.camera.setEditorRefX(x);
+                    break;
+                case Axis.Y:
+                    this.canvasState.camera.setEditorRefY(y);
+                    break;
+                case Axis.Z:
+                    this.canvasState.camera.setEditorRefZ(z);
+                    break;
+            }
+            this.canvasState.transitioning = true;
+            this.canvasState.transitionTime = 0;
+            this.canvasState.scene.setCubeLayer(currentLayer);
+            this.canvasState.scene.unsetSelector();
         }
     }
 
@@ -99,6 +249,44 @@ export default class Controls {
         const yMove = e.movementY * this.movementSpeed;
 
         this.insideCanvasMoveHandler(x, y, xMove, yMove);
+    }
+
+    private getEditorCursorGlobalCoordinates(x: number, y: number): vec3 {
+        if (!this.canvasState.canvas || !this.canvasState.scene) {
+            return vec3.fromValues(0, 0, 0);
+        }
+
+        const rect = this.canvasState.canvas.getBoundingClientRect();
+
+        const clipX = (x - rect.left) / rect.width * 2 - 1;
+        const clipY = (y - rect.top) / rect.height * -2 + 1;
+
+        const start: vec3 = vec3.transformMat4(vec3.create(), vec3.fromValues(clipX, clipY, -1), this.canvasState.viewProjectionInverse);
+        const end: vec3 = vec3.transformMat4(vec3.create(), vec3.fromValues(clipX, clipY, 1), this.canvasState.viewProjectionInverse);
+
+        const v: vec3 = vec3.sub(vec3.create(), end, start);
+
+        let currentLayer = 0;
+        let t = 0;
+        switch (this.canvasState.editorAxis) {
+            case Axis.X:
+                currentLayer = (Math.round(this.xLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[0];
+                t = (currentLayer - start[0]) / v[0];
+                break;
+            case Axis.Y:
+                currentLayer = (Math.round(this.yLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[1];
+                t = (currentLayer - start[1]) / v[1];
+                break;
+            case Axis.Z:
+                currentLayer = (Math.round(this.zLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[2];
+                t = (currentLayer - start[2]) / v[2];
+                break;
+        }
+        let cursorXWorld = start[0] + t * v[0];
+        let cursorYWorld = start[1] + t * v[1];
+        let cursorZWorld = start[2] + t * v[2];
+
+        return vec3.fromValues(cursorXWorld, cursorYWorld, cursorZWorld);
     }
 
     private insideCanvasMoveHandler(x: number, y: number, xMove: number, yMove: number) {
@@ -119,25 +307,7 @@ export default class Controls {
             this.canvasState.camera.getMode() == Mode.EditorX ||
             this.canvasState.camera.getMode() == Mode.EditorZ) {
 
-            let currentLayer = 0;
-            let t = 0;
-            switch (this.canvasState.editorAxis) {
-                case Axis.X:
-                    currentLayer = (Math.round(this.xLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[0];
-                    t = (currentLayer - start[0]) / v[0];
-                    break;
-                case Axis.Y:
-                    currentLayer = (Math.round(this.yLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[1];
-                    t = (currentLayer - start[1]) / v[1];
-                    break;
-                case Axis.Z:
-                    currentLayer = (Math.round(this.zLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[2];
-                    t = (currentLayer - start[2]) / v[2];
-                    break;
-            }
-            let cursorXWorld = start[0] + t * v[0];
-            let cursorYWorld = start[1] + t * v[1];
-            let cursorZWorld = start[2] + t * v[2];
+            const [cursorXWorld, cursorYWorld, cursorZWorld] = this.getEditorCursorGlobalCoordinates(x, y)
 
             let xIndexNow = Math.floor((cursorXWorld - this.canvasState.upperBackLeft[0]) / this.canvasState.sideLength);
             let yIndexNow = Math.floor((cursorYWorld - this.canvasState.upperBackLeft[1]) / this.canvasState.sideLength);
@@ -318,49 +488,18 @@ export default class Controls {
         } else if (this.canvasState.camera.getMode() == Mode.EditorY ||
             this.canvasState.camera.getMode() == Mode.EditorX ||
             this.canvasState.camera.getMode() == Mode.EditorZ) {
+
+            if (this.shiftDown) {
+                const x = e.clientX;
+                const y = e.clientY;
+
+                const editorZoomTowards = this.getEditorCursorGlobalCoordinates(x, y);
+                this.canvasState.camera.editorZoomTowards(editorZoomTowards, -0.01 * e.deltaY);
+                return;
+            }
+
             let layerScroll = this.layerScrollSpeed * e.deltaY;
-            let prevLayer = 0;
-            let currentLayer = 0;
-            let x = 0, y = 0, z = 0;
-            switch (this.canvasState.editorAxis) {
-                case Axis.X:
-                    prevLayer = Math.round(this.xLayer);
-                    this.xLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.xLayer - layerScroll));
-                    currentLayer = Math.round(this.xLayer);
-                    x = currentLayer / this.canvasState.divisionFactor;
-                    break;
-                case Axis.Y:
-                    prevLayer = Math.round(this.yLayer);
-                    this.yLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.yLayer - layerScroll));
-                    currentLayer = Math.round(this.yLayer);
-                    y = currentLayer / this.canvasState.divisionFactor;
-                    break;
-                case Axis.Z:
-                    prevLayer = Math.round(this.zLayer);
-                    this.zLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.zLayer - layerScroll));
-                    currentLayer = Math.round(this.zLayer);
-                    z = currentLayer / this.canvasState.divisionFactor;
-                    break;
-            }
-            if (prevLayer != currentLayer) {
-                this.canvasState.setLayerLabel(currentLayer + 1);
-                this.canvasState.renderHoverCube = false;
-                switch (this.canvasState.editorAxis) {
-                    case Axis.X:
-                        this.canvasState.camera.setEditorRefX(vec3.fromValues(x, y, z));
-                        break;
-                    case Axis.Y:
-                        this.canvasState.camera.setEditorRefY(vec3.fromValues(x, y, z));
-                        break;
-                    case Axis.Z:
-                        this.canvasState.camera.setEditorRefZ(vec3.fromValues(x, y, z));
-                        break;
-                }
-                this.canvasState.transitioning = true;
-                this.canvasState.transitionTime = 0;
-                this.canvasState.scene.setCubeLayer(currentLayer);
-                this.canvasState.scene.unsetSelector();
-            }
+            this.scrollLayers(layerScroll);
         }
     }
 
@@ -374,20 +513,20 @@ export default class Controls {
             case Axis.X:
                 this.xLayer = Math.max(0, Math.min(this.xLayer + incrementor, this.canvasState.divisionFactor - 1));
                 currentLayer = Math.round(this.xLayer);
-                let x = currentLayer / this.canvasState.divisionFactor;
-                this.canvasState.camera.setEditorRefX(vec3.fromValues(x, 0, 0));
+                let x = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[0];
+                this.canvasState.camera.setEditorRefX(x);
                 break;
             case Axis.Y:
                 this.yLayer = Math.max(0, Math.min(this.yLayer + incrementor, this.canvasState.divisionFactor - 1));
                 currentLayer = Math.round(this.yLayer);
-                let y = currentLayer / this.canvasState.divisionFactor;
-                this.canvasState.camera.setEditorRefY(vec3.fromValues(0, y, 0));
+                let y = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[1];
+                this.canvasState.camera.setEditorRefY(y);
                 break;
             case Axis.Z:
                 this.zLayer = Math.max(0, Math.min(this.zLayer + incrementor, this.canvasState.divisionFactor - 1));
                 currentLayer = Math.round(this.zLayer);
-                let z = currentLayer / this.canvasState.divisionFactor;
-                this.canvasState.camera.setEditorRefZ(vec3.fromValues(0, 0, z));
+                let z = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[2];
+                this.canvasState.camera.setEditorRefZ(z);
                 break;
         }
         this.canvasState.setLayerLabel(currentLayer + 1);

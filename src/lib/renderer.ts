@@ -218,6 +218,8 @@ export default class Renderer {
             this.previousCanvasHeight = this.canvasState.canvas.clientHeight;
 
             this.resizeTracerTextures();
+
+            this.canvasState.camera.debug();
         }
 
         this.gl.clearColor(this.canvasState.backgroundColor[0],
