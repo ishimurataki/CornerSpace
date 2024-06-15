@@ -16,19 +16,22 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
 
     useEffect(() => {
         const canvasState = new CanvasState();
-        const scene = new Scene(canvasState);
-        const controls = new Controls(canvasState);
         if (canvasData) {
             canvasState.divisionFactor = canvasData.dimension;
-            scene.setSunCenter(canvasData.pointLightPosition);
+            canvasState.sideLength = 1 / canvasData.dimension;
             canvasState.backgroundColor = canvasData.backgroundColor;
             canvasState.ambienceStrength = canvasData.ambientStrength;
             canvasState.sunStrength = canvasData.pointLightStrength;
-
+        }
+        const scene = new Scene(canvasState);
+        scene.setSunCenter(canvasData.pointLightPosition);
+        if (canvasData) {
             canvasData.voxels.forEach((voxel: Voxel) => {
                 scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
             });
         }
+        const controls = new Controls(canvasState);
+
         canvasState.bindScene(scene);
         canvasState.bindControls(controls);
 

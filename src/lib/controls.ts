@@ -199,21 +199,21 @@ export default class Controls {
         let x = 0, y = 0, z = 0;
         switch (this.canvasState.editorAxis) {
             case Axis.X:
-                prevLayer = Math.round(this.xLayer);
-                this.xLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.xLayer - layerScroll));
-                currentLayer = Math.round(this.xLayer);
+                prevLayer = Math.floor(this.xLayer);
+                this.xLayer = Math.min(this.canvasState.divisionFactor - 0.1, Math.max(0, this.xLayer - layerScroll));
+                currentLayer = Math.floor(this.xLayer);
                 x = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[0];
                 break;
             case Axis.Y:
-                prevLayer = Math.round(this.yLayer);
-                this.yLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.yLayer - layerScroll));
-                currentLayer = Math.round(this.yLayer);
+                prevLayer = Math.floor(this.yLayer);
+                this.yLayer = Math.min(this.canvasState.divisionFactor - 0.1, Math.max(0, this.yLayer - layerScroll));
+                currentLayer = Math.floor(this.yLayer);
                 y = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[1];
                 break;
             case Axis.Z:
-                prevLayer = Math.round(this.zLayer);
-                this.zLayer = Math.min(this.canvasState.divisionFactor - 1, Math.max(0, this.zLayer - layerScroll));
-                currentLayer = Math.round(this.zLayer);
+                prevLayer = Math.floor(this.zLayer);
+                this.zLayer = Math.min(this.canvasState.divisionFactor - 0.1, Math.max(0, this.zLayer - layerScroll));
+                currentLayer = Math.floor(this.zLayer);
                 z = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[2];
                 break;
         }
@@ -270,15 +270,15 @@ export default class Controls {
         let t = 0;
         switch (this.canvasState.editorAxis) {
             case Axis.X:
-                currentLayer = (Math.round(this.xLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[0];
+                currentLayer = ((Math.floor(this.xLayer) + 0.5) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[0];
                 t = (currentLayer - start[0]) / v[0];
                 break;
             case Axis.Y:
-                currentLayer = (Math.round(this.yLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[1];
+                currentLayer = ((Math.floor(this.yLayer) + 0.5) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[1];
                 t = (currentLayer - start[1]) / v[1];
                 break;
             case Axis.Z:
-                currentLayer = (Math.round(this.zLayer) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[2];
+                currentLayer = ((Math.floor(this.zLayer) + 0.5) / this.canvasState.divisionFactor) + this.canvasState.upperBackLeft[2];
                 t = (currentLayer - start[2]) / v[2];
                 break;
         }
@@ -307,7 +307,7 @@ export default class Controls {
             this.canvasState.camera.getMode() == Mode.EditorX ||
             this.canvasState.camera.getMode() == Mode.EditorZ) {
 
-            const [cursorXWorld, cursorYWorld, cursorZWorld] = this.getEditorCursorGlobalCoordinates(x, y)
+            const [cursorXWorld, cursorYWorld, cursorZWorld] = this.getEditorCursorGlobalCoordinates(x, y);
 
             let xIndexNow = Math.floor((cursorXWorld - this.canvasState.upperBackLeft[0]) / this.canvasState.sideLength);
             let yIndexNow = Math.floor((cursorYWorld - this.canvasState.upperBackLeft[1]) / this.canvasState.sideLength);
@@ -511,20 +511,20 @@ export default class Controls {
         const incrementor = decrement ? -1 : 1;
         switch (this.canvasState.editorAxis) {
             case Axis.X:
-                this.xLayer = Math.max(0, Math.min(this.xLayer + incrementor, this.canvasState.divisionFactor - 1));
-                currentLayer = Math.round(this.xLayer);
+                this.xLayer = Math.max(0, Math.min(this.xLayer + incrementor, this.canvasState.divisionFactor - 0.1));
+                currentLayer = Math.floor(this.xLayer);
                 let x = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[0];
                 this.canvasState.camera.setEditorRefX(x);
                 break;
             case Axis.Y:
-                this.yLayer = Math.max(0, Math.min(this.yLayer + incrementor, this.canvasState.divisionFactor - 1));
-                currentLayer = Math.round(this.yLayer);
+                this.yLayer = Math.max(0, Math.min(this.yLayer + incrementor, this.canvasState.divisionFactor - 0.1));
+                currentLayer = Math.floor(this.yLayer);
                 let y = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[1];
                 this.canvasState.camera.setEditorRefY(y);
                 break;
             case Axis.Z:
-                this.zLayer = Math.max(0, Math.min(this.zLayer + incrementor, this.canvasState.divisionFactor - 1));
-                currentLayer = Math.round(this.zLayer);
+                this.zLayer = Math.max(0, Math.min(this.zLayer + incrementor, this.canvasState.divisionFactor - 0.1));
+                currentLayer = Math.floor(this.zLayer);
                 let z = currentLayer / this.canvasState.divisionFactor + this.canvasState.upperBackLeft[2];
                 this.canvasState.camera.setEditorRefZ(z);
                 break;

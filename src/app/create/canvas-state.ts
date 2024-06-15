@@ -22,7 +22,8 @@ export default class CanvasState {
     layerLabel: HTMLElement | null = null;
     layerContainer: HTMLElement | null = null;
 
-    divisionFactor: number = 32;
+    // divionFactor options: 16, 32, 48, 64, 80, 96
+    divisionFactor: number = 16;
     sideLength: number = 1 / this.divisionFactor;
     upperBackLeft: vec2 = vec3.fromValues(-0.5, -0.5, -0.5);
 

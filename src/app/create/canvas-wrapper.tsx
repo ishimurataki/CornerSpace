@@ -16,12 +16,15 @@ import {
     EyeDropperIcon,
     CubeTransparentIcon,
     ChevronUpIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    CubeIcon
 } from "@heroicons/react/24/outline";
 import { hexToRgb, rgbToHex } from "@/utils/functions";
 import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
+
+const canvasSizeOptions = [16, 32, 48, 64, 80, 96];
 
 const editToolMap = new Map([
     [EditToolModes.Pencil, PencilIcon],
@@ -36,27 +39,14 @@ const materialMap = new Map([
 ]);
 
 const canvasState = new CanvasState();
-const scene = new Scene(canvasState);
-const controls = new Controls(canvasState);
-canvasState.bindScene(scene);
+let scene: Scene | undefined;
+let controls = new Controls(canvasState);
 canvasState.bindControls(controls);
 
 export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: string | null, canvasData: CanvasData | null }) {
 
-    const [mounted, setMounted] = useState(false);
-
-    if (!mounted && canvasData) {
-        canvasState.divisionFactor = canvasData.dimension;
-        scene.setSunCenter(canvasData.pointLightPosition);
-        canvasState.backgroundColor = canvasData.backgroundColor;
-        canvasState.ambienceStrength = canvasData.ambientStrength;
-        canvasState.sunStrength = canvasData.pointLightStrength;
-
-        canvasData.voxels.forEach((voxel: Voxel) => {
-            scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
-        });
-    }
-
+    const [chosenCanvasDimension, setChosenCanvasDimension] = useState(32);
+    const [showCreatePanel, setShowCreatePanel] = useState(!canvasData);
     const [showTools, setShowTools] = useState(true);
     const [toolsMenuMode, setToolsMenuMode] = useState("edit");
     const [color, setColor] = useState(rgbToHex(canvasState.hoverCubeColor));
@@ -67,8 +57,10 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [selectedMaterial, setSelectedMaterial] = useState(canvasState.tracerMaterial);
     const [toolMode, setToolMode] = useState(canvasState.editToolMode);
     const [showLighting, setShowLighting] = useState(true);
-    const [ambientLight, setAmbientLight] = useState(canvasState.ambienceStrength);
-    const [pointLight, setPointLight] = useState(canvasState.sunStrength);
+    const [ambientLight, setAmbientLight] = useState(canvasData ?
+        canvasData.ambientStrength : canvasState.ambienceStrength);
+    const [pointLight, setPointLight] = useState(canvasData ?
+        canvasData.pointLightStrength : canvasState.sunStrength);
     const [rayTraceEnabled, setRayTraceEnabled] = useState(canvasState.rayTrace);
     const [title, setTitle] = useState(canvasData ? canvasData.name : "");
     const [description, setDescription] = useState(canvasData ? canvasData.description : "");
@@ -78,7 +70,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     function handleKeyUp(e: KeyboardEvent) {
-        if (e.code == "Space") {
+        if (e.code == "Space" && !showCreatePanel) {
             e.preventDefault();
             if (toolsMenuMode === "edit") {
                 setToolsMenuMode("render");
@@ -98,7 +90,24 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     }
 
     useEffect(() => {
-        setMounted(true);
+
+        if (canvasData) {
+            canvasState.divisionFactor = canvasData.dimension;
+            canvasState.sideLength = 1 / canvasData.dimension;
+            canvasState.backgroundColor = canvasData.backgroundColor;
+            canvasState.ambienceStrength = canvasData.ambientStrength;
+            canvasState.sunStrength = canvasData.pointLightStrength;
+        }
+        scene = new Scene(canvasState);
+        canvasState.bindScene(scene);
+
+        if (canvasData) {
+            canvasData.voxels.forEach((voxel: Voxel) => {
+                if (scene) scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
+            });
+            if (scene) scene.setSunCenter(canvasData.pointLightPosition);
+        }
+
         const canvas = canvasRef.current;
         if (canvas == null) {
             alert("Couldn't find canvas element.");
@@ -173,7 +182,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         return () => {
             window.cancelAnimationFrame(animationFrameId);
         }
-    }, [canvasData]);
+    }, [canvasData, canvasState.divisionFactor]);
 
     useEffect(() => {
         document.addEventListener("mouseup", handleMouseUp);
@@ -183,6 +192,15 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
             document.removeEventListener("mouseup", handleMouseUp);
         }
     });
+
+    const canvasSizeOptionButtons = canvasSizeOptions.map((dimension) => {
+        return (
+            <button key={"canvasSizeOption-" + dimension} className={`hover:bg-sea-green p-2 rounded-md 
+            ${chosenCanvasDimension == dimension ? "bg-sea-green" : "bg-pastel-green"}`}
+                onClick={() => setChosenCanvasDimension(dimension)}>
+                <span className="text-3xl">{dimension}</span>x{dimension}</button>
+        );
+    })
 
     const editToolButtons = Array.from(editToolMap).map(([mode, Link]) => {
         return <button onClick={() => {
@@ -222,6 +240,36 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     return (
         <div className="flex-1 w-full flex flex-row max-h min-h-0 min-w-0">
+            <div className={`fixed top-0 w-full h-full z-50 backdrop-brightness-50 bg-white/30 flex items-center justify-center ${showCreatePanel ? "" : "invisible"}`}>
+                <div className="bg-white p-3 rounded-md flex flex-col">
+                    <div className="flex flex-row gap-2 text-xl font-bold mt-3"><CubeIcon className="w-6" />New Canvas</div>
+                    <hr className="h-px my-2 bg-gray-800 border-2" />
+                    <div className="font-bold">
+                        Title:
+                    </div>
+                    <textarea className="h-8 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Blank Canvas"
+                        onChange={(e) => setTitle(e.target.value)}></textarea>
+                    <div className="font-bold">
+                        Description:
+                    </div>
+                    <textarea className=" h-40 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Add a description"
+                        onChange={(e) => setDescription(e.target.value)}></textarea>
+                    <div className="font-bold">
+                        Canvas Size:
+                    </div>
+                    <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
+                        {canvasSizeOptionButtons}
+                    </div>
+                    <button className="bg-blue-200 hover:bg-blue-400 hover:font-bold p-2 rounded-md mt-3"
+                        onClick={() => {
+                            canvasState.divisionFactor = chosenCanvasDimension;
+                            canvasState.sideLength = 1 / canvasState.divisionFactor;
+                            setShowCreatePanel(false);
+                            setToolsMenuMode("edit");
+                            canvasState.controls?.toggleToEditor();
+                        }}>CREATE</button>
+                </div>
+            </div>
             <div className={`flex relative pb-1 max-h flex-col gap-1 border-x-pastel-red ${showTools ? "pl-1 pr-1" : ""}`}>
                 <div className="absolute right-0 h-full flex flex-col justify-center">
                     <button className={`text-xl text-gray-600 hover:text-gray-900 hover:text-3xl z-10 ${showTools ? "mr-1.5" : "-mr-8"}`}
@@ -402,14 +450,18 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         <button className="bg-sky-100 rounded-md px-2 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={saving} onClick={handleSave}>Save</button>
                         <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => {
                             canvasState.camera.debug();
+                            canvasState.divisionFactor = 100;
+                            canvasState.sideLength = 1 / canvasState.divisionFactor;
+                            setToolsMenuMode("edit");
+                            canvasState.controls?.toggleToEditor();
                         }}>test</button>
                     </div>
                 </div>
             </div>
             <div className="flex-1 z-0">
                 <div className="h-full w-full relative">
-                    <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer">Layer:
-                        <text className="text-3xl" id="layerLabel"> 1 </text>/ {canvasState.divisionFactor}
+                    <div className="absolute top-3 right-4 text-xl text-white" id="layerContainer" suppressHydrationWarning>Layer:
+                        <span className="text-3xl" id="layerLabel"> 1 </span>/ {canvasState.divisionFactor}
                     </div>
                     <canvas ref={canvasRef} className="border-4 border-pastel-green h-full w-full min-h-0 min-w-0" />
                 </div>
