@@ -1,12 +1,12 @@
 "use server";
 
-import { loadCanvasSever } from "@/backend-lib/actions";
+import { loadCanvasServer } from "@/backend-lib/actions";
 import { notFound } from "next/navigation";
 import CanvasWrapper from "../canvas-wrapper";
 
 export default async function Page({ params }: { params: { id: string } }) {
     const canvasId = params.id;
-    const { isCanvasLoaded, canvasData, errorMessage } = await loadCanvasSever(canvasId);
+    const { isCanvasLoaded, canvasData, errorMessage } = await loadCanvasServer(canvasId);
     if (!isCanvasLoaded) {
         console.log(errorMessage);
         notFound();

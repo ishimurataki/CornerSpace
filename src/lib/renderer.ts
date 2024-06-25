@@ -219,7 +219,6 @@ export default class Renderer {
 
             this.resizeTracerTextures();
         }
-
         this.gl.clearColor(this.canvasState.backgroundColor[0],
             this.canvasState.backgroundColor[1],
             this.canvasState.backgroundColor[2], 1.0);

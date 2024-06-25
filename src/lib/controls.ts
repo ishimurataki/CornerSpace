@@ -544,13 +544,13 @@ export default class Controls {
         let currentLayer = 0;
         switch (this.canvasState.editorAxis) {
             case Axis.X:
-                currentLayer = Math.round(this.xLayer);
+                currentLayer = Math.floor(this.xLayer);
                 break;
             case Axis.Y:
-                currentLayer = Math.round(this.yLayer);
+                currentLayer = Math.floor(this.yLayer);
                 break;
             case Axis.Z:
-                currentLayer = Math.round(this.zLayer);
+                currentLayer = Math.floor(this.zLayer);
                 break;
         }
         this.canvasState.scene.setCubeLayer(currentLayer);

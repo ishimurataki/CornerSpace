@@ -1,26 +1,33 @@
 "use server";
 
-import CanvasCard from "./canvas-card";
+import CanvasCardWrapper from "./canvas-card-wrapper";
 import { getCanvasIdsForUserServer } from "@/backend-lib/actions";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function App() {
 
-  const { areCanvasIdsLoaded, canvasIds, errorMessage } = await getCanvasIdsForUserServer();
-  if (!areCanvasIdsLoaded || canvasIds == null) {
+  const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getCanvasIdsForUserServer();
+  if (!areCanvasIdsLoaded || canvasIds == null || username == null) {
     console.log(errorMessage);
     redirect('signin');
   }
 
   return (
-    <main className="h-screen flex flex-col bg-green-50 p-10">
-      <p className="text-2xl">Hello! Welcome to cubit</p>
-      <p className="text-lg mx-10 mt-5">Your canvases!</p>
-      <div className="grid grid-cols-1 gap-4 mx-10 my-5 overflow-scroll">
+    <main className="h-screen flex flex-col m-6 md:m-8 lg:m-10">
+      <p className="text-2xl">@{username}'s Studio</p>
+      <p className="text-lg mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5" >Your Gallery</p >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll">
         {canvasIds.map((canvasId) => {
-          return <CanvasCard canvasId={canvasId} key={canvasId} />
+          return (
+            <Suspense fallback={
+              <div className={`bg-gray-200 w-full h-full rounded-lg`}>
+              </div>}>
+              <CanvasCardWrapper canvasId={canvasId} key={canvasId} />
+            </Suspense>
+          );
         })}
       </div>
-    </main>
+    </main >
   );
 }

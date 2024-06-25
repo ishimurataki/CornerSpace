@@ -107,7 +107,7 @@ function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMess
     return { valid: true, errorMessage: null };
 }
 
-export async function loadCanvasSever(canvasId: string):
+export async function loadCanvasServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
     unstable_noStore();
 
@@ -143,6 +143,7 @@ export async function loadCanvasSever(canvasId: string):
 
         const canvasData: CanvasData = {
             name: canvas.name,
+            owner: canvas.owner,
             description: canvas.description ? canvas.description : "",
             publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
             version: canvasDataJson.version,
@@ -151,7 +152,8 @@ export async function loadCanvasSever(canvasId: string):
             backgroundColor: hexToRgb(canvasDataJson.backgroundColor),
             ambientStrength: canvasDataJson.ambientStrength,
             pointLightStrength: canvasDataJson.pointLightStrength,
-            voxels: voxels
+            voxels: voxels,
+            canvasThumbnail: canvasDataJson.canvasThumbnail,
         };
 
         return { isCanvasLoaded: true, canvasData: canvasData, errorMessage: null }
@@ -222,6 +224,7 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
         "ambientStrength": canvasData.ambientStrength,
         "pointLightStrength": canvasData.pointLightStrength,
         "voxels": voxelsString,
+        "canvasThumbnail": canvasData.canvasThumbnail
     });
 
     const publicity = canvasData.publicity == Publicity.Public ? "PUBLIC" : "PRIVATE";
@@ -283,7 +286,10 @@ export async function testServer() {
 }
 
 export async function getCanvasIdsForUserServer():
-    Promise<{ areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null }> {
+    Promise<{
+        areCanvasIdsLoaded: boolean, username: string | null,
+        canvasIds: string[] | null, errorMessage: string | null
+    }> {
     unstable_noStore();
 
     const currentUser = await fetchUserAttributesServer();
@@ -291,7 +297,7 @@ export async function getCanvasIdsForUserServer():
     const username = currentUser?.preferred_username;
 
     if (!signedIn || !username) {
-        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "User not authenticated." }
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "User not authenticated." }
     }
 
     const { data: canvasesData, errors: getCanvasForUserErrors } =
@@ -305,8 +311,8 @@ export async function getCanvasIdsForUserServer():
                 canvasIds.push(canvas.canvasId);
             }
         }
-        return { areCanvasIdsLoaded: true, canvasIds, errorMessage: null };
+        return { areCanvasIdsLoaded: true, username: username, canvasIds, errorMessage: null };
     }
     console.log(getCanvasForUserErrors);
-    return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+    return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." }
 }

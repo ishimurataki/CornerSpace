@@ -175,6 +175,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
             renderer.tick(now);
             renderer.render(now);
             canvasState.previousTime = now;
+
             animationFrameId = requestAnimationFrame(render);
         }
         requestAnimationFrame(render);
@@ -449,11 +450,6 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         </div>
                         <button className="bg-sky-100 rounded-md px-2 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={saving} onClick={handleSave}>Save</button>
                         <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => {
-                            canvasState.camera.debug();
-                            canvasState.divisionFactor = 100;
-                            canvasState.sideLength = 1 / canvasState.divisionFactor;
-                            setToolsMenuMode("edit");
-                            canvasState.controls?.toggleToEditor();
                         }}>test</button>
                     </div>
                 </div>
