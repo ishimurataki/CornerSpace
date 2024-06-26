@@ -10,26 +10,25 @@ import initShaderProgram from "@/lib/utils/shader-helper";
 import { renderFragmentSource, renderVertexSource } from "@/lib/shaders/render-shader";
 import { tracerFragmentSource, tracerVertexSource } from "@/lib/shaders/tracer-shader";
 import { plainFragmentShaderSource, plainVertexShaderSource } from "@/lib/shaders/plain-shader";
+import Link from "next/link";
 
 export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         const canvasState = new CanvasState();
-        if (canvasData) {
-            canvasState.divisionFactor = canvasData.dimension;
-            canvasState.sideLength = 1 / canvasData.dimension;
-            canvasState.backgroundColor = canvasData.backgroundColor;
-            canvasState.ambienceStrength = canvasData.ambientStrength;
-            canvasState.sunStrength = canvasData.pointLightStrength;
-        }
+
+        canvasState.divisionFactor = canvasData.dimension;
+        canvasState.sideLength = 1 / canvasData.dimension;
+        canvasState.backgroundColor = canvasData.backgroundColor;
+        canvasState.ambienceStrength = canvasData.ambientStrength;
+        canvasState.sunStrength = canvasData.pointLightStrength;
+
         const scene = new Scene(canvasState);
         scene.setSunCenter(canvasData.pointLightPosition);
-        if (canvasData) {
-            canvasData.voxels.forEach((voxel: Voxel) => {
-                scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
-            });
-        }
+        canvasData.voxels.forEach((voxel: Voxel) => {
+            scene.cubeSpace.setCube(voxel.x, voxel.y, voxel.z, voxel.cubeColor, voxel.cubeMaterial);
+        });
         const controls = new Controls(canvasState);
 
         canvasState.bindScene(scene);
@@ -78,7 +77,6 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
             return;
         }
         controls.toggleToViewer();
-        canvasState.rayTrace = false;
 
         const renderer = new Renderer(gl, canvasState, tracerShaderProgram, renderShaderProgram, plainShaderProgram);
         canvasState.renderer = renderer;
@@ -100,6 +98,23 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
     }, [canvasData])
 
     return (
-        <canvas ref={canvasRef} className="border-4 border-green-400 h-60 w-80" />
+        <div className="z-40 fixed top-0 left-0 w-screen h-screen flex flex-col md:flex-row bg-black bg-opacity-80 overflow-scroll">
+            <div className="flex justify-center items-center w-full h-4/5 md:h-full">
+                <canvas ref={canvasRef} className="w-11/12 h-full md:h-full rounded-lg" />
+            </div>
+            <div className="flex justify-center items-center md:justify-end w-full h-60 min-h-60 md:h-full md:max-w-72 lg:max-w-96">
+                <div className="bg-white rounded-lg py-2 px-4 flex flex-col gap-2 w-11/12 md:w-full h-full">
+                    <Link href={`/gallery/${canvasData.owner}`} className="hover:text-cyan-400">
+                        @{canvasData.owner}
+                    </Link>
+                    <div className="text-lg">
+                        {canvasData.name}
+                    </div>
+                    <div>
+                        {canvasData.description}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

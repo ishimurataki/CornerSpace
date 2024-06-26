@@ -6,15 +6,18 @@ import { useState } from "react";
 import {
     EllipsisVerticalIcon,
     GlobeAmericasIcon,
-    EyeSlashIcon
+    EyeSlashIcon,
+    XCircleIcon
 } from "@heroicons/react/24/outline";
+import Canvas from "./canvas";
 
 export default function CanvasCard({ canvasData, canvasId }: { canvasData: CanvasData, canvasId: string }) {
     const [hover, setHover] = useState(false);
     const [showEllipsisDropdown, setShowEllipsisDropdown] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
+    const [showCanvasComponent, setShowCanvasComponent] = useState(false);
     return (
-        <div className="relative hover:border-4 border-cyan-400 rounded-lg"
+        <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit"
             onMouseOver={() => setHover(true)}
             onMouseLeave={() => {
                 setHover(false);
@@ -55,7 +58,9 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                                         @{canvasData.owner}
                                     </Link>
                                 </span><span> | </span>
-                                <Link href={`/view/${canvasId}`} className="text-lg hover:text-cyan-400">{canvasData.name}</Link>
+                                <span className="text-lg hover:text-cyan-400 cursor-pointer" onClick={() => setShowCanvasComponent(true)}>
+                                    {canvasData.name}
+                                </span>
                                 <div>
                                     <button className="text-xs hover:text-cyan-400" onClick={() => setShowDescription(true)}>
                                         show description
@@ -64,6 +69,15 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                             </div>
                         </div>
                     }
+                </div>
+                : ""
+            }
+            {showCanvasComponent ?
+                <div>
+                    <div className="z-50 fixed top-4 left-8 w-12 h-12 text-white bg-gray-600 rounded-lg p-2 hover:text-cyan-400 hover:p-1">
+                        <XCircleIcon onClick={() => setShowCanvasComponent(false)} />
+                    </div>
+                    <Canvas canvasData={canvasData} />
                 </div>
                 : ""
             }
