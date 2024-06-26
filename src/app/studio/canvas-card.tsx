@@ -22,7 +22,7 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                 setShowDescription(false);
             }}
         >
-            <img src={canvasData.canvasThumbnail} className="rounded-lg" />
+            <img src={canvasData.canvasThumbnail} className="rounded-lg" alt={canvasData.name + " thumbnail"} />
             {hover ?
                 <div>
                     {showDescription ?

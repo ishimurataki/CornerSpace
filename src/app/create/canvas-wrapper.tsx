@@ -89,8 +89,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         }
     }
 
-    useEffect(() => {
-
+    const setup = () => {
         if (canvasData) {
             canvasState.divisionFactor = canvasData.dimension;
             canvasState.sideLength = 1 / canvasData.dimension;
@@ -179,11 +178,11 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
             animationFrameId = requestAnimationFrame(render);
         }
         requestAnimationFrame(render);
+    }
 
-        return () => {
-            window.cancelAnimationFrame(animationFrameId);
-        }
-    }, [canvasData, canvasState.divisionFactor]);
+    useEffect(() => {
+        setup();
+    }, []);
 
     useEffect(() => {
         document.addEventListener("mouseup", handleMouseUp);
@@ -265,6 +264,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         onClick={() => {
                             canvasState.divisionFactor = chosenCanvasDimension;
                             canvasState.sideLength = 1 / canvasState.divisionFactor;
+                            setup();
                             setShowCreatePanel(false);
                             setToolsMenuMode("edit");
                             canvasState.controls?.toggleToEditor();

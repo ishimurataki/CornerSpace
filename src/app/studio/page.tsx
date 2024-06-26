@@ -15,14 +15,14 @@ export default async function App() {
 
   return (
     <main className="h-screen flex flex-col m-6 md:m-8 lg:m-10">
-      <p className="text-2xl">@{username}'s Studio</p>
+      <p className="text-2xl">@{username}&apos; Studio</p>
       <p className="text-lg mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5" >Your Gallery</p >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll">
         {canvasIds.map((canvasId) => {
           return (
             <Suspense fallback={
               <div className={`bg-gray-200 w-full h-full rounded-lg`}>
-              </div>}>
+              </div>} key={`canvasCard-${canvasId}`}>
               <CanvasCardWrapper canvasId={canvasId} key={canvasId} />
             </Suspense>
           );
