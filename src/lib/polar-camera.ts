@@ -156,12 +156,27 @@ class PolarCamera {
     }
 
     reset(): void {
-        this.theta = 0;
-        this.phi = (1 / 2) * Math.PI;
-        this.r = 50;
+        this.mode = Mode.EditorY;
 
-        this.ref = vec3.fromValues(0.0, 0.0, 0.0);
+        this.editorR = 1.5;
+        this.maxEditorR = 1.5;
+
+        this.editorRefY = vec3.fromValues(0.0, -0.5, 0.0);
+        this.editorRefX = vec3.fromValues(-0.5, 0.0, 0.0);
+        this.editorRefZ = vec3.fromValues(0.0, 0.0, -0.5);
+
+        this.viewerRef = vec3.fromValues(0.0, 0.0, 0.0);
+        this.viewerTheta = 0.25 * Math.PI;
+        this.viewerPhi = 0.15 * Math.PI;
+        this.viewerR = 1.5;
+
+        this.theta = this.EDITOR_THETA_Y;
+        this.phi = this.EDITOR_PHI_Y;
+        this.r = this.editorR;
+
+        this.ref = this.editorRefY;
         this.up = vec3.fromValues(0.0, 1.0, 0.0);
+        this.eye = vec3.fromValues(0.0, 1.0, 0.0);
     }
 
     debug(): void {

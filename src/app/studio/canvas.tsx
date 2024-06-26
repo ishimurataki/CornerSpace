@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import CanvasState from "../create/canvas-state";
 import Scene from "@/lib/renderables/scene";
 import Controls from "@/lib/controls";
@@ -12,12 +12,22 @@ import { tracerFragmentSource, tracerVertexSource } from "@/lib/shaders/tracer-s
 import { plainFragmentShaderSource, plainVertexShaderSource } from "@/lib/shaders/plain-shader";
 import Link from "next/link";
 
+const canvasState = new CanvasState();
+
 export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    let stopAnimation = false;
+
+    const [rayTraceEnabled, setRayTraceEnabled] = useState(true);
+    const [ambientLight, setAmbientLight] = useState(canvasData.ambientStrength);
+    const [pointLight, setPointLight] = useState(canvasData.pointLightStrength);
+
+    const toggleRayTrace = () => {
+        canvasState.rayTrace = !rayTraceEnabled;
+        setRayTraceEnabled(!rayTraceEnabled);
+    }
 
     useEffect(() => {
-        const canvasState = new CanvasState();
-
         canvasState.divisionFactor = canvasData.dimension;
         canvasState.sideLength = 1 / canvasData.dimension;
         canvasState.backgroundColor = canvasData.backgroundColor;
@@ -33,6 +43,9 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
 
         canvasState.bindScene(scene);
         canvasState.bindControls(controls);
+
+        canvasState.camera.reset();
+        canvasState.rayTrace = true;
 
         const canvas = canvasRef.current;
         if (canvas == null) {
@@ -83,27 +96,31 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
 
         gl.useProgram(plainShaderProgram);
 
+        stopAnimation = false;
         let animationFrameId: number;
         const render = (now: number) => {
-            renderer.tick(now);
-            renderer.render(now);
-            canvasState.previousTime = now;
-            animationFrameId = requestAnimationFrame(render);
+            if (!stopAnimation) {
+                renderer.tick(now);
+                renderer.render(now);
+                canvasState.previousTime = now;
+                animationFrameId = requestAnimationFrame(render);
+            }
         }
         requestAnimationFrame(render);
 
         return () => {
+            stopAnimation = true;
             window.cancelAnimationFrame(animationFrameId);
         }
     }, [canvasData])
 
     return (
-        <div className="z-40 fixed top-0 left-0 w-screen h-screen flex flex-col md:flex-row bg-black bg-opacity-80 overflow-scroll">
-            <div className="flex justify-center items-center w-full h-4/5 md:h-full">
-                <canvas ref={canvasRef} className="w-11/12 h-full md:h-full rounded-lg" />
+        <div className="z-40 fixed top-0 left-0 w-screen h-screen flex flex-col flex-nowrap gap-2 md:flex-row bg-black bg-opacity-80 overflow-scroll">
+            <div className="grow flex justify-center items-center w-full h-4/5 min-h-[calc(75%)] md:h-full">
+                <canvas ref={canvasRef} className="w-[calc(100%-30px)] md:w-11/12 h-full md:h-full rounded-lg" />
             </div>
-            <div className="flex justify-center items-center md:justify-end w-full h-60 min-h-60 md:h-full md:max-w-72 lg:max-w-96">
-                <div className="bg-white rounded-lg py-2 px-4 flex flex-col gap-2 w-11/12 md:w-full h-full">
+            <div className="shrink flex justify-center items-center md:justify-end w-full md:h-full md:max-w-72 lg:max-w-96">
+                <div className="bg-white rounded-lg py-2 px-4 flex flex-col gap-2 w-[calc(100%-30px)] md:w-full h-full">
                     <Link href={`/gallery/${canvasData.owner}`} className="hover:text-cyan-400">
                         @{canvasData.owner}
                     </Link>
@@ -113,6 +130,31 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
                     <div>
                         {canvasData.description}
                     </div>
+                    <hr className="mt-32" />
+                    <div>
+                        <input type="checkbox" checked={rayTraceEnabled}
+                            className="w-3 h-3 mr-2" onClick={() => toggleRayTrace()} />
+                        <span className="">Enable Ray-Tracing</span>
+                    </div>
+                    <div className="flex gap-1">
+                        <input type="range" min="1" max="10" value={ambientLight} step="0.025" className="w-24"
+                            onChange={(e) => {
+                                let ambienceStrength = Number(e.target.value);
+                                setAmbientLight(ambienceStrength);
+                                canvasState.setAmbienceStrength(ambienceStrength);
+                            }} />
+                        Ambience
+                    </div>
+                    <div className="flex gap-1">
+                        <input type="range" min="1" max="10" value={pointLight} step="0.025" className=" w-24"
+                            onChange={(e) => {
+                                let pointLightStrength = Number(e.target.value);
+                                setPointLight(pointLightStrength);
+                                canvasState.setPointLightStrength(pointLightStrength);
+                            }} />
+                        Point
+                    </div>
+
                 </div>
             </div>
         </div>

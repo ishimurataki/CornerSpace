@@ -68,6 +68,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [saving, setSaving] = useState(false);
     const [editorAxis, setEditorAxis] = useState(canvasState.editorAxis);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    let stopAnimation = false;
 
     function handleKeyUp(e: KeyboardEvent) {
         if (e.code == "Space" && !showCreatePanel) {
@@ -89,7 +90,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         }
     }
 
-    const setup = () => {
+    useEffect(() => {
         if (canvasData) {
             canvasState.divisionFactor = canvasData.dimension;
             canvasState.sideLength = 1 / canvasData.dimension;
@@ -106,6 +107,11 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
             });
             if (scene) scene.setSunCenter(canvasData.pointLightPosition);
         }
+
+        controls = new Controls(canvasState);
+        canvasState.bindControls(controls);
+
+        canvasState.camera.reset();
 
         const canvas = canvasRef.current;
         if (canvas == null) {
@@ -169,20 +175,24 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
             setToolsMenuMode("render");
         }
 
+        stopAnimation = false;
         let animationFrameId: number;
         const render = (now: number) => {
-            renderer.tick(now);
-            renderer.render(now);
-            canvasState.previousTime = now;
+            if (!stopAnimation) {
+                renderer.tick(now);
+                renderer.render(now);
 
-            animationFrameId = requestAnimationFrame(render);
+                animationFrameId = requestAnimationFrame(render);
+            }
+            canvasState.previousTime = now;
         }
         requestAnimationFrame(render);
-    }
 
-    useEffect(() => {
-        setup();
-    }, []);
+        return () => {
+            stopAnimation = true;
+            window.cancelAnimationFrame(animationFrameId);
+        }
+    }, [canvasData, canvasState.divisionFactor]);
 
     useEffect(() => {
         document.addEventListener("mouseup", handleMouseUp);
@@ -264,7 +274,6 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         onClick={() => {
                             canvasState.divisionFactor = chosenCanvasDimension;
                             canvasState.sideLength = 1 / canvasState.divisionFactor;
-                            setup();
                             setShowCreatePanel(false);
                             setToolsMenuMode("edit");
                             canvasState.controls?.toggleToEditor();

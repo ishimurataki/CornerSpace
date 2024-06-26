@@ -187,6 +187,7 @@ export default class Renderer {
 
     tick(currentTime: number) {
         let deltaTime = currentTime - this.canvasState.previousTime;
+        deltaTime = Math.min(deltaTime, 20);
         if (this.canvasState.transitioning) {
             let a = this.canvasState.transitionTime / 1000;
             if (a > 1) {
