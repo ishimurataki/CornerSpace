@@ -3,7 +3,7 @@
 import { loadCanvasServer } from "@/backend-lib/actions";
 import CanvasCard from "./canvas-card";
 
-export default async function CanvasCardWrapper({ canvasId }: { canvasId: string }) {
+export default async function CanvasCardWrapper({ canvasId, forOwner }: { canvasId: string, forOwner: boolean }) {
     const { isCanvasLoaded, canvasData, errorMessage } = await loadCanvasServer(canvasId);
     if (!canvasData) {
         return (
@@ -14,6 +14,6 @@ export default async function CanvasCardWrapper({ canvasId }: { canvasId: string
     }
 
     return (
-        <CanvasCard canvasData={canvasData} canvasId={canvasId} />
+        <CanvasCard canvasData={canvasData} canvasId={canvasId} forOwner={forOwner} />
     );
 }

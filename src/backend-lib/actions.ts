@@ -109,7 +109,6 @@ function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMess
 
 export async function loadCanvasServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
-    unstable_noStore();
 
     const { data: canvasData, errors: getCanvasErrors } =
         await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
@@ -285,12 +284,42 @@ export async function testServer() {
     }
 }
 
-export async function getCanvasIdsForUserServer():
+export async function doesUserExist(username: string) {
+    const { errors, data: user } = await client.models.Users.get({ username });
+    if (errors) {
+        console.log(errors);
+        throw (new Error("500 - Internal Server Error."));
+    }
+    return Object.keys(user as User).length > 0;
+}
+
+export async function getCanvasIdsForUserServer(username: string):
     Promise<{
         areCanvasIdsLoaded: boolean, username: string | null,
         canvasIds: string[] | null, errorMessage: string | null
     }> {
-    unstable_noStore();
+    const { data: canvasesData, errors: getCanvasForUserErrors } =
+        await client.queries.getCanvasesForUser({ user: username });
+
+    if (canvasesData) {
+        const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
+        const canvasIds: string[] = [];
+        for (const canvas of canvasDataValues) {
+            if (canvas) {
+                canvasIds.push(canvas.canvasId);
+            }
+        }
+        return { areCanvasIdsLoaded: true, username: username, canvasIds, errorMessage: null };
+    }
+    console.log(getCanvasForUserErrors);
+    return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+}
+
+export async function getCanvasIdsForSignedInUserServer():
+    Promise<{
+        areCanvasIdsLoaded: boolean, username: string | null,
+        canvasIds: string[] | null, errorMessage: string | null
+    }> {
 
     const currentUser = await fetchUserAttributesServer();
     const signedIn = currentUser != undefined;

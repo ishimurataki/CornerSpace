@@ -133,7 +133,7 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
                     <hr className="mt-32" />
                     <div>
                         <input type="checkbox" checked={rayTraceEnabled}
-                            className="w-3 h-3 mr-2" onClick={() => toggleRayTrace()} />
+                            className="w-3 h-3 mr-2" onChange={() => toggleRayTrace()} />
                         <span className="">Enable Ray-Tracing</span>
                     </div>
                     <div className="flex gap-1">

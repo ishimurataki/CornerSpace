@@ -6,16 +6,13 @@ import { useState } from "react";
 import {
     EllipsisVerticalIcon,
     GlobeAmericasIcon,
-    EyeSlashIcon,
-    XCircleIcon
+    EyeSlashIcon
 } from "@heroicons/react/24/outline";
-import Canvas from "./canvas";
 
-export default function CanvasCard({ canvasData, canvasId }: { canvasData: CanvasData, canvasId: string }) {
+export default function CanvasCard({ canvasData, canvasId, forOwner }: { canvasData: CanvasData, canvasId: string, forOwner: boolean }) {
     const [hover, setHover] = useState(false);
     const [showEllipsisDropdown, setShowEllipsisDropdown] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
-    const [showCanvasComponent, setShowCanvasComponent] = useState(false);
     return (
         <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit"
             onMouseOver={() => setHover(true)}
@@ -41,9 +38,9 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                                 <div className="flex flex-row"><EyeSlashIcon className="text-white w-7" /></div>}
                             </div>
                             <div className="absolute top-0 right-0 mt-4 flex flex-col items-end mr-1">
-                                <EllipsisVerticalIcon className="text-white h-10 hover:text-cyan-400"
-                                    onClick={() => setShowEllipsisDropdown(!showEllipsisDropdown)} />
-                                {showEllipsisDropdown ?
+                                {forOwner ? <EllipsisVerticalIcon className="text-white h-10 hover:text-cyan-400"
+                                    onClick={() => setShowEllipsisDropdown(!showEllipsisDropdown)} /> : ""}
+                                {forOwner && showEllipsisDropdown ?
                                     <div className="bg-white mr-4 p-2 rounded-md flex flex-col gap-1">
                                         <Link href={`/create/${canvasId}`} className="hover:text-cyan-600">Edit</Link>
                                         <hr />
@@ -58,8 +55,10 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                                         @{canvasData.owner}
                                     </Link>
                                 </span><span> | </span>
-                                <span className="text-lg hover:text-cyan-400 cursor-pointer" onClick={() => setShowCanvasComponent(true)}>
-                                    {canvasData.name}
+                                <span>
+                                    <Link href={`/view/${canvasId}`} className="text-lg hover:text-cyan-400">
+                                        {canvasData.name}
+                                    </Link>
                                 </span>
                                 <div>
                                     <button className="text-xs hover:text-cyan-400" onClick={() => setShowDescription(true)}>
@@ -69,15 +68,6 @@ export default function CanvasCard({ canvasData, canvasId }: { canvasData: Canva
                             </div>
                         </div>
                     }
-                </div>
-                : ""
-            }
-            {showCanvasComponent ?
-                <div>
-                    <div className="z-50 fixed top-4 left-8 w-12 h-12 text-white bg-gray-600 rounded-lg p-2 hover:text-cyan-400 hover:p-1">
-                        <XCircleIcon onClick={() => setShowCanvasComponent(false)} />
-                    </div>
-                    <Canvas canvasData={canvasData} />
                 </div>
                 : ""
             }

@@ -1,13 +1,13 @@
 "use server";
 
 import CanvasCardWrapper from "./canvas-card-wrapper";
-import { getCanvasIdsForUserServer } from "@/backend-lib/actions";
+import { getCanvasIdsForSignedInUserServer } from "@/backend-lib/actions";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export default async function App() {
 
-  const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getCanvasIdsForUserServer();
+  const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getCanvasIdsForSignedInUserServer();
   if (!areCanvasIdsLoaded || canvasIds == null || username == null) {
     console.log(errorMessage);
     redirect('signin');
@@ -23,7 +23,7 @@ export default async function App() {
             <Suspense fallback={
               <div className={`bg-gray-200 w-full h-full rounded-lg`}>
               </div>} key={`canvasCard-${canvasId}`}>
-              <CanvasCardWrapper canvasId={canvasId} key={canvasId} />
+              <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={true} />
             </Suspense>
           );
         })}
