@@ -14,7 +14,7 @@ export default function CanvasCard({ canvasData, canvasId, forOwner }: { canvasD
     const [showEllipsisDropdown, setShowEllipsisDropdown] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
     return (
-        <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit"
+        <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit z-20"
             onMouseOver={() => setHover(true)}
             onMouseLeave={() => {
                 setHover(false);

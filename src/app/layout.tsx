@@ -2,6 +2,7 @@ import ConfigureAmplifyClientSide from "@/components/configure-amplify";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Header from "./header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ConfigureAmplifyClientSide />
+        <Header />
         {view}
         {children}
       </body>

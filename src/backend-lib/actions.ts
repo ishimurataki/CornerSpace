@@ -285,6 +285,7 @@ export async function testServer() {
 }
 
 export async function doesUserExist(username: string) {
+    if (!username) return false;
     const { errors, data: user } = await client.models.Users.get({ username });
     if (errors) {
         console.log(errors);

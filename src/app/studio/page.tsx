@@ -14,7 +14,7 @@ export default async function App() {
   }
 
   return (
-    <main className="h-screen flex flex-col m-6 md:m-8 lg:m-10">
+    <main className="flex flex-col m-6 md:m-8 lg:m-10">
       <p className="text-2xl">@{username}&apos; Studio</p>
       <p className="text-lg mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5" >Your Gallery</p >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll">

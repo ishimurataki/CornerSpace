@@ -24,7 +24,7 @@ import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
 
-const canvasSizeOptions = [16, 32, 48, 64, 80, 96];
+const canvasSizeOptions = [16, 32, 48, 64, 78, 96];
 
 const editToolMap = new Map([
     [EditToolModes.Pencil, PencilIcon],

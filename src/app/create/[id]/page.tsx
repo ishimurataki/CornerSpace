@@ -13,11 +13,10 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main className="h-screen p-2 flex flex-col md:overflow-hidden">
-            <h1 className={`flex-none mb-1 text-3xl md:text-4xl`}>
-                CuBit
-            </h1>
-            <CanvasWrapper canvasId={canvasId} canvasData={canvasData} />
+        <main className="h-[calc(100vh-74px)] mt-2 flex flex-col md:overflow-hidden">
+            <div className="flex-1 w-full flex flex-row max-h min-h-0 min-w-0">
+                <CanvasWrapper canvasId={canvasId} canvasData={canvasData} />
+            </div>
         </main>
     );
 }

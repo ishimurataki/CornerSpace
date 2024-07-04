@@ -14,8 +14,8 @@ export default async function SignInTestPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4 py-10 h-screen justify-center items-center bg-green-50">
+        <main className="h-[calc(100vh-74px)] flex flex-col gap-4 py-10 justify-center items-center bg-green-50">
             <SignInUpAggregate />
-        </div >
+        </main>
     )
 }
