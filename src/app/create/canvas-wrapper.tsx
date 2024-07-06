@@ -66,6 +66,8 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [description, setDescription] = useState(canvasData ? canvasData.description : "");
     const [publicity, setPublicity] = useState(canvasData ? canvasData.publicity : Publicity.Public);
     const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState<null | string>(null);
     const [editorAxis, setEditorAxis] = useState(canvasState.editorAxis);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     let stopAnimation = false;
@@ -244,7 +246,16 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     const handleSave = async () => {
         setSaving(true);
-        await saveCanvas(canvasId, title, description, publicity, canvasState);
+        const { isCanvasSaved, errorMessage } = await saveCanvas(canvasId, title, description, publicity, canvasState);
+        if (isCanvasSaved) {
+            setSaved(true);
+            setSaveError(null);
+            setTimeout(() => {
+                setSaved(false)
+            }, 5000);
+        } else {
+            setSaveError(errorMessage);
+        }
         setSaving(false);
     }
 
@@ -443,28 +454,36 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         <input placeholder="Title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="h-8 block mt-2 p-2 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 " />
+                            className="bg-sea-green h-8 block mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white" />
                         <textarea
                             placeholder="Add a description here"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="block h-40 mt-2 p-2 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
-                    focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white 
-                    dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                            className="bg-sea-green block h-40 mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white"></textarea>
                         <div className="pt-2">
                             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-white">Publicity: </label>
                             <select
-                                onChange={(e) => setPublicity(e.target.value == "Public" ? Publicity.Public : Publicity.Private)}
+                                onChange={(e) => {
+                                    setPublicity(e.target.value == String(Publicity.Public) ? Publicity.Public : Publicity.Private)
+                                }}
                                 value={publicity}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 
-                        px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                className="bg-sea-green border-2 border-white text-gray-900 text-sm rounded-full px-2 py-1.5 outline-none hover:text-cyan-800 hover:border-cyan-800">
                                 <option value={Publicity.Public}>Public</option>
                                 <option value={Publicity.Private}>Private</option>
                             </select>
                         </div>
-                        <button className="bg-sky-100 rounded-md px-2 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50" aria-disabled={saving} onClick={handleSave}>Save</button>
-                        <button className="bg-sky-100 rounded-md px-2 mt-2 ml-10" onClick={() => {
-                        }}>test</button>
+                        <div className="flex flex-row">
+                            <button className={`${saved ? "text-green" : "text-gray-800"} px-3 py-1 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 border-2 border-white 
+                            rounded-full hover:text-cyan-800 hover:border-cyan-800 text-lg`}
+                                aria-disabled={saving || saved}
+                                onClick={handleSave}>
+                                {saved ? "Saved" : "Save"}
+                            </button>
+                        </div>
+                        {saveError ?
+                            <div className="text-red-600 text-sm p-2">Save failed: {saveError}</div>
+                            : ""
+                        }
                     </div>
                 </div>
             </div>

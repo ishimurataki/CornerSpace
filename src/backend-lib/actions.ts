@@ -7,7 +7,7 @@ import { Amplify } from "aws-amplify";
 import { AuthError, confirmSignUp, fetchAuthSession, signUp } from "aws-amplify/auth";
 import { downloadData, uploadData } from 'aws-amplify/storage';
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
-import { CanvasData, Publicity } from "./data";
+import { CanvasData, CanvasDataSave, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 import { unstable_noStore } from "next/cache";
@@ -94,7 +94,7 @@ export async function confirmSignUpServer(username: string, userId: string, conf
     }
 }
 
-function validateCanvasData(canvasData: CanvasData): { valid: boolean, errorMessage: string | null } {
+function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, errorMessage: string | null } {
 
     // TODO: complete this validation function
     if (canvasData.dimension < 10 || canvasData.dimension > 100) {
@@ -162,7 +162,7 @@ export async function loadCanvasServer(canvasId: string):
     }
 }
 
-export async function saveCanvasServer(canvasData: CanvasData, canvasId: string | null = null):
+export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: string | null = null):
     Promise<{ isCanvasSaved: boolean, errorMessage: string | null }> {
     unstable_noStore();
 
@@ -208,12 +208,7 @@ export async function saveCanvasServer(canvasData: CanvasData, canvasId: string 
         canvasId = uuidv4();
     }
 
-    // Create voxels string representation
-    let voxelsString: string[] = [];
-    for (let voxel of canvasData.voxels) {
-        let voxelString = `${voxel.x},${voxel.y},${voxel.z}:${rgbToHex(voxel.cubeColor)}:${voxel.cubeMaterial}`;
-        voxelsString.push(voxelString);
-    }
+    let voxelsString: string[] = JSON.parse(canvasData.voxels);
 
     const canvasDataString = JSON.stringify({
         "version": canvasData.version,

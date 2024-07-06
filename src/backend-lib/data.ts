@@ -1,5 +1,6 @@
 import CanvasState from "@/app/create/canvas-state";
 import { loadCanvasServer, saveCanvasServer } from "./actions";
+import { rgbToHex } from "@/utils/functions";
 
 export type Voxel = {
     x: number,
@@ -29,15 +30,29 @@ export type CanvasData = {
     canvasThumbnail: string
 }
 
+export type CanvasDataSave = {
+    name: string,
+    owner: string,
+    description: string,
+    publicity: Publicity
+    version: string,
+    dimension: number,
+    pointLightPosition: vec3,
+    backgroundColor: vec3,
+    ambientStrength: number,
+    pointLightStrength: number,
+    voxels: string,
+    canvasThumbnail: string
+}
+
 export async function saveCanvas(canvasId: string | null, name: string, description: string, publicity: Publicity, canvasState: CanvasState) {
     console.log('Saving canvas...');
 
     if (!canvasState || !canvasState.canvas || !canvasState.scene) {
-        console.log('No scene attached.');
-        return;
+        return { isCanvasSaved: false, errorMessage: "No scene attached." };
     }
 
-    const voxels: Voxel[] = [];
+    let voxelsStringArray: string[] = [];
     for (let y = 0; y < canvasState.divisionFactor; y++) {
         let yIndex = y * Math.pow(canvasState.divisionFactor, 2);
         for (let x = 0; x < canvasState.divisionFactor; x++) {
@@ -47,16 +62,13 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
                 let cubeColor = canvasState.scene.cubeSpace.cubeColorSpace[cubeIndex];
                 if (!cubeColor) continue;
                 let cubeMaterial = canvasState.scene.cubeSpace.cubeMaterialSpace[cubeIndex];
-                voxels.push({
-                    x,
-                    y,
-                    z,
-                    cubeColor,
-                    cubeMaterial
-                });
+                let voxelString = `${x},${y},${z}:${rgbToHex(cubeColor)}:${cubeMaterial}`;
+                voxelsStringArray.push(voxelString);
             }
         }
     }
+    // Create voxels string representation
+    let voxelsString = JSON.stringify(voxelsStringArray);
 
     const width = canvasState.canvas.width;
     const height = canvasState.canvas.height;
@@ -82,7 +94,7 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
         destinationCaptureSize, destinationCaptureSize);
     const canvasThumbnail = resizedCanvas.toDataURL("image/jpeg", 1.0);
 
-    let canvasData: CanvasData = {
+    let canvasData: CanvasDataSave = {
         "name": name,
         "owner": "blank",
         "description": description,
@@ -93,16 +105,12 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
         "backgroundColor": canvasState.backgroundColor,
         "ambientStrength": canvasState.ambienceStrength,
         "pointLightStrength": canvasState.sunStrength,
-        "voxels": voxels,
+        "voxels": voxelsString,
         "canvasThumbnail": canvasThumbnail
     };
 
     console.log("canvasID: " + canvasId);
     const { isCanvasSaved, errorMessage } = await saveCanvasServer(canvasData, canvasId);
 
-    if (isCanvasSaved) {
-        console.log("Saved!");
-    } else {
-        console.log(errorMessage);
-    }
+    return { isCanvasSaved, errorMessage };
 }
