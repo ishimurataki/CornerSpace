@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main>
+        <main className="h-[calc(100vh-64px)]">
             <Canvas canvasData={canvasData} />
         </main>
     )

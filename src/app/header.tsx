@@ -55,9 +55,13 @@ export default function Header() {
                     onChange={(e) => {
                         handleSearch(e.target.value);
                     }}
+                    onBlur={() => { setSearchUsername(null) }}
+                    onFocus={(e) => {
+                        if (e.target.value) handleSearch(e.target.value);
+                    }}
                 />
                 {searchUsername ?
-                    <div className="absolute bg-white rounded-md mt-1 py-1 px-2 w-full hover:text-cyan-400 shadow-lg cursor-pointer"
+                    <div className="absolute bg-white rounded-md mt-1 py-1 px-2 w-full hover:text-cyan-400 shadow-lg cursor-pointer z-30"
                         onClick={() => {
                             setSearchUsername(null);
                             router.push(`/user/${searchUsername}`);

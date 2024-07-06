@@ -115,13 +115,13 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
     }, [canvasData])
 
     return (
-        <div className="z-40 fixed top-0 left-0 w-screen h-screen flex flex-col flex-nowrap gap-2 md:flex-row bg-black bg-opacity-80 overflow-scroll">
+        <div className="z-40 top-0 left-0 w-screen h-full flex flex-col flex-nowrap gap-2 md:flex-row bg-black bg-opacity-80 overflow-scroll">
             <div className="grow flex justify-center items-center w-full h-4/5 min-h-[calc(75%)] md:h-full">
                 <canvas ref={canvasRef} className="w-[calc(100%-30px)] md:w-11/12 h-full md:h-full rounded-lg" />
             </div>
             <div className="shrink flex justify-center items-center md:justify-end w-full md:h-full md:max-w-72 lg:max-w-96">
                 <div className="bg-white rounded-lg py-2 px-4 flex flex-col gap-2 w-[calc(100%-30px)] md:w-full h-full">
-                    <Link href={`/gallery/${canvasData.owner}`} className="hover:text-cyan-400">
+                    <Link href={`/user/${canvasData.owner}`} className="hover:text-cyan-400">
                         @{canvasData.owner}
                     </Link>
                     <div className="text-lg">

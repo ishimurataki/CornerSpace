@@ -51,7 +51,7 @@ export default function CanvasCard({ canvasData, canvasId, forOwner }: { canvasD
                             </div>
                             <div className="p-4 absolute bottom-0 w-full text-white rounded-b-md bg-gradient-to-t from-black">
                                 <span>
-                                    <Link href={`/gallery/${canvasData.owner}`} className="hover:text-cyan-400">
+                                    <Link href={`/user/${canvasData.owner}`} className="hover:text-cyan-400">
                                         @{canvasData.owner}
                                     </Link>
                                 </span><span> | </span>

@@ -308,12 +308,17 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                     </button>
                     <button
                         className={`${toolsMenuMode == "save" ? "bg-pastel-red" : "bg-pastel-orange"}`}
-                        onClick={() => setToolsMenuMode("save")}>
+                        onClick={() => {
+                            if (toolsMenuMode == "edit") {
+                                canvasState.controls?.toggleToViewer();
+                            }
+                            setToolsMenuMode("save")
+                        }}>
                         Save
                     </button>
                 </div>
-                <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1`}>
-                    <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"} h-full`}>
+                <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1 overflow-y-scroll`}>
+                    <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"}`}>
                         <div className="grid grid-cols-4 gap-1 h-8 my-2">
                             <button className={`${editorAxis == Axis.X ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
                                 rounded-md px-4 py-1 hover:bg-pastel-green hover:text-base`}
