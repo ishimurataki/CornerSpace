@@ -12,6 +12,7 @@ import {
 }
     from '@heroicons/react/24/outline';
 import { signOut } from 'aws-amplify/auth';
+import { useRef } from 'react';
 
 export default function Header() {
     const router = useRouter();
@@ -20,6 +21,8 @@ export default function Header() {
     const [userName, setUserName] = useState<null | string>(null);
     const [showRightMenu, setShowRightMenu] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
+
+    const searchHitRef = useRef<HTMLButtonElement>(null);
 
     const handleSearch = useDebouncedCallback(async (term: string) => {
         console.log('searching...');
@@ -55,19 +58,24 @@ export default function Header() {
                     onChange={(e) => {
                         handleSearch(e.target.value);
                     }}
-                    onBlur={() => { setSearchUsername(null) }}
+                    onBlur={(e) => {
+                        if (searchHitRef.current && !searchHitRef.current.contains(e.relatedTarget)) {
+                            setSearchUsername(null);
+                        }
+                    }}
                     onFocus={(e) => {
                         if (e.target.value) handleSearch(e.target.value);
                     }}
                 />
                 {searchUsername ?
-                    <div className="absolute bg-white rounded-md mt-1 py-1 px-2 w-full hover:text-cyan-400 shadow-lg cursor-pointer z-30"
+                    <div><button className="absolute bg-white rounded-md mt-1 py-1 px-2 hover:text-cyan-400 shadow-lg cursor-pointer z-30 w-full text-left"
+                        ref={searchHitRef}
                         onClick={() => {
-                            setSearchUsername(null);
                             router.push(`/user/${searchUsername}`);
+                            setSearchUsername(null);
                         }}>
                         @{searchUsername}
-                    </div> : ""
+                    </button></div> : ""
                 }
             </div>
             <Link className="text-white border-2 border-white rounded-full p-1 md:py-1 md:px-2 flex flex-row items-center gap-1 
