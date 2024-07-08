@@ -163,7 +163,7 @@ export async function loadCanvasServer(canvasId: string):
 }
 
 export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: string | null = null):
-    Promise<{ isCanvasSaved: boolean, errorMessage: string | null }> {
+    Promise<{ isCanvasSaved: boolean, canvasId: string | null, errorMessage: string | null }> {
     unstable_noStore();
 
     const isNewCanvas = !canvasId;
@@ -174,13 +174,13 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     const username = currentUser?.preferred_username;
 
     if (!signedIn || !username) {
-        return { isCanvasSaved: false, errorMessage: "User not authenticated." }
+        return { isCanvasSaved: false, canvasId, errorMessage: "User not authenticated." }
     }
 
     // Confirm that canvas data passed is valid
     const { valid, errorMessage } = validateCanvasData(canvasData);
     if (!valid) {
-        return { isCanvasSaved: false, errorMessage };
+        return { isCanvasSaved: false, canvasId, errorMessage };
     }
 
     // Obtain correct canvasId
@@ -188,22 +188,22 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         await client.queries.getCanvasesForUser({ user: username });
     if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
         console.log(getCanvasForUserErrors);
-        return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." };
+        return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
     }
 
     const canvases = Object.values(canvasesData);
     if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
-        return { isCanvasSaved: false, errorMessage: "Invalid canvas ID." }
+        return { isCanvasSaved: false, canvasId, errorMessage: "Invalid canvas ID." }
     } else if (!canvasId) {
         const { data: user, errors: usersGetErrors } = await client.models.Users.get({ username });
         if (usersGetErrors) {
             console.log(usersGetErrors);
-            return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." };
+            return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
         }
         const maxNumberOfCanvases = (user as User).numberOfCanvases;
         const currentNumberOfCanvases = canvases.length;
         if (currentNumberOfCanvases >= maxNumberOfCanvases) {
-            return { isCanvasSaved: false, errorMessage: "Max number of canvases reached." }
+            return { isCanvasSaved: false, canvasId, errorMessage: "Max number of canvases reached." }
         }
         canvasId = uuidv4();
     }
@@ -235,7 +235,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
 
         if (errors) {
             console.log(errors);
-            return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." }
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
         }
     } else {
         await client.models.Canvases.update({
@@ -254,10 +254,10 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
             data: canvasDataString,
         }).result;
         console.log('Succeeded: ', result);
-        return { isCanvasSaved: true, errorMessage: null }
+        return { isCanvasSaved: true, canvasId, errorMessage: null }
     } catch (error) {
         console.log('Error : ', error);
-        return { isCanvasSaved: false, errorMessage: "500 - Internal Server Error." }
+        return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." }
     }
 }
 
@@ -289,7 +289,7 @@ export async function doesUserExist(username: string) {
     return Object.keys(user as User).length > 0;
 }
 
-export async function getCanvasIdsForUserServer(username: string):
+export async function getPublicCanvasIdsForUserServer(username: string):
     Promise<{
         areCanvasIdsLoaded: boolean, username: string | null,
         canvasIds: string[] | null, errorMessage: string | null
@@ -301,7 +301,7 @@ export async function getCanvasIdsForUserServer(username: string):
         const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
         const canvasIds: string[] = [];
         for (const canvas of canvasDataValues) {
-            if (canvas) {
+            if (canvas && canvas.publicity == "PUBLIC") {
                 canvasIds.push(canvas.canvasId);
             }
         }

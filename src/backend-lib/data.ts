@@ -11,7 +11,7 @@ export type Voxel = {
 }
 
 export enum Publicity {
-    Public,
+    Public = 0,
     Private
 }
 
@@ -110,7 +110,7 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
     };
 
     console.log("canvasID: " + canvasId);
-    const { isCanvasSaved, errorMessage } = await saveCanvasServer(canvasData, canvasId);
+    const { isCanvasSaved, canvasId: canvasIdNew, errorMessage } = await saveCanvasServer(canvasData, canvasId);
 
-    return { isCanvasSaved, errorMessage };
+    return { isCanvasSaved, canvasIdNew, errorMessage };
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import CanvasCardWrapper from "@/app/studio/canvas-card-wrapper";
-import { doesUserExist, getCanvasIdsForUserServer } from "@/backend-lib/actions";
+import { doesUserExist, getPublicCanvasIdsForUserServer } from "@/backend-lib/actions";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -10,7 +10,7 @@ export default async function UserPage({ params }: { params: { username: string 
   if (!userExists) {
     notFound();
   }
-  const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getCanvasIdsForUserServer(params.username);
+  const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getPublicCanvasIdsForUserServer(params.username);
   if (!areCanvasIdsLoaded || canvasIds == null) {
     return (
       <div className="bg-gray-200 w-full h-full rounded-lg p-10 flex items-center justify-center">

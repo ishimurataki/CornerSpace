@@ -23,6 +23,7 @@ import { hexToRgb, rgbToHex } from "@/utils/functions";
 import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
+import { useRouter } from "next/navigation";
 
 const canvasSizeOptions = [16, 32, 48, 64, 78, 96];
 
@@ -44,6 +45,8 @@ let controls = new Controls(canvasState);
 canvasState.bindControls(controls);
 
 export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: string | null, canvasData: CanvasData | null }) {
+
+    const router = useRouter();
 
     const [chosenCanvasDimension, setChosenCanvasDimension] = useState(32);
     const [showCreatePanel, setShowCreatePanel] = useState(!canvasData);
@@ -246,8 +249,11 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     const handleSave = async () => {
         setSaving(true);
-        const { isCanvasSaved, errorMessage } = await saveCanvas(canvasId, title, description, publicity, canvasState);
-        if (isCanvasSaved) {
+        console.log("HERE");
+        const { isCanvasSaved, canvasIdNew, errorMessage } = await saveCanvas(canvasId, title, description, publicity, canvasState);
+        if (isCanvasSaved && canvasIdNew) {
+            canvasId = canvasIdNew;
+            router.replace(`/create/${canvasIdNew}`);
             setSaved(true);
             setSaveError(null);
             setTimeout(() => {
@@ -323,7 +329,8 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             if (toolsMenuMode == "edit") {
                                 canvasState.controls?.toggleToViewer();
                             }
-                            setToolsMenuMode("save")
+                            setToolsMenuMode("save");
+                            console.log(publicity);
                         }}>
                         Save
                     </button>
@@ -466,16 +473,17 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                                 onChange={(e) => {
                                     setPublicity(e.target.value == String(Publicity.Public) ? Publicity.Public : Publicity.Private)
                                 }}
-                                value={publicity}
+                                value={String(publicity)}
                                 className="bg-sea-green border-2 border-white text-gray-900 text-sm rounded-full px-2 py-1.5 outline-none hover:text-cyan-800 hover:border-cyan-800">
-                                <option value={Publicity.Public}>Public</option>
-                                <option value={Publicity.Private}>Private</option>
+                                <option value={String(Publicity.Public)}>Public</option>
+                                <option value={String(Publicity.Private)}>Private</option>
                             </select>
                         </div>
                         <div className="flex flex-row">
                             <button className={`${saved ? "text-green" : "text-gray-800"} px-3 py-1 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 border-2 border-white 
                             rounded-full hover:text-cyan-800 hover:border-cyan-800 text-lg`}
                                 aria-disabled={saving || saved}
+                                disabled={saving || saved}
                                 onClick={handleSave}>
                                 {saved ? "Saved" : "Save"}
                             </button>
