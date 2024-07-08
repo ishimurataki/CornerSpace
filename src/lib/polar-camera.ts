@@ -37,10 +37,10 @@ class PolarCamera {
     private readonly EDITOR_THETA_Z: number = 0.5 * Math.PI;
     private readonly EDITOR_PHI_Z: number = 0;
 
-    private viewerRef = vec3.fromValues(0.0, 0.0, 0.0);
-    private viewerTheta: number = 0.25 * Math.PI;
-    private viewerPhi: number = 0.15 * Math.PI;
-    private viewerR: number = 1.5;
+    viewerRef = vec3.fromValues(0.0, 0.0, 0.0);
+    viewerTheta: number = 0.25 * Math.PI;
+    viewerPhi: number = 0.15 * Math.PI;
+    viewerR: number = 1.5;
 
     private readonly maxViewerR = 10;
 

@@ -117,6 +117,12 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
         canvasState.bindControls(controls);
 
         canvasState.camera.reset();
+        if (canvasData && canvasData.viewerRef && canvasData.viewerTheta && canvasData.viewerPhi && canvasData.viewerR) {
+            canvasState.camera.viewerRef = canvasData.viewerRef;
+            canvasState.camera.viewerTheta = canvasData.viewerTheta;
+            canvasState.camera.viewerPhi = canvasData.viewerPhi;
+            canvasState.camera.viewerR = canvasData.viewerR;
+        }
 
         const canvas = canvasRef.current;
         if (canvas == null) {
@@ -249,7 +255,6 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     const handleSave = async () => {
         setSaving(true);
-        console.log("HERE");
         const { isCanvasSaved, canvasIdNew, errorMessage } = await saveCanvas(canvasId, title, description, publicity, canvasState);
         if (isCanvasSaved && canvasIdNew) {
             canvasId = canvasIdNew;
@@ -330,7 +335,6 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                                 canvasState.controls?.toggleToViewer();
                             }
                             setToolsMenuMode("save");
-                            console.log(publicity);
                         }}>
                         Save
                     </button>

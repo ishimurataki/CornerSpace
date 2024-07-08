@@ -45,6 +45,12 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
         canvasState.bindControls(controls);
 
         canvasState.camera.reset();
+        if (canvasData.viewerRef && canvasData.viewerTheta && canvasData.viewerPhi && canvasData.viewerR) {
+            canvasState.camera.viewerRef = canvasData.viewerRef;
+            canvasState.camera.viewerTheta = canvasData.viewerTheta;
+            canvasState.camera.viewerPhi = canvasData.viewerPhi;
+            canvasState.camera.viewerR = canvasData.viewerR;
+        }
         canvasState.rayTrace = true;
 
         const canvas = canvasRef.current;

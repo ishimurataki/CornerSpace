@@ -14,7 +14,7 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
     const [showEllipsisDropdown, setShowEllipsisDropdown] = useState(false);
     const [showDescription, setShowDescription] = useState(false);
     return (
-        <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit z-20"
+        <div className="relative hover:border-4 border-cyan-400 rounded-lg max-w-fit z-20 aspect-square"
             onMouseOver={() => setHover(true)}
             onMouseLeave={() => {
                 setHover(false);
@@ -22,7 +22,7 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
                 setShowDescription(false);
             }}
         >
-            <img src={canvasCardData.thumbnail} className="rounded-lg" alt={canvasCardData.name + " thumbnail"} />
+            <img src={canvasCardData.thumbnail ? canvasCardData.thumbnail : undefined} className="rounded-lg bg-gray-400 aspect-square" alt={canvasCardData.name + " thumbnail"} />
             {hover ?
                 <div>
                     {showDescription ?

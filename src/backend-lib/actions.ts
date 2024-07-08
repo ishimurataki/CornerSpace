@@ -121,24 +121,26 @@ export async function loadCanvasCardDataServer(canvasId: string):
     const canvas = canvasData[0];
     const username = canvas.owner;
 
+    const canvasCardData: CanvasCardData = {
+        name: canvas.name,
+        owner: canvas.owner,
+        description: canvas.description ? canvas.description : "",
+        publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
+        thumbnail: null
+    };
+
     try {
         const canvasThumbailDownloadResult = await downloadData({
             path: `canvasThumbnails/${username}/${canvasId}`,
         }).result;
         const canvasThumbnailString = await canvasThumbailDownloadResult.body.text();
 
-        const canvasCardData: CanvasCardData = {
-            name: canvas.name,
-            owner: canvas.owner,
-            description: canvas.description ? canvas.description : "",
-            publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
-            thumbnail: canvasThumbnailString,
-        };
+        canvasCardData.thumbnail = canvasThumbnailString;
 
         return { isCanvasLoaded: true, canvasCardData: canvasCardData, errorMessage: null }
     } catch (e) {
         console.log(e);
-        return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "500 - Internal Server Error." }
+        return { isCanvasLoaded: true, canvasCardData: canvasCardData, errorMessage: "500 - Internal Server Error. Thumbnail not loaded." }
     }
 }
 
@@ -187,6 +189,10 @@ export async function loadCanvasServer(canvasId: string):
             backgroundColor: hexToRgb(canvasDataJson.backgroundColor),
             ambientStrength: canvasDataJson.ambientStrength,
             pointLightStrength: canvasDataJson.pointLightStrength,
+            viewerRef: canvasDataJson.viewerRef,
+            viewerTheta: canvasDataJson.viewerTheta,
+            viewerPhi: canvasDataJson.viewerPhi,
+            viewerR: canvasDataJson.viewerR,
             voxels: voxels
         };
 
@@ -252,6 +258,10 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         "backgroundColor": rgbToHex(canvasData.backgroundColor),
         "ambientStrength": canvasData.ambientStrength,
         "pointLightStrength": canvasData.pointLightStrength,
+        "viewerRef": canvasData.viewerRef,
+        "viewerTheta": canvasData.viewerTheta,
+        "viewerPhi": canvasData.viewerPhi,
+        "viewerR": canvasData.viewerR,
         "voxels": voxelsString
     });
 

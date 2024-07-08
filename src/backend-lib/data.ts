@@ -20,7 +20,7 @@ export type CanvasCardData = {
     owner: string,
     description: string,
     publicity: Publicity,
-    thumbnail: string
+    thumbnail: string | null,
 }
 
 export type CanvasData = {
@@ -34,6 +34,10 @@ export type CanvasData = {
     backgroundColor: vec3,
     ambientStrength: number,
     pointLightStrength: number,
+    viewerRef: vec3,
+    viewerTheta: number,
+    viewerPhi: number,
+    viewerR: number,
     voxels: Voxel[]
 }
 
@@ -49,6 +53,10 @@ export type CanvasDataSave = {
     ambientStrength: number,
     pointLightStrength: number,
     voxels: string,
+    viewerRef: vec3,
+    viewerTheta: number,
+    viewerPhi: number,
+    viewerR: number,
     canvasThumbnail: string
 }
 
@@ -58,6 +66,8 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
     if (!canvasState || !canvasState.canvas || !canvasState.scene) {
         return { isCanvasSaved: false, errorMessage: "No scene attached." };
     }
+
+    canvasState.camera
 
     let voxelsStringArray: string[] = [];
     for (let y = 0; y < canvasState.divisionFactor; y++) {
@@ -113,6 +123,10 @@ export async function saveCanvas(canvasId: string | null, name: string, descript
         "ambientStrength": canvasState.ambienceStrength,
         "pointLightStrength": canvasState.sunStrength,
         "voxels": voxelsString,
+        "viewerRef": canvasState.camera.viewerRef,
+        "viewerTheta": canvasState.camera.viewerTheta,
+        "viewerPhi": canvasState.camera.viewerPhi,
+        "viewerR": canvasState.camera.viewerR,
         "canvasThumbnail": canvasThumbnail
     };
 
