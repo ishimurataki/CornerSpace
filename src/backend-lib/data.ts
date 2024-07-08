@@ -15,6 +15,14 @@ export enum Publicity {
     Private
 }
 
+export type CanvasCardData = {
+    name: string,
+    owner: string,
+    description: string,
+    publicity: Publicity,
+    thumbnail: string
+}
+
 export type CanvasData = {
     name: string,
     owner: string,
@@ -26,8 +34,7 @@ export type CanvasData = {
     backgroundColor: vec3,
     ambientStrength: number,
     pointLightStrength: number,
-    voxels: Voxel[],
-    canvasThumbnail: string
+    voxels: Voxel[]
 }
 
 export type CanvasDataSave = {

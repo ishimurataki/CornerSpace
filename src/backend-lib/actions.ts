@@ -7,7 +7,7 @@ import { Amplify } from "aws-amplify";
 import { AuthError, confirmSignUp, fetchAuthSession, signUp } from "aws-amplify/auth";
 import { downloadData, uploadData } from 'aws-amplify/storage';
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
-import { CanvasData, CanvasDataSave, Publicity } from "./data";
+import { CanvasCardData, CanvasData, CanvasDataSave, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 import { unstable_noStore } from "next/cache";
@@ -107,6 +107,42 @@ function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, error
     return { valid: true, errorMessage: null };
 }
 
+export async function loadCanvasCardDataServer(canvasId: string):
+    Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
+    const { data: canvasData, errors: getCanvasErrors } =
+        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
+
+    if (getCanvasErrors) {
+        return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "500 - Internal Server Error." }
+    }
+    if (canvasData.length == 0) {
+        return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "Invalid canvasId." }
+    }
+    const canvas = canvasData[0];
+    const username = canvas.owner;
+
+    try {
+        const canvasThumbailDownloadResult = await downloadData({
+            path: `canvasThumbnails/${username}/${canvasId}`,
+        }).result;
+        const canvasThumbnailString = await canvasThumbailDownloadResult.body.text();
+
+        const canvasCardData: CanvasCardData = {
+            name: canvas.name,
+            owner: canvas.owner,
+            description: canvas.description ? canvas.description : "",
+            publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
+            thumbnail: canvasThumbnailString,
+        };
+
+        return { isCanvasLoaded: true, canvasCardData: canvasCardData, errorMessage: null }
+    } catch (e) {
+        console.log(e);
+        return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "500 - Internal Server Error." }
+    }
+}
+
+
 export async function loadCanvasServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
 
@@ -151,8 +187,7 @@ export async function loadCanvasServer(canvasId: string):
             backgroundColor: hexToRgb(canvasDataJson.backgroundColor),
             ambientStrength: canvasDataJson.ambientStrength,
             pointLightStrength: canvasDataJson.pointLightStrength,
-            voxels: voxels,
-            canvasThumbnail: canvasDataJson.canvasThumbnail,
+            voxels: voxels
         };
 
         return { isCanvasLoaded: true, canvasData: canvasData, errorMessage: null }
@@ -217,8 +252,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         "backgroundColor": rgbToHex(canvasData.backgroundColor),
         "ambientStrength": canvasData.ambientStrength,
         "pointLightStrength": canvasData.pointLightStrength,
-        "voxels": voxelsString,
-        "canvasThumbnail": canvasData.canvasThumbnail
+        "voxels": voxelsString
     });
 
     const publicity = canvasData.publicity == Publicity.Public ? "PUBLIC" : "PRIVATE";
@@ -249,11 +283,16 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
 
     // Save canvas to storage
     try {
-        const result = await uploadData({
+        const canvasDataUploadeResult = await uploadData({
             path: `canvases/${username}/${canvasId}`,
             data: canvasDataString,
         }).result;
-        console.log('Succeeded: ', result);
+        console.log('Succeeded canvas data upload: ', canvasDataUploadeResult);
+        const canvasThumbnailUploadResult = await uploadData({
+            path: `canvasThumbnails/${username}/${canvasId}`,
+            data: canvasData.canvasThumbnail
+        }).result;
+        console.log('Succeeded canvas thumbnail upload: ', canvasThumbnailUploadResult);
         return { isCanvasSaved: true, canvasId, errorMessage: null }
     } catch (error) {
         console.log('Error : ', error);
