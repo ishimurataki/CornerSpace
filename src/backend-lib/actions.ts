@@ -5,7 +5,7 @@ import { generateClient } from 'aws-amplify/data'
 import outputs from "@/../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { AuthError, confirmSignUp, fetchAuthSession, signUp } from "aws-amplify/auth";
-import { downloadData, uploadData } from 'aws-amplify/storage';
+import { downloadData, remove, uploadData } from 'aws-amplify/storage';
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import { CanvasCardData, CanvasData, CanvasDataSave, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
@@ -268,6 +268,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     const publicity = canvasData.publicity == Publicity.Public ? "PUBLIC" : "PRIVATE";
 
     // Save canvas to data
+    let canvasMetaDataSaveErrors: null | string = null;
     if (isNewCanvas) {
         const { errors, data: newCanvas } = await client.models.Canvases.create({
             owner: username,
@@ -276,19 +277,24 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
             description: canvasData.description,
             publicity: publicity
         });
-
         if (errors) {
-            console.log(errors);
-            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
+            canvasMetaDataSaveErrors = errors.toString();
         }
     } else {
-        await client.models.Canvases.update({
+        const { errors, data: oldCanvas } = await client.models.Canvases.update({
             owner: username,
             canvasId: canvasId,
             name: canvasData.name,
             description: canvasData.description,
             publicity: publicity
-        })
+        });
+        if (errors) {
+            canvasMetaDataSaveErrors = errors.toString();
+        }
+    }
+    if (canvasMetaDataSaveErrors) {
+        console.log(canvasMetaDataSaveErrors);
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
     }
 
     // Save canvas to storage
@@ -389,4 +395,57 @@ export async function getCanvasIdsForSignedInUserServer():
     }
     console.log(getCanvasForUserErrors);
     return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+}
+
+export async function deleteCanvasServer(canvasId: string):
+    Promise<{
+        isCanvasDeleted: boolean, errorMessage: string | null
+    }> {
+
+    // Confirm that user is signed in
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isCanvasDeleted: false, errorMessage: "User not authenticated." }
+    }
+
+    const { data: canvasData, errors: getCanvasErrors } =
+        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
+
+    if (getCanvasErrors) {
+        return { isCanvasDeleted: false, errorMessage: "500 - Internal Server Error." }
+    }
+
+    // Confirm signed in user is owner of the canvasId
+    if (canvasData.length == 0 || canvasData[0].owner != username) {
+        return { isCanvasDeleted: false, errorMessage: "Invalid canvasId." }
+    }
+
+    // Attempt to delete canvas meta data
+    const { errors: canvasMetaDataDeleteErrors } = await client.models.Canvases.delete({
+        owner: username,
+        canvasId: canvasId,
+    })
+    if (canvasMetaDataDeleteErrors) {
+        console.log(canvasMetaDataDeleteErrors);
+        return { isCanvasDeleted: false, errorMessage: "500 - Internal Server Error." }
+    }
+
+    // Attempt to delete canvas data from storage
+    try {
+        await remove({
+            path: `canvases/${username}/${canvasId}`,
+        });
+        console.log('Succeeded canvas data deletion');
+        await remove({
+            path: `canvasThumbnails/${username}/${canvasId}`,
+        });
+        console.log('Succeeded canvas thumbnail deletion');
+        return { isCanvasDeleted: true, errorMessage: null }
+    } catch (error) {
+        console.log('Error: ', error);
+        return { isCanvasDeleted: false, errorMessage: "500 - Internal Server Error." }
+    }
 }
