@@ -6,11 +6,15 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
+import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 
 export default async function App() {
 
+  const user = await fetchUserAttributesServer();
+  const signedIn = user != undefined;
+
   const { areCanvasIdsLoaded, username, canvasIds, errorMessage } = await getCanvasIdsForSignedInUserServer();
-  if (!areCanvasIdsLoaded || canvasIds == null || username == null) {
+  if (!signedIn || !areCanvasIdsLoaded || canvasIds == null || username == null) {
     console.log(errorMessage);
     redirect('signin');
   }
