@@ -1,5 +1,5 @@
 import { vec3, vec4, mat4 } from "@/lib/gl-matrix/index";
-import { Mode } from "@/lib/polar-camera";
+import { Axis, Mode } from "@/lib/polar-camera";
 import Scene from "@/lib/renderables/scene";
 import CanvasState, { EditToolModes, TracerMaterial } from "@/app/create/canvas-state";
 

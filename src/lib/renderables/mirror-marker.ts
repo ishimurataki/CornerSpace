@@ -6,14 +6,28 @@ export default class MirrorMarker extends Mesh {
 
     constructor(sideLength: number) {
         super();
-        let y = sideLength * 1.1;
+        let y = sideLength * 1.02;
         this.vertices = [
             0.0, y, 0.0,
             sideLength / 2.0, y, 0.0,
             sideLength, y, sideLength,
             sideLength, y, sideLength,
             sideLength / 2.0, y, 0.0,
-            sideLength, y, sideLength / 2.0
+            sideLength, y, sideLength / 2.0,
+
+            y, 0.0, 0.0,
+            y, sideLength / 2.0, 0.0,
+            y, sideLength, sideLength,
+            y, sideLength, sideLength,
+            y, sideLength / 2.0, 0.0,
+            y, sideLength, sideLength / 2.0,
+
+            0.0, 0.0, y,
+            sideLength / 2.0, 0.0, y,
+            sideLength, sideLength, y,
+            sideLength, sideLength, y,
+            sideLength / 2.0, 0.0, y,
+            sideLength, sideLength / 2.0, y
         ];
     }
 }
