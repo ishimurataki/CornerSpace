@@ -10,28 +10,9 @@ import outputs from "@/../../amplify_outputs.json";
 import { unstable_noStore as noStore } from 'next/cache';
 import { AuthError } from "aws-amplify/auth";
 
-const { runWithAmplifyServerContext } = createServerRunner({
+export const { runWithAmplifyServerContext } = createServerRunner({
     config: outputs
 });
-
-const cookiesClient = generateServerClientUsingCookies<Schema>({
-    config: outputs,
-    cookies,
-});
-
-export async function getCurrentUserServer() {
-    noStore();
-    try {
-        const currentUser = await runWithAmplifyServerContext({
-            nextServerContext: { cookies },
-            operation: (contextSpec) => getCurrentUser(contextSpec),
-        });
-        return currentUser;
-    } catch (error) {
-        console.error(error);
-        return undefined;
-    }
-}
 
 export async function fetchUserAttributesServer() {
     noStore();

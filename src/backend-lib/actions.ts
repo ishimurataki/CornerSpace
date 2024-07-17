@@ -12,9 +12,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 import { unstable_noStore } from "next/cache";
 
+import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data';
+import { cookies } from 'next/headers';
+
 Amplify.configure(outputs, { ssr: true });
 
-const client = generateClient<Schema>();
+const guestClient = generateClient<Schema>();
+const cookieBasedClient = generateServerClientUsingCookies<Schema>({
+    config: outputs,
+    cookies
+});
 
 type User = {
     username: string,
@@ -24,7 +31,7 @@ type User = {
 }
 
 async function isUsernameTaken(username: string) {
-    const { errors, data: user } = await client.models.Users.get(
+    const { errors, data: user } = await guestClient.models.Users.get(
         { username },
         {
             selectionSet: ['username'],
@@ -103,7 +110,7 @@ function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, error
 export async function loadCanvasCardDataServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
     const { data: canvasData, errors: getCanvasErrors } =
-        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
+        await guestClient.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
 
     if (getCanvasErrors) {
         return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "500 - Internal Server Error." }
@@ -142,7 +149,7 @@ export async function loadCanvasServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasData: CanvasData | null, errorMessage: string | null }> {
 
     const { data: canvasData, errors: getCanvasErrors } =
-        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
+        await guestClient.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
 
     if (getCanvasErrors) {
         return { isCanvasLoaded: false, canvasData: null, errorMessage: "500 - Internal Server Error." }
@@ -219,7 +226,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
 
     // Obtain correct canvasId
     const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await client.queries.getCanvasesForUser({ user: username });
+        await guestClient.queries.getCanvasesForUser({ user: username });
     if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
         console.log(getCanvasForUserErrors);
         return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
@@ -229,7 +236,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
         return { isCanvasSaved: false, canvasId, errorMessage: "Invalid canvas ID." }
     } else if (!canvasId) {
-        const { data: user, errors: usersGetErrors } = await client.models.Users.get(
+        const { data: user, errors: usersGetErrors } = await guestClient.models.Users.get(
             { username },
             { authMode: 'identityPool' }
         );
@@ -269,7 +276,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     let canvasMetaDataSaveErrors: null | string = null;
     if (isNewCanvas) {
         console.log("Here 3")
-        const { errors, data: newCanvas } = await client.models.Canvases.create(
+        const { errors, data: newCanvas } = await guestClient.models.Canvases.create(
             {
                 ownerUsername: username,
                 canvasId: canvasId,
@@ -284,7 +291,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         }
     } else {
         console.log("Here 3")
-        const { errors, data: oldCanvas } = await client.models.Canvases.update(
+        const { errors, data: oldCanvas } = await guestClient.models.Canvases.update(
             {
                 ownerUsername: username,
                 canvasId: canvasId,
@@ -335,7 +342,7 @@ export async function testServer() {
         return;
     }
 
-    const { data: canvases, errors } = await client.queries.getCanvasesForUser({ user: username });
+    const { data: canvases, errors } = await guestClient.queries.getCanvasesForUser({ user: username });
     if (canvases) {
         console.log(Object.keys(canvases));
     }
@@ -343,7 +350,7 @@ export async function testServer() {
 
 export async function doesUserExist(username: string) {
     if (!username) return false;
-    const { errors, data: user } = await client.models.Users.get(
+    const { errors, data: user } = await guestClient.models.Users.get(
         { username },
         {
             selectionSet: ['username'],
@@ -362,7 +369,7 @@ export async function getPublicCanvasIdsForUserServer(username: string):
         canvasIds: string[] | null, errorMessage: string | null
     }> {
     const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await client.queries.getCanvasesForUser({ user: username });
+        await guestClient.queries.getCanvasesForUser({ user: username });
 
     if (canvasesData) {
         const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
@@ -393,7 +400,7 @@ export async function getCanvasIdsForSignedInUserServer():
     }
 
     const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await client.queries.getCanvasesForUser({ user: username });
+        await guestClient.queries.getCanvasesForUser({ user: username });
 
     if (canvasesData) {
         const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
@@ -424,7 +431,7 @@ export async function deleteCanvasServer(canvasId: string):
     }
 
     const { data: canvasData, errors: getCanvasErrors } =
-        await client.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
+        await guestClient.models.Canvases.listCanvasesByCanvasId({ canvasId: canvasId });
 
     if (getCanvasErrors) {
         return { isCanvasDeleted: false, errorMessage: "500 - Internal Server Error." }
@@ -436,7 +443,7 @@ export async function deleteCanvasServer(canvasId: string):
     }
 
     // Attempt to delete canvas meta data
-    const { errors: canvasMetaDataDeleteErrors } = await client.models.Canvases.delete({
+    const { errors: canvasMetaDataDeleteErrors } = await guestClient.models.Canvases.delete({
         ownerUsername: username,
         canvasId: canvasId,
     })
@@ -460,4 +467,33 @@ export async function deleteCanvasServer(canvasId: string):
         console.log('Error: ', error);
         return { isCanvasDeleted: false, errorMessage: "500 - Internal Server Error." }
     }
+}
+
+export async function getNumberOfCanvasesForSignedInUserServer():
+    Promise<{
+        numberOfCanvases: number | null, errorMessage: string | null
+    }> {
+
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { numberOfCanvases: null, errorMessage: "User not authenticated." }
+    }
+
+    const { errors, data: user } = await cookieBasedClient.models.Users.get(
+        { username },
+        {
+            selectionSet: ['numberOfCanvases'],
+            authMode: "userPool"
+        }
+    );
+    if (user?.numberOfCanvases) {
+        return { numberOfCanvases: user.numberOfCanvases, errorMessage: null };
+    }
+    if (errors) {
+        console.log(errors);
+    }
+    return { numberOfCanvases: null, errorMessage: "500 - Internal Server Error." }
 }
