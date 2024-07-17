@@ -24,24 +24,17 @@ type User = {
 }
 
 async function isUsernameTaken(username: string) {
-    const { errors, data: user } = await client.models.Users.get({ username });
+    const { errors, data: user } = await client.models.Users.get(
+        { username },
+        {
+            selectionSet: ['username'],
+            authMode: "identityPool"
+        });
     if (errors) {
         console.log(errors);
         throw (new Error("500 - Internal Server Error."));
     }
     return Object.keys(user as User).length > 0;
-}
-
-async function createUser(username: string) {
-    const { errors, data: newUser } = await client.models.Users.create({
-        username,
-    });
-    if (!errors) {
-        console.log(`Created user ${(newUser as User).username} in Users DDB table.`);
-        return true;
-    }
-    console.log(errors);
-    return false;
 }
 
 export async function signUpServer(username: string, email: string, password: string)
@@ -81,7 +74,7 @@ export async function confirmSignUpServer(username: string, userId: string, conf
             username: userId,
             confirmationCode
         });
-        if (isSignUpComplete && await createUser(username)) {
+        if (isSignUpComplete) {
             return { isSignedUp: true, errorMessage: null };
         }
         return { isSignedUp: false, errorMessage: "500 - Internal Server Error." }
@@ -123,7 +116,7 @@ export async function loadCanvasCardDataServer(canvasId: string):
 
     const canvasCardData: CanvasCardData = {
         name: canvas.name,
-        owner: canvas.owner,
+        owner: canvas.ownerUsername,
         description: canvas.description ? canvas.description : "",
         publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
         thumbnail: null
@@ -180,7 +173,7 @@ export async function loadCanvasServer(canvasId: string):
 
         const canvasData: CanvasData = {
             name: canvas.name,
-            owner: canvas.owner,
+            owner: canvas.ownerUsername,
             description: canvas.description ? canvas.description : "",
             publicity: canvas.publicity == "PRIVATE" ? Publicity.Private : Publicity.Public,
             version: canvasDataJson.version,
@@ -236,8 +229,13 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
         return { isCanvasSaved: false, canvasId, errorMessage: "Invalid canvas ID." }
     } else if (!canvasId) {
-        const { data: user, errors: usersGetErrors } = await client.models.Users.get({ username });
+        const { data: user, errors: usersGetErrors } = await client.models.Users.get(
+            { username },
+            { authMode: 'identityPool' }
+        );
+        console.log("Here 1")
         if (usersGetErrors) {
+            console.log("Here 2")
             console.log(usersGetErrors);
             return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
         }
@@ -270,29 +268,38 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     // Save canvas to data
     let canvasMetaDataSaveErrors: null | string = null;
     if (isNewCanvas) {
-        const { errors, data: newCanvas } = await client.models.Canvases.create({
-            owner: username,
-            canvasId: canvasId,
-            name: canvasData.name,
-            description: canvasData.description,
-            publicity: publicity
-        });
+        console.log("Here 3")
+        const { errors, data: newCanvas } = await client.models.Canvases.create(
+            {
+                ownerUsername: username,
+                canvasId: canvasId,
+                name: canvasData.name,
+                description: canvasData.description,
+                publicity: publicity
+            },
+            { authMode: "userPool" }
+        );
         if (errors) {
             canvasMetaDataSaveErrors = errors.toString();
         }
     } else {
-        const { errors, data: oldCanvas } = await client.models.Canvases.update({
-            owner: username,
-            canvasId: canvasId,
-            name: canvasData.name,
-            description: canvasData.description,
-            publicity: publicity
-        });
+        console.log("Here 3")
+        const { errors, data: oldCanvas } = await client.models.Canvases.update(
+            {
+                ownerUsername: username,
+                canvasId: canvasId,
+                name: canvasData.name,
+                description: canvasData.description,
+                publicity: publicity
+            },
+            { authMode: "userPool" }
+        );
         if (errors) {
             canvasMetaDataSaveErrors = errors.toString();
         }
     }
     if (canvasMetaDataSaveErrors) {
+        console.log("Here 4")
         console.log(canvasMetaDataSaveErrors);
         return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
     }
@@ -336,7 +343,12 @@ export async function testServer() {
 
 export async function doesUserExist(username: string) {
     if (!username) return false;
-    const { errors, data: user } = await client.models.Users.get({ username });
+    const { errors, data: user } = await client.models.Users.get(
+        { username },
+        {
+            selectionSet: ['username'],
+            authMode: "identityPool"
+        });
     if (errors) {
         console.log(errors);
         throw (new Error("500 - Internal Server Error."));
@@ -425,7 +437,7 @@ export async function deleteCanvasServer(canvasId: string):
 
     // Attempt to delete canvas meta data
     const { errors: canvasMetaDataDeleteErrors } = await client.models.Canvases.delete({
-        owner: username,
+        ownerUsername: username,
         canvasId: canvasId,
     })
     if (canvasMetaDataDeleteErrors) {

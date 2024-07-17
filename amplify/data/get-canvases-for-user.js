@@ -2,8 +2,8 @@ export function request(ctx) {
   return {
     operation: 'Query',
     query: {
-      expression: '#owner = :user',
-      expressionNames: { '#owner': 'owner' },
+      expression: '#ownerUsername = :user',
+      expressionNames: { '#ownerUsername': 'ownerUsername' },
       expressionValues: util.dynamodb.toMapValues({ ':user': ctx.args.user }),
     }
   };
