@@ -8,17 +8,11 @@ export type Canvases = {
   createdAt: string,
   description?: string | null,
   name: string,
-  owner?: string | null,
+  ownerCognitoId?: string | null,
   ownerUsername: string,
-  publicity?: CanvasesPublicity | null,
+  publicity?: string | null,
   updatedAt: string,
 };
-
-export enum CanvasesPublicity {
-  PRIVATE = "PRIVATE",
-  PUBLIC = "PUBLIC",
-}
-
 
 export type Users = {
   __typename: "Users",
@@ -48,9 +42,9 @@ export type ModelCanvasesFilterInput = {
   name?: ModelStringInput | null,
   not?: ModelCanvasesFilterInput | null,
   or?: Array< ModelCanvasesFilterInput | null > | null,
-  owner?: ModelStringInput | null,
+  ownerCognitoId?: ModelStringInput | null,
   ownerUsername?: ModelIDInput | null,
-  publicity?: ModelCanvasesPublicityInput | null,
+  publicity?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
 };
 
@@ -110,11 +104,6 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
-export type ModelCanvasesPublicityInput = {
-  eq?: CanvasesPublicity | null,
-  ne?: CanvasesPublicity | null,
-};
-
 export enum ModelSortDirection {
   ASC = "ASC",
   DESC = "DESC",
@@ -164,8 +153,8 @@ export type ModelCanvasesConditionInput = {
   name?: ModelStringInput | null,
   not?: ModelCanvasesConditionInput | null,
   or?: Array< ModelCanvasesConditionInput | null > | null,
-  owner?: ModelStringInput | null,
-  publicity?: ModelCanvasesPublicityInput | null,
+  ownerCognitoId?: ModelStringInput | null,
+  publicity?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
 };
 
@@ -173,8 +162,9 @@ export type CreateCanvasesInput = {
   canvasId: string,
   description?: string | null,
   name: string,
+  ownerCognitoId?: string | null,
   ownerUsername: string,
-  publicity?: CanvasesPublicity | null,
+  publicity?: string | null,
 };
 
 export type ModelUsersConditionInput = {
@@ -206,8 +196,9 @@ export type UpdateCanvasesInput = {
   canvasId: string,
   description?: string | null,
   name?: string | null,
+  ownerCognitoId?: string | null,
   ownerUsername: string,
-  publicity?: CanvasesPublicity | null,
+  publicity?: string | null,
 };
 
 export type UpdateUsersInput = {
@@ -224,7 +215,7 @@ export type ModelSubscriptionCanvasesFilterInput = {
   id?: ModelSubscriptionIDInput | null,
   name?: ModelSubscriptionStringInput | null,
   or?: Array< ModelSubscriptionCanvasesFilterInput | null > | null,
-  owner?: ModelStringInput | null,
+  ownerCognitoId?: ModelStringInput | null,
   ownerUsername?: ModelSubscriptionIDInput | null,
   publicity?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
@@ -295,9 +286,9 @@ export type GetCanvasesQuery = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -313,9 +304,9 @@ export type GetCanvasesForUserQuery = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null > | null,
 };
@@ -353,9 +344,9 @@ export type ListCanvasesQuery = {
       createdAt: string,
       description?: string | null,
       name: string,
-      owner?: string | null,
+      ownerCognitoId?: string | null,
       ownerUsername: string,
-      publicity?: CanvasesPublicity | null,
+      publicity?: string | null,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -379,9 +370,9 @@ export type ListCanvasesByCanvasIdQuery = {
       createdAt: string,
       description?: string | null,
       name: string,
-      owner?: string | null,
+      ownerCognitoId?: string | null,
       ownerUsername: string,
-      publicity?: CanvasesPublicity | null,
+      publicity?: string | null,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -411,6 +402,19 @@ export type ListUsersQuery = {
   } | null,
 };
 
+export type CreateCanvasForUserMutationVariables = {
+  canvasData: string,
+  canvasId?: string | null,
+  description: string,
+  name: string,
+  ownerUsername: string,
+  publicity: string,
+};
+
+export type CreateCanvasForUserMutation = {
+  createCanvasForUser?: string | null,
+};
+
 export type CreateCanvasesMutationVariables = {
   condition?: ModelCanvasesConditionInput | null,
   input: CreateCanvasesInput,
@@ -423,9 +427,9 @@ export type CreateCanvasesMutation = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -458,9 +462,9 @@ export type DeleteCanvasesMutation = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -493,9 +497,9 @@ export type UpdateCanvasesMutation = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -518,7 +522,7 @@ export type UpdateUsersMutation = {
 
 export type OnCreateCanvasesSubscriptionVariables = {
   filter?: ModelSubscriptionCanvasesFilterInput | null,
-  owner?: string | null,
+  ownerCognitoId?: string | null,
 };
 
 export type OnCreateCanvasesSubscription = {
@@ -528,9 +532,9 @@ export type OnCreateCanvasesSubscription = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -553,7 +557,7 @@ export type OnCreateUsersSubscription = {
 
 export type OnDeleteCanvasesSubscriptionVariables = {
   filter?: ModelSubscriptionCanvasesFilterInput | null,
-  owner?: string | null,
+  ownerCognitoId?: string | null,
 };
 
 export type OnDeleteCanvasesSubscription = {
@@ -563,9 +567,9 @@ export type OnDeleteCanvasesSubscription = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };
@@ -588,7 +592,7 @@ export type OnDeleteUsersSubscription = {
 
 export type OnUpdateCanvasesSubscriptionVariables = {
   filter?: ModelSubscriptionCanvasesFilterInput | null,
-  owner?: string | null,
+  ownerCognitoId?: string | null,
 };
 
 export type OnUpdateCanvasesSubscription = {
@@ -598,9 +602,9 @@ export type OnUpdateCanvasesSubscription = {
     createdAt: string,
     description?: string | null,
     name: string,
-    owner?: string | null,
+    ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: CanvasesPublicity | null,
+    publicity?: string | null,
     updatedAt: string,
   } | null,
 };

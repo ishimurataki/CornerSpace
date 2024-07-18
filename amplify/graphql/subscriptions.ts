@@ -10,14 +10,14 @@ type GeneratedSubscription<InputType, OutputType> = string & {
 
 export const onCreateCanvases = /* GraphQL */ `subscription OnCreateCanvases(
   $filter: ModelSubscriptionCanvasesFilterInput
-  $owner: String
+  $ownerCognitoId: String
 ) {
-  onCreateCanvases(filter: $filter, owner: $owner) {
+  onCreateCanvases(filter: $filter, ownerCognitoId: $ownerCognitoId) {
     canvasId
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -47,14 +47,14 @@ export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
 >;
 export const onDeleteCanvases = /* GraphQL */ `subscription OnDeleteCanvases(
   $filter: ModelSubscriptionCanvasesFilterInput
-  $owner: String
+  $ownerCognitoId: String
 ) {
-  onDeleteCanvases(filter: $filter, owner: $owner) {
+  onDeleteCanvases(filter: $filter, ownerCognitoId: $ownerCognitoId) {
     canvasId
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -84,14 +84,14 @@ export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
 >;
 export const onUpdateCanvases = /* GraphQL */ `subscription OnUpdateCanvases(
   $filter: ModelSubscriptionCanvasesFilterInput
-  $owner: String
+  $ownerCognitoId: String
 ) {
-  onUpdateCanvases(filter: $filter, owner: $owner) {
+  onUpdateCanvases(filter: $filter, ownerCognitoId: $ownerCognitoId) {
     canvasId
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt

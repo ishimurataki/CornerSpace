@@ -8,6 +8,27 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
+export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
+  $canvasData: String!
+  $canvasId: String
+  $description: String!
+  $name: String!
+  $ownerUsername: String!
+  $publicity: String!
+) {
+  createCanvasForUser(
+    canvasData: $canvasData
+    canvasId: $canvasId
+    description: $description
+    name: $name
+    ownerUsername: $ownerUsername
+    publicity: $publicity
+  )
+}
+` as GeneratedMutation<
+  APITypes.CreateCanvasForUserMutationVariables,
+  APITypes.CreateCanvasForUserMutation
+>;
 export const createCanvases = /* GraphQL */ `mutation CreateCanvases(
   $condition: ModelCanvasesConditionInput
   $input: CreateCanvasesInput!
@@ -17,7 +38,7 @@ export const createCanvases = /* GraphQL */ `mutation CreateCanvases(
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -54,7 +75,7 @@ export const deleteCanvases = /* GraphQL */ `mutation DeleteCanvases(
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -91,7 +112,7 @@ export const updateCanvases = /* GraphQL */ `mutation UpdateCanvases(
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt

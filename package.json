@@ -11,6 +11,8 @@
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.0.28",
     "@aws-amplify/ui-react": "^6.1.9",
+    "@aws-sdk/client-dynamodb": "^3.614.0",
+    "@aws-sdk/lib-dynamodb": "^3.614.0",
     "@heroicons/react": "^2.1.1",
     "aws-amplify": "^6.2.0",
     "clsx": "^2.1.0",

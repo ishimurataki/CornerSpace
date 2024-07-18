@@ -11,7 +11,6 @@ import { CanvasCardData, CanvasData, CanvasDataSave, Publicity } from "./data";
 import { v4 as uuidv4 } from 'uuid';
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 import { unstable_noStore } from "next/cache";
-
 import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data';
 import { cookies } from 'next/headers';
 
@@ -119,7 +118,7 @@ export async function loadCanvasCardDataServer(canvasId: string):
         return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "Invalid canvasId." }
     }
     const canvas = canvasData[0];
-    const username = canvas.owner;
+    const username = canvas.ownerUsername;
 
     const canvasCardData: CanvasCardData = {
         name: canvas.name,
@@ -158,7 +157,7 @@ export async function loadCanvasServer(canvasId: string):
         return { isCanvasLoaded: false, canvasData: null, errorMessage: "Invalid canvasId." }
     }
     const canvas = canvasData[0];
-    const username = canvas.owner;
+    const username = canvas.ownerUsername;
 
     try {
         const canvasDataDownloadResult = await downloadData({
@@ -224,38 +223,7 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         return { isCanvasSaved: false, canvasId, errorMessage };
     }
 
-    // Obtain correct canvasId
-    const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await guestClient.queries.getCanvasesForUser({ user: username });
-    if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
-        console.log(getCanvasForUserErrors);
-        return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
-    }
-
-    const canvases = Object.values(canvasesData);
-    if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
-        return { isCanvasSaved: false, canvasId, errorMessage: "Invalid canvas ID." }
-    } else if (!canvasId) {
-        const { data: user, errors: usersGetErrors } = await guestClient.models.Users.get(
-            { username },
-            { authMode: 'identityPool' }
-        );
-        console.log("Here 1")
-        if (usersGetErrors) {
-            console.log("Here 2")
-            console.log(usersGetErrors);
-            return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
-        }
-        const maxNumberOfCanvases = (user as User).numberOfCanvases;
-        const currentNumberOfCanvases = canvases.length;
-        if (currentNumberOfCanvases >= maxNumberOfCanvases) {
-            return { isCanvasSaved: false, canvasId, errorMessage: "Max number of canvases reached." }
-        }
-        canvasId = uuidv4();
-    }
-
     let voxelsString: string[] = JSON.parse(canvasData.voxels);
-
     const canvasDataString = JSON.stringify({
         "version": canvasData.version,
         "dimension": canvasData.dimension,
@@ -269,65 +237,112 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
         "viewerR": canvasData.viewerR,
         "voxels": voxelsString
     });
-
     const publicity = canvasData.publicity == Publicity.Public ? "PUBLIC" : "PRIVATE";
 
-    // Save canvas to data
-    let canvasMetaDataSaveErrors: null | string = null;
-    if (isNewCanvas) {
-        console.log("Here 3")
-        const { errors, data: newCanvas } = await guestClient.models.Canvases.create(
-            {
-                ownerUsername: username,
-                canvasId: canvasId,
-                name: canvasData.name,
-                description: canvasData.description,
-                publicity: publicity
-            },
-            { authMode: "userPool" }
-        );
-        if (errors) {
-            canvasMetaDataSaveErrors = errors.toString();
+    const createCanvasForUserReturnedString = await cookieBasedClient.mutations.createCanvasForUser(
+        {
+            ownerUsername: username,
+            canvasId: canvasId,
+            name: canvasData.name,
+            description: canvasData.description,
+            publicity: publicity,
+            canvasData: canvasDataString
+        },
+        {
+            authMode: "userPool"
         }
-    } else {
-        console.log("Here 3")
-        const { errors, data: oldCanvas } = await guestClient.models.Canvases.update(
-            {
-                ownerUsername: username,
-                canvasId: canvasId,
-                name: canvasData.name,
-                description: canvasData.description,
-                publicity: publicity
-            },
-            { authMode: "userPool" }
-        );
-        if (errors) {
-            canvasMetaDataSaveErrors = errors.toString();
-        }
-    }
-    if (canvasMetaDataSaveErrors) {
-        console.log("Here 4")
-        console.log(canvasMetaDataSaveErrors);
-        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
-    }
+    );
+    console.log("HERE IS THE RETURN VALUE");
+    console.log(createCanvasForUserReturnedString);
 
-    // Save canvas to storage
-    try {
-        const canvasDataUploadeResult = await uploadData({
-            path: `canvases/${username}/${canvasId}`,
-            data: canvasDataString,
-        }).result;
-        console.log('Succeeded canvas data upload: ', canvasDataUploadeResult);
-        const canvasThumbnailUploadResult = await uploadData({
-            path: `canvasThumbnails/${username}/${canvasId}`,
-            data: canvasData.canvasThumbnail
-        }).result;
-        console.log('Succeeded canvas thumbnail upload: ', canvasThumbnailUploadResult);
-        return { isCanvasSaved: true, canvasId, errorMessage: null }
-    } catch (error) {
-        console.log('Error : ', error);
-        return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." }
-    }
+    return { isCanvasSaved: false, canvasId, errorMessage: "Not yet fully implemented" }
+
+    // Obtain correct canvasId
+    // const { data: canvasesData, errors: getCanvasForUserErrors } =
+    //     await guestClient.queries.getCanvasesForUser({ user: username });
+    // if (getCanvasForUserErrors || canvasesData == undefined || canvasesData == null) {
+    //     console.log(getCanvasForUserErrors);
+    //     return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
+    // }
+
+    // const canvases = Object.values(canvasesData);
+    // if (canvasId && !canvases.some((canvas) => canvas?.canvasId == canvasId)) {
+    //     return { isCanvasSaved: false, canvasId, errorMessage: "Invalid canvas ID." }
+    // } else if (!canvasId) {
+    //     const { data: user, errors: usersGetErrors } = await guestClient.models.Users.get(
+    //         { username },
+    //         { authMode: 'identityPool' }
+    //     );
+    //     console.log("Here 1")
+    //     if (usersGetErrors) {
+    //         console.log("Here 2")
+    //         console.log(usersGetErrors);
+    //         return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." };
+    //     }
+    //     const maxNumberOfCanvases = (user as User).numberOfCanvases;
+    //     const currentNumberOfCanvases = canvases.length;
+    //     if (currentNumberOfCanvases >= maxNumberOfCanvases) {
+    //         return { isCanvasSaved: false, canvasId, errorMessage: "Max number of canvases reached." }
+    //     }
+    //     canvasId = uuidv4();
+    // }
+
+    // Save canvas to data
+    // let canvasMetaDataSaveErrors: null | string = null;
+    // if (isNewCanvas) {
+    //     console.log("Here 3")
+    //     const { errors, data: newCanvas } = await guestClient.models.Canvases.create(
+    //         {
+    //             ownerUsername: username,
+    //             canvasId: canvasId,
+    //             name: canvasData.name,
+    //             description: canvasData.description,
+    //             publicity: publicity
+    //         },
+    //         { authMode: "userPool" }
+    //     );
+    //     if (errors) {
+    //         canvasMetaDataSaveErrors = errors.toString();
+    //     }
+    // } else {
+    //     console.log("Here 3")
+    //     const { errors, data: oldCanvas } = await guestClient.models.Canvases.update(
+    //         {
+    //             ownerUsername: username,
+    //             canvasId: canvasId,
+    //             name: canvasData.name,
+    //             description: canvasData.description,
+    //             publicity: publicity
+    //         },
+    //         { authMode: "userPool" }
+    //     );
+    //     if (errors) {
+    //         canvasMetaDataSaveErrors = errors.toString();
+    //     }
+    // }
+    // if (canvasMetaDataSaveErrors) {
+    //     console.log("Here 4")
+    //     console.log(canvasMetaDataSaveErrors);
+    //     return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." }
+    // }
+
+    // // Save canvas to storage
+    // try {
+    //     const canvasDataUploadeResult = await uploadData({
+    //         path: `canvases/${username}/${canvasId}`,
+    //         data: canvasDataString,
+    //     }).result;
+    //     console.log('Succeeded canvas data upload: ', canvasDataUploadeResult);
+    //     const canvasThumbnailUploadResult = await uploadData({
+    //         path: `canvasThumbnails/${username}/${canvasId}`,
+    //         data: canvasData.canvasThumbnail
+    //     }).result;
+    //     console.log('Succeeded canvas thumbnail upload: ', canvasThumbnailUploadResult);
+    //     return { isCanvasSaved: true, canvasId, errorMessage: null }
+    // } catch (error) {
+    //     console.log('Error : ', error);
+    //     return { isCanvasSaved: false, canvasId, errorMessage: "500 - Internal Server Error." }
+    // }
 }
 
 export async function testServer() {
@@ -342,9 +357,19 @@ export async function testServer() {
         return;
     }
 
-    const { data: canvases, errors } = await guestClient.queries.getCanvasesForUser({ user: username });
-    if (canvases) {
-        console.log(Object.keys(canvases));
+    const { errors, data } = await cookieBasedClient.models.Users.create(
+        {
+            username: "testusername"
+        },
+        {
+            authMode: "userPool"
+        }
+    );
+    if (errors) {
+        console.log(errors);
+    }
+    if (data) {
+        console.log(data);
     }
 }
 
@@ -438,7 +463,7 @@ export async function deleteCanvasServer(canvasId: string):
     }
 
     // Confirm signed in user is owner of the canvasId
-    if (canvasData.length == 0 || canvasData[0].owner != username) {
+    if (canvasData.length == 0 || canvasData[0].ownerUsername != username) {
         return { isCanvasDeleted: false, errorMessage: "Invalid canvasId." }
     }
 

@@ -14,7 +14,7 @@ export const getCanvases = /* GraphQL */ `query GetCanvases($canvasId: String!, 
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -31,7 +31,7 @@ export const getCanvasesForUser = /* GraphQL */ `query GetCanvasesForUser($user:
     createdAt
     description
     name
-    owner
+    ownerCognitoId
     ownerUsername
     publicity
     updatedAt
@@ -74,7 +74,7 @@ export const listCanvases = /* GraphQL */ `query ListCanvases(
       createdAt
       description
       name
-      owner
+      ownerCognitoId
       ownerUsername
       publicity
       updatedAt
@@ -107,7 +107,7 @@ export const listCanvasesByCanvasId = /* GraphQL */ `query ListCanvasesByCanvasI
       createdAt
       description
       name
-      owner
+      ownerCognitoId
       ownerUsername
       publicity
       updatedAt

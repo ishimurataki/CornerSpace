@@ -7,7 +7,6 @@ import { Suspense } from "react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
-import { number } from "zod";
 
 export default async function App() {
 
