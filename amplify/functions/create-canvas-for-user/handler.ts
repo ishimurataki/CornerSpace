@@ -5,6 +5,7 @@ import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/create-canvas-for-user';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { getUsers } from '../../graphql/queries';
 import { createCanvases, updateCanvases } from '../../graphql/mutations';
@@ -44,18 +45,36 @@ const dataClient = generateClient<Schema>({
 const dynamoDBClient = new DynamoDBClient({});
 const dynamoDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
 
+const s3Client = new S3Client();
+
 export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (event, context) => {
     // your function code goes here
-    const { ownerUsername, canvasId, name, description, publicity, canvasData } = event.arguments;
+    const { ownerUsername, canvasId, name, description, publicity, canvasData, canvasThumbail } = event.arguments;
     const isNewCanvas = !canvasId;
     let newCanvasId: string = canvasId ? canvasId : "";
 
-    console.log("starting createCanvasForUser lambda function invocation with arguments:")
-    console.log(ownerUsername);
-    console.log(canvasId);
-    console.log(canvasData);
+    console.log(`Starting createCanvasForUser lambda function invocation for ${ownerUsername}.`)
 
     const ownerCognitoId = (event.identity as AppSyncIdentityCognito).username;
+    const { data: getUserData, errors: getUserErrors } = await dataClient.graphql({
+        query: getUsers,
+        variables: {
+            username: ownerUsername
+        },
+    });
+    if (getUserErrors || !getUserData.getUsers) {
+        console.log(getUserErrors);
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
+    }
+    if (!getUserData.getUsers.cognitoId) {
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - User cognitoId unavailable." };
+    }
+    if (getUserData.getUsers.cognitoId !== ownerCognitoId) {
+        return {
+            isCanvasSaved: false, canvasId: null,
+            errorMessage: "400 - Authenticated user does not match requested username."
+        };
+    }
 
     // Obtain correct canvasId
     const queryCommand = new QueryCommand({
@@ -71,38 +90,26 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
 
     const response = await dynamoDocClient.send(queryCommand);
     if (response.$metadata.httpStatusCode !== 200 || !response.Items) {
-        console.log("500 - Internal Server Error. DDB query command failed.");
-        return "500 - Internal Server Error. DDB query command failed.";
+        console.log("DDB query command failed.");
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - User cognitoId unavailable." };
     }
     const canvases = response.Items;
     if (canvasId && !canvases.some((canvas) => canvas.canvasId == canvasId)) {
-        return "Invalid canvas ID."
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "400 - Invalid canvas ID." };
     } else if (!canvasId) {
-        const { data: getUserData, errors: getUsersError } = await dataClient.graphql({
-            query: getUsers,
-            variables: {
-                username: ownerUsername
-            }
-        });
-        if (getUsersError || !getUserData.getUsers) {
-            return "500 - Internal Server Error." + getUsersError;
-        }
         if (!getUserData.getUsers.numberOfCanvases) {
-            return "User max canvas count unavailable."
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - User max canvas count unavailable." };
         }
         const maxNumberOfCanvases = getUserData.getUsers.numberOfCanvases;
         const currentNumberOfCanvases = canvases.length;
-        console.log("max number of canvases: " + maxNumberOfCanvases);
-        console.log("current number of canvases: " + currentNumberOfCanvases);
         if (currentNumberOfCanvases >= maxNumberOfCanvases) {
-            return "Max number of canvases reached."
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "400 - Max number of canvases reached." };
         }
         newCanvasId = uuidv4();
     }
 
     if (isNewCanvas) {
-        console.log("Here 3");
-        const result = await dataClient.graphql({
+        const { data: createCanvasData, errors: createCanvasErrors } = await dataClient.graphql({
             query: createCanvases,
             variables: {
                 input: {
@@ -115,10 +122,12 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
                 },
             },
         });
-        console.log(result);
+        if (createCanvasErrors) {
+            console.log(createCanvasErrors);
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
+        }
     } else {
-        console.log("Here 4");
-        const result = await dataClient.graphql({
+        const { data: updateCanvasData, errors: updateCanvasErrors } = await dataClient.graphql({
             query: updateCanvases,
             variables: {
                 input: {
@@ -131,8 +140,30 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
                 },
             }
         })
-        console.log(result);
+        if (updateCanvasErrors) {
+            console.log(updateCanvasErrors);
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
+        }
+    }
+    // Save canvas to storage
+    const canvasDataUploadCommand = new PutObjectCommand({
+        Bucket: env.CANVASES_BUCKET_NAME,
+        Key: `canvases/${ownerUsername}/${newCanvasId}`,
+        Body: canvasData
+    });
+    const canvasThumbnailUploadCommand = new PutObjectCommand({
+        Bucket: env.CANVASES_BUCKET_NAME,
+        Key: `canvasThumbnails/${ownerUsername}/${newCanvasId}`,
+        Body: canvasThumbail
+    });
+
+    try {
+        await s3Client.send(canvasDataUploadCommand);
+        await s3Client.send(canvasThumbnailUploadCommand);
+    } catch (error) {
+        console.log("s3 upload failure: " + error);
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
     }
 
-    return "new canvas ID is:" + newCanvasId;
+    return { isCanvasSaved: true, canvasId: newCanvasId, errorMessage: null };
 };

@@ -71,6 +71,11 @@ const schema = a
         dataSource: a.ref("Canvases"),
         entry: "./get-canvases-for-user.js"
       })),
+    createCanvasForUserResponse: a.customType({
+      isCanvasSaved: a.boolean().required(),
+      canvasId: a.string(),
+      errorMessage: a.string()
+    }),
     createCanvasForUser: a
       .mutation()
       .arguments({
@@ -79,10 +84,11 @@ const schema = a
         name: a.string().required(),
         description: a.string().required(),
         publicity: a.string().required(),
-        canvasData: a.string().required()
+        canvasData: a.string().required(),
+        canvasThumbail: a.string().required()
       })
       .authorization((allow) => [allow.authenticated()])
-      .returns(a.string())
+      .returns(a.ref('createCanvasForUserResponse'))
       .handler(a.handler.function(createCanvasForUser))
   })
   .authorization((allow) => [
