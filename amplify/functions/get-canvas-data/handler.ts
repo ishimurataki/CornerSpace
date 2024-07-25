@@ -1,6 +1,6 @@
 import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
-import { env } from '$amplify/env/create-canvas-for-user';
+import { env } from '$amplify/env/get-canvas-data';
 import { AppSyncIdentityCognito, AppSyncIdentityIAM } from 'aws-lambda';
 import { generateClient } from 'aws-amplify/data';
 import { listCanvasesByCanvasId } from '../../graphql/queries';

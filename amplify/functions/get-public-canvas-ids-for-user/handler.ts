@@ -1,6 +1,6 @@
 import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
-import { env } from '$amplify/env/create-canvas-for-user';
+import { env } from '$amplify/env/get-public-canvas-ids-for-user';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
