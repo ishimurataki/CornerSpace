@@ -77,7 +77,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
 
     // Obtain correct canvasId
     const queryCommand = new QueryCommand({
-        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
+        TableName: "Canvases-zbc4ytvn7bgdxfym6bbpnpl2gu-NONE",
         ProjectionExpression: "canvasId",
         KeyConditionExpression:
             "ownerUsername = :user",
