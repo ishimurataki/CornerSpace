@@ -301,21 +301,18 @@ export async function getPublicCanvasIdsForUserServer(username: string):
         areCanvasIdsLoaded: boolean, username: string | null,
         canvasIds: string[] | null, errorMessage: string | null
     }> {
-    const { data: canvasesData, errors: getCanvasForUserErrors } =
-        await guestClient.queries.getCanvasesForUser({ user: username });
-
-    if (canvasesData) {
-        const canvasDataValues = Object.values(canvasesData).filter((canvas) => canvas !== null);
-        const canvasIds: string[] = [];
-        for (const canvas of canvasDataValues) {
-            if (canvas && canvas.publicity == "PUBLIC") {
-                canvasIds.push(canvas.canvasId);
-            }
-        }
-        return { areCanvasIdsLoaded: true, username: username, canvasIds, errorMessage: null };
+    const { data, errors } = await guestClient.queries.getPublicCanvasIdsForUser(
+        { ownerUsername: username },
+        { authMode: "identityPool" }
+    );
+    if (errors || !data) {
+        console.log(errors);
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." };
     }
-    console.log(getCanvasForUserErrors);
-    return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+    if (!data.areCanvasIdsReturned) {
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: data.errorMessage ? data.errorMessage : null };
+    }
+    return { areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null, errorMessage: null };
 }
 
 export async function getCanvasIdsForSignedInUserServer():
@@ -329,7 +326,7 @@ export async function getCanvasIdsForSignedInUserServer():
     const username = currentUser?.preferred_username;
 
     if (!signedIn || !username) {
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "User not authenticated." }
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "User not authenticated." };
     }
 
     const { data, errors } = await cookieBasedClient.queries.getAllCanvasIdsForAuthenticatedUser(
@@ -338,12 +335,12 @@ export async function getCanvasIdsForSignedInUserServer():
     );
     if (errors || !data) {
         console.log(errors);
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." };
     }
     if (!data.areCanvasIdsReturned) {
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: data.errorMessage ? data.errorMessage : null }
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: data.errorMessage ? data.errorMessage : null };
     }
-    return { areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null, errorMessage: null }
+    return { areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null, errorMessage: null };
 }
 
 export async function deleteCanvasServer(canvasId: string):

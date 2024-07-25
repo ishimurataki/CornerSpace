@@ -61,15 +61,6 @@ const schema = a
       .authorization(allow => [
         allow.ownerDefinedIn("ownerCognitoId").to(["read"])
       ]),
-    getCanvasesForUser: a
-      .query()
-      .arguments({ user: a.string().required() })
-      .returns(a.ref("Canvases").array())
-      .authorization(allow => [allow.publicApiKey()])
-      .handler(a.handler.custom({
-        dataSource: a.ref("Canvases"),
-        entry: "./get-canvases-for-user.js"
-      })),
     createCanvasForUserResponse: a.customType({
       isCanvasSaved: a.boolean().required(),
       canvasId: a.string(),
