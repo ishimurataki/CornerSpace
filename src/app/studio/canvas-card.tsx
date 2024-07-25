@@ -1,6 +1,6 @@
 "use client";
 
-import { CanvasCardData, CanvasData } from "@/backend-lib/data";
+import { CanvasCardData } from "@/backend-lib/data";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -21,7 +21,6 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
 
     const handleDelete = async () => {
         setDeleting(true);
-        console.log("here");
         const { isCanvasDeleted, errorMessage } = await deleteCanvasServer(canvasId);
         if (isCanvasDeleted) {
             setDeleteError(null);
@@ -53,7 +52,7 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
                                 </button>
                             </div> :
                             <div>
-                                <div className="absolute top-0 left-0 m-4">{canvasCardData.publicity == 0 ?
+                                <div className="absolute top-0 left-0 m-4">{canvasCardData.publicity == "PUBLIC" ?
                                     <div className="flex flex-row"><GlobeAmericasIcon className="text-white w-7" /></div> :
                                     <div className="flex flex-row"><EyeSlashIcon className="text-white w-7" /></div>}
                                 </div>
@@ -74,8 +73,8 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
                                 </div>
                                 <div className="p-4 absolute bottom-0 w-full text-white rounded-b-md bg-gradient-to-t from-black">
                                     <span>
-                                        <Link href={`/user/${canvasCardData.owner}`} className="hover:text-cyan-400">
-                                            @{canvasCardData.owner}
+                                        <Link href={`/user/${canvasCardData.ownerUsername}`} className="hover:text-cyan-400">
+                                            @{canvasCardData.ownerUsername}
                                         </Link>
                                     </span><span> | </span>
                                     <span>

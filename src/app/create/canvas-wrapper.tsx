@@ -1,6 +1,6 @@
 "use client"
 
-import { CanvasData, Publicity, saveCanvas, Voxel } from "@/backend-lib/data";
+import { CanvasData, saveCanvas, Voxel } from "@/backend-lib/data";
 import CanvasState, { EditToolModes, TracerMaterial } from "./canvas-state";
 import Scene from "@/lib/renderables/scene";
 import Controls from "@/lib/controls";
@@ -68,7 +68,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [rayTraceEnabled, setRayTraceEnabled] = useState(canvasState.rayTrace);
     const [title, setTitle] = useState(canvasData ? canvasData.name : "");
     const [description, setDescription] = useState(canvasData ? canvasData.description : "");
-    const [publicity, setPublicity] = useState(canvasData ? canvasData.publicity : Publicity.Public);
+    const [publicity, setPublicity] = useState(canvasData ? canvasData.publicity : "PUBLIC");
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [saveError, setSaveError] = useState<null | string>(null);
@@ -476,12 +476,12 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-white">Publicity: </label>
                             <select
                                 onChange={(e) => {
-                                    setPublicity(e.target.value == String(Publicity.Public) ? Publicity.Public : Publicity.Private)
+                                    setPublicity(e.target.value == "PUBLIC" ? "PUBLIC" : "PRIVATE")
                                 }}
                                 value={String(publicity)}
                                 className="bg-sea-green border-2 border-white text-gray-900 text-sm rounded-full px-2 py-1.5 outline-none hover:text-cyan-800 hover:border-cyan-800">
-                                <option value={String(Publicity.Public)}>Public</option>
-                                <option value={String(Publicity.Private)}>Private</option>
+                                <option value={"PUBLIC"}>Public</option>
+                                <option value={"PRIVATE"}>Private</option>
                             </select>
                         </div>
                         <div className="flex flex-row">

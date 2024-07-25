@@ -48,7 +48,6 @@ const dynamoDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
 const s3Client = new S3Client();
 
 export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (event, context) => {
-    // your function code goes here
     const { ownerUsername, canvasId, name, description, publicity, canvasData, canvasThumbail } = event.arguments;
     const isNewCanvas = !canvasId;
     let newCanvasId: string = canvasId ? canvasId : "";
@@ -109,7 +108,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
     }
 
     if (isNewCanvas) {
-        const { data: createCanvasData, errors: createCanvasErrors } = await dataClient.graphql({
+        const { errors: createCanvasErrors } = await dataClient.graphql({
             query: createCanvases,
             variables: {
                 input: {
@@ -127,7 +126,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
             return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
         }
     } else {
-        const { data: updateCanvasData, errors: updateCanvasErrors } = await dataClient.graphql({
+        const { errors: updateCanvasErrors } = await dataClient.graphql({
             query: updateCanvases,
             variables: {
                 input: {

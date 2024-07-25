@@ -10,16 +10,11 @@ export type Voxel = {
     cubeMaterial: number
 }
 
-export enum Publicity {
-    Public = 0,
-    Private
-}
-
 export type CanvasCardData = {
     name: string,
-    owner: string,
+    ownerUsername: string,
     description: string,
-    publicity: Publicity,
+    publicity: string,
     thumbnail: string | null,
 }
 
@@ -27,7 +22,7 @@ export type CanvasData = {
     name: string,
     owner: string,
     description: string,
-    publicity: Publicity
+    publicity: string
     version: string,
     dimension: number,
     pointLightPosition: vec3,
@@ -45,7 +40,7 @@ export type CanvasDataSave = {
     name: string,
     owner: string,
     description: string,
-    publicity: Publicity
+    publicity: string
     version: string,
     dimension: number,
     pointLightPosition: vec3,
@@ -60,7 +55,7 @@ export type CanvasDataSave = {
     canvasThumbnail: string
 }
 
-export async function saveCanvas(canvasId: string | null, name: string, description: string, publicity: Publicity, canvasState: CanvasState) {
+export async function saveCanvas(canvasId: string | null, name: string, description: string, publicity: string, canvasState: CanvasState) {
     console.log('Saving canvas...');
 
     if (!canvasState || !canvasState.canvas || !canvasState.scene) {

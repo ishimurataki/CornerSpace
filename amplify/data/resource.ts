@@ -1,7 +1,9 @@
 import { type ClientSchema, a, defineData, defineFunction } from '@aws-amplify/backend';
 import { postConfirmation } from '../auth/post-confirmation/resource';
-import { createCanvasForUser } from '../functions/create-canvas-for-user/resource'
+import { createCanvasForUser } from '../functions/create-canvas-for-user/resource';
+import { deleteCanvasForUser } from '../functions/delete-canvas-for-user/resource';
 import { getPublicCanvasIdsForUser } from '../functions/get-public-canvas-ids-for-user/resource';
+import { getAllCanvasIdsForAuthenticatedUser } from '../functions/get-all-canvas-ids-for-authenticated-user/resource';
 import { getCanvasCard } from '../functions/get-canvas-card/resource';
 import { getCanvasData } from '../functions/get-canvas-data/resource';
 
@@ -87,54 +89,76 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .returns(a.ref('createCanvasForUserResponse'))
       .handler(a.handler.function(createCanvasForUser)),
-    getPublicCanvasIdsForUserResponse: a.customType({
+    deleteCanvasForUserResponse: a.customType({
+      isCanvasDeleted: a.boolean().required(),
+      errorMessage: a.string()
+    }),
+    deleteCanvasForUser: a
+      .mutation()
+      .arguments({ canvasId: a.string().required() })
+      .authorization((allow) => [allow.authenticated()])
+      .returns(a.ref('deleteCanvasForUserResponse'))
+      .handler(a.handler.function(deleteCanvasForUser)),
+    getCanvasIdsForUserResponse: a.customType({
       areCanvasIdsReturned: a.boolean().required(),
-      canvasIds: a.string().array(),
+      canvasIds: a.string().required().array(),
       errorMessage: a.string()
     }),
     getPublicCanvasIdsForUser: a
       .query()
       .arguments({ ownerUsername: a.string().required() })
       .authorization((allow) => [allow.authenticated(), allow.guest()])
-      .returns(a.ref('getPublicCanvasIdsForUserResponse'))
+      .returns(a.ref('getCanvasIdsForUserResponse'))
       .handler(a.handler.function(getPublicCanvasIdsForUser)),
-    getCanvasCardResponse: a.customType({
-      isCanvasCardReturned: a.boolean().required(),
+    getAllCanvasIdsForAuthenticatedUser: a
+      .query()
+      .arguments({ ownerUsername: a.string().required() })
+      .authorization((allow) => [allow.authenticated()])
+      .returns(a.ref('getCanvasIdsForUserResponse'))
+      .handler(a.handler.function(getAllCanvasIdsForAuthenticatedUser)),
+    canvasCard: a.customType({
       ownerUsername: a.string().required(),
       name: a.string().required(),
       description: a.string().required(),
       publicity: a.string().required(),
-      thumbnail: a.string().required(),
+      thumbnail: a.string().required()
+    }),
+    getCanvasCardResponse: a.customType({
+      isCanvasCardReturned: a.boolean().required(),
+      canvasCard: a.ref('canvasCard'),
       errorMessage: a.string()
     }),
     getCanvasCard: a
       .query()
-      .arguments({ ownerUsername: a.string().required(), canvasId: a.string().required() })
+      .arguments({ canvasId: a.string().required() })
       .authorization((allow) => [allow.authenticated(), allow.guest()])
       .returns(a.ref('getCanvasCardResponse'))
       .handler(a.handler.function(getCanvasCard)),
+    canvasData: a.customType({
+      ownerUsername: a.string().required(),
+      name: a.string().required(),
+      description: a.string().required(),
+      publicity: a.string().required(),
+      canvasData: a.string().required()
+    }),
     getCanvasDataResponse: a.customType({
       isCanvasDataReturned: a.boolean().required(),
-      canvasData: a.customType({
-        ownerUsername: a.string().required(),
-        name: a.string().required(),
-        description: a.string().required(),
-        publicity: a.string().required(),
-        canvasData: a.string().required()
-      }),
+      canvasData: a.ref('canvasData'),
       errorMessage: a.string()
     }),
     getCanvasData: a
       .query()
-      .arguments({ ownerUsername: a.string().required(), canvasId: a.string().required() })
+      .arguments({ canvasId: a.string().required() })
       .authorization((allow) => [allow.authenticated(), allow.guest()])
       .returns(a.ref('getCanvasDataResponse'))
-      .handler(a.handler.function(getCanvasData)),
+      .handler(a.handler.function(getCanvasData))
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
     allow.resource(createCanvasForUser),
+    allow.resource(deleteCanvasForUser),
     allow.resource(getPublicCanvasIdsForUser),
+    allow.resource(getAllCanvasIdsForAuthenticatedUser),
     allow.resource(getCanvasCard),
     allow.resource(getCanvasData)
   ]);
