@@ -8,6 +8,44 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
+export const getCanvasCard = /* GraphQL */ `query GetCanvasCard($canvasId: String!, $ownerUsername: String!) {
+  getCanvasCard(canvasId: $canvasId, ownerUsername: $ownerUsername) {
+    canvasCard {
+      description
+      name
+      ownerUsername
+      publicity
+      thumbnail
+      __typename
+    }
+    errorMessage
+    isCanvasCardReturned
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCanvasCardQueryVariables,
+  APITypes.GetCanvasCardQuery
+>;
+export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: String!, $ownerUsername: String!) {
+  getCanvasData(canvasId: $canvasId, ownerUsername: $ownerUsername) {
+    canvasData {
+      canvasData
+      description
+      name
+      ownerUsername
+      publicity
+      __typename
+    }
+    errorMessage
+    isCanvasDataReturned
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCanvasDataQueryVariables,
+  APITypes.GetCanvasDataQuery
+>;
 export const getCanvases = /* GraphQL */ `query GetCanvases($canvasId: String!, $ownerUsername: ID!) {
   getCanvases(canvasId: $canvasId, ownerUsername: $ownerUsername) {
     canvasId
@@ -41,6 +79,18 @@ export const getCanvasesForUser = /* GraphQL */ `query GetCanvasesForUser($user:
 ` as GeneratedQuery<
   APITypes.GetCanvasesForUserQueryVariables,
   APITypes.GetCanvasesForUserQuery
+>;
+export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIdsForUser($ownerUsername: String!) {
+  getPublicCanvasIdsForUser(ownerUsername: $ownerUsername) {
+    areCanvasIdsReturned
+    canvasIds
+    errorMessage
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetPublicCanvasIdsForUserQueryVariables,
+  APITypes.GetPublicCanvasIdsForUserQuery
 >;
 export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
   getUsers(username: $username) {

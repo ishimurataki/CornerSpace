@@ -1,4 +1,4 @@
-import type { AppSyncIdentityCognito, Handler } from 'aws-lambda';
+import type { AppSyncIdentityCognito } from 'aws-lambda';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from "../../data/resource";
@@ -78,7 +78,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
 
     // Obtain correct canvasId
     const queryCommand = new QueryCommand({
-        TableName: "Canvases-yfnnvnwepjgyrmfl43tns5vkqa-NONE",
+        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
         ProjectionExpression: "canvasId",
         KeyConditionExpression:
             "ownerUsername = :user",
@@ -91,7 +91,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
     const response = await dynamoDocClient.send(queryCommand);
     if (response.$metadata.httpStatusCode !== 200 || !response.Items) {
         console.log("DDB query command failed.");
-        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - User cognitoId unavailable." };
+        return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
     }
     const canvases = response.Items;
     if (canvasId && !canvases.some((canvas) => canvas.canvasId == canvasId)) {

@@ -24,6 +24,7 @@ import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
 import { useRouter } from "next/navigation";
+import { testServer } from "@/backend-lib/actions";
 
 const canvasSizeOptions = [16, 32, 48, 64, 78, 96];
 
@@ -491,6 +492,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                                 onClick={handleSave}>
                                 {saved ? "Saved" : "Save"}
                             </button>
+                            <button onClick={() => testServer()}>Test</button>
                         </div>
                         {saveError ?
                             <div className="text-red-600 text-sm p-2">Save failed: {saveError}</div>

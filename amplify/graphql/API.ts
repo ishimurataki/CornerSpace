@@ -2,16 +2,55 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
+export type getCanvasCardResponse = {
+  __typename: "getCanvasCardResponse",
+  canvasCard?: canvasCard | null,
+  errorMessage?: string | null,
+  isCanvasCardReturned: boolean,
+};
+
+export type canvasCard = {
+  __typename: "canvasCard",
+  description: string,
+  name: string,
+  ownerUsername: string,
+  publicity: string,
+  thumbnail: string,
+};
+
+export type getCanvasDataResponse = {
+  __typename: "getCanvasDataResponse",
+  canvasData?: canvasData | null,
+  errorMessage?: string | null,
+  isCanvasDataReturned: boolean,
+};
+
+export type canvasData = {
+  __typename: "canvasData",
+  canvasData: string,
+  description: string,
+  name: string,
+  ownerUsername: string,
+  publicity: string,
+};
+
 export type Canvases = {
   __typename: "Canvases",
   canvasId: string,
   createdAt: string,
-  description?: string | null,
+  description: string,
   name: string,
   ownerCognitoId?: string | null,
   ownerUsername: string,
-  publicity?: string | null,
+  publicity: string,
   updatedAt: string,
+};
+
+export type getPublicCanvasIdsForUserResponse = {
+  __typename: "getPublicCanvasIdsForUserResponse",
+  areCanvasIdsReturned: boolean,
+  canvasIds?: Array< string | null > | null,
+  errorMessage?: string | null,
 };
 
 export type Users = {
@@ -146,6 +185,13 @@ export type ModelUsersConnection = {
   nextToken?: string | null,
 };
 
+export type createCanvasForUserResponse = {
+  __typename: "createCanvasForUserResponse",
+  canvasId?: string | null,
+  errorMessage?: string | null,
+  isCanvasSaved: boolean,
+};
+
 export type ModelCanvasesConditionInput = {
   and?: Array< ModelCanvasesConditionInput | null > | null,
   createdAt?: ModelStringInput | null,
@@ -160,11 +206,11 @@ export type ModelCanvasesConditionInput = {
 
 export type CreateCanvasesInput = {
   canvasId: string,
-  description?: string | null,
+  description: string,
   name: string,
   ownerCognitoId?: string | null,
   ownerUsername: string,
-  publicity?: string | null,
+  publicity: string,
 };
 
 export type ModelUsersConditionInput = {
@@ -274,6 +320,48 @@ export type ModelSubscriptionIntInput = {
   notIn?: Array< number | null > | null,
 };
 
+export type GetCanvasCardQueryVariables = {
+  canvasId: string,
+  ownerUsername: string,
+};
+
+export type GetCanvasCardQuery = {
+  getCanvasCard?:  {
+    __typename: "getCanvasCardResponse",
+    canvasCard?:  {
+      __typename: "canvasCard",
+      description: string,
+      name: string,
+      ownerUsername: string,
+      publicity: string,
+      thumbnail: string,
+    } | null,
+    errorMessage?: string | null,
+    isCanvasCardReturned: boolean,
+  } | null,
+};
+
+export type GetCanvasDataQueryVariables = {
+  canvasId: string,
+  ownerUsername: string,
+};
+
+export type GetCanvasDataQuery = {
+  getCanvasData?:  {
+    __typename: "getCanvasDataResponse",
+    canvasData?:  {
+      __typename: "canvasData",
+      canvasData: string,
+      description: string,
+      name: string,
+      ownerUsername: string,
+      publicity: string,
+    } | null,
+    errorMessage?: string | null,
+    isCanvasDataReturned: boolean,
+  } | null,
+};
+
 export type GetCanvasesQueryVariables = {
   canvasId: string,
   ownerUsername: string,
@@ -284,11 +372,11 @@ export type GetCanvasesQuery = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -302,13 +390,26 @@ export type GetCanvasesForUserQuery = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null > | null,
+};
+
+export type GetPublicCanvasIdsForUserQueryVariables = {
+  ownerUsername: string,
+};
+
+export type GetPublicCanvasIdsForUserQuery = {
+  getPublicCanvasIdsForUser?:  {
+    __typename: "getPublicCanvasIdsForUserResponse",
+    areCanvasIdsReturned: boolean,
+    canvasIds?: Array< string | null > | null,
+    errorMessage?: string | null,
+  } | null,
 };
 
 export type GetUsersQueryVariables = {
@@ -342,11 +443,11 @@ export type ListCanvasesQuery = {
       __typename: "Canvases",
       canvasId: string,
       createdAt: string,
-      description?: string | null,
+      description: string,
       name: string,
       ownerCognitoId?: string | null,
       ownerUsername: string,
-      publicity?: string | null,
+      publicity: string,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -368,11 +469,11 @@ export type ListCanvasesByCanvasIdQuery = {
       __typename: "Canvases",
       canvasId: string,
       createdAt: string,
-      description?: string | null,
+      description: string,
       name: string,
       ownerCognitoId?: string | null,
       ownerUsername: string,
-      publicity?: string | null,
+      publicity: string,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -405,6 +506,7 @@ export type ListUsersQuery = {
 export type CreateCanvasForUserMutationVariables = {
   canvasData: string,
   canvasId?: string | null,
+  canvasThumbail: string,
   description: string,
   name: string,
   ownerUsername: string,
@@ -412,7 +514,12 @@ export type CreateCanvasForUserMutationVariables = {
 };
 
 export type CreateCanvasForUserMutation = {
-  createCanvasForUser?: string | null,
+  createCanvasForUser?:  {
+    __typename: "createCanvasForUserResponse",
+    canvasId?: string | null,
+    errorMessage?: string | null,
+    isCanvasSaved: boolean,
+  } | null,
 };
 
 export type CreateCanvasesMutationVariables = {
@@ -425,11 +532,11 @@ export type CreateCanvasesMutation = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -460,11 +567,11 @@ export type DeleteCanvasesMutation = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -495,11 +602,11 @@ export type UpdateCanvasesMutation = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -530,11 +637,11 @@ export type OnCreateCanvasesSubscription = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -565,11 +672,11 @@ export type OnDeleteCanvasesSubscription = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };
@@ -600,11 +707,11 @@ export type OnUpdateCanvasesSubscription = {
     __typename: "Canvases",
     canvasId: string,
     createdAt: string,
-    description?: string | null,
+    description: string,
     name: string,
     ownerCognitoId?: string | null,
     ownerUsername: string,
-    publicity?: string | null,
+    publicity: string,
     updatedAt: string,
   } | null,
 };

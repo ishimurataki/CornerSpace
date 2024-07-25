@@ -11,6 +11,7 @@ type GeneratedMutation<InputType, OutputType> = string & {
 export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
   $canvasData: String!
   $canvasId: String
+  $canvasThumbail: String!
   $description: String!
   $name: String!
   $ownerUsername: String!
@@ -19,11 +20,17 @@ export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
   createCanvasForUser(
     canvasData: $canvasData
     canvasId: $canvasId
+    canvasThumbail: $canvasThumbail
     description: $description
     name: $name
     ownerUsername: $ownerUsername
     publicity: $publicity
-  )
+  ) {
+    canvasId
+    errorMessage
+    isCanvasSaved
+    __typename
+  }
 }
 ` as GeneratedMutation<
   APITypes.CreateCanvasForUserMutationVariables,

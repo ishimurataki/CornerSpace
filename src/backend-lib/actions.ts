@@ -29,7 +29,8 @@ type User = {
     updatedAt: string
 }
 
-async function isUsernameTaken(username: string) {
+export async function doesUserExist(username: string): Promise<boolean> {
+    if (!username) return false;
     const { errors, data: user } = await guestClient.models.Users.get(
         { username },
         {
@@ -40,12 +41,12 @@ async function isUsernameTaken(username: string) {
         console.log(errors);
         throw (new Error("500 - Internal Server Error."));
     }
-    return Object.keys(user as User).length > 0;
+    return !!user;
 }
 
 export async function signUpServer(username: string, email: string, password: string)
     : Promise<{ isSignedUp: boolean, userId: string | null, errorMessage: string | null }> {
-    const usernameTaken = await isUsernameTaken(username);
+    const usernameTaken = await doesUserExist(username);
     if (usernameTaken) {
         return { isSignedUp: false, userId: null, errorMessage: "Username already taken." };
     }
@@ -271,46 +272,49 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
 }
 
 export async function testServer() {
+
     console.log("here test server");
 
-    const currentUser = await fetchUserAttributesServer();
-    const signedIn = currentUser != undefined;
-    const username = currentUser?.preferred_username;
+    // const { data, errors } = await guestClient.queries.getPublicCanvasIdsForUser(
+    //     { ownerUsername: "ishimurataki" },
+    //     { authMode: "identityPool" }
+    // );
 
-    if (!username) {
-        console.log("no user authenticated");
-        return;
-    }
+    // const { data, errors } = await cookieBasedClient.queries.getCanvasCard(
+    //     { ownerUsername: "ishimurataki", canvasId: "9fa94efd-334b-48db-a726-2f39264fd4e4" },
+    //     { authMode: "userPool" }
+    // );
 
-    const { errors, data } = await cookieBasedClient.models.Users.create(
-        {
-            username: "testusername"
-        },
-        {
-            authMode: "userPool"
-        }
-    );
+    const { data, errors } = await guestClient.queries.getCanvasCard(
+        { ownerUsername: "ishimurataki", canvasId: "9fa94efd-334b-48db-a726-2f39264fd4e4" },
+        { authMode: "identityPool" }
+    )
+    // const currentUser = await fetchUserAttributesServer();
+    // const signedIn = currentUser != undefined;
+    // const username = currentUser?.preferred_username;
+
+    // if (!username) {
+    //     console.log("no user authenticated");
+    //     return;
+    // }
+
+
+    // cookieBasedClient.queries.getPublicCanvasIdsForUser
+
+    // const { errors, data } = await cookieBasedClient.models.Users.create(
+    //     {
+    //         username: "testusername"
+    //     },
+    //     {
+    //         authMode: "userPool"
+    //     }
+    // );
     if (errors) {
         console.log(errors);
     }
     if (data) {
         console.log(data);
     }
-}
-
-export async function doesUserExist(username: string) {
-    if (!username) return false;
-    const { errors, data: user } = await guestClient.models.Users.get(
-        { username },
-        {
-            selectionSet: ['username'],
-            authMode: "identityPool"
-        });
-    if (errors) {
-        console.log(errors);
-        throw (new Error("500 - Internal Server Error."));
-    }
-    return Object.keys(user as User).length > 0;
 }
 
 export async function getPublicCanvasIdsForUserServer(username: string):
