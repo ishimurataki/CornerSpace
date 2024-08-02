@@ -41,7 +41,7 @@ export const handler: Schema["getPublicCanvasIdsForUser"]["functionHandler"] = a
     console.log(`Starting getPublicCanvasIdsForUser lambda function invocation for ${ownerUsername}.`);
 
     const queryCommand = new QueryCommand({
-        TableName: "Canvases-zbc4ytvn7bgdxfym6bbpnpl2gu-NONE",
+        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
         ProjectionExpression: "canvasId,publicity",
         KeyConditionExpression:
             "ownerUsername = :user",

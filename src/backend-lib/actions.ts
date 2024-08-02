@@ -284,10 +284,10 @@ export async function testServer() {
 
     console.log("here test server");
 
-    const { data, errors } = await cookieBasedClient.queries.getCanvasData(
-        { canvasId: "c56c441a-6133-411c-8fef-8d5f70b1f79e" },
+    const { data, errors } = await cookieBasedClient.models.Canvases.get(
+        { ownerUsername: "ishimurataki", canvasId: "3447b220-6e34-4996-99bb-eba4b6462469" },
         { authMode: "userPool" }
-    );
+    )
     if (errors) {
         console.log(errors);
     }

@@ -69,7 +69,7 @@ export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHan
     }
 
     const queryCommand = new QueryCommand({
-        TableName: "Canvases-zbc4ytvn7bgdxfym6bbpnpl2gu-NONE",
+        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
         ProjectionExpression: "canvasId",
         KeyConditionExpression:
             "ownerUsername = :user",
