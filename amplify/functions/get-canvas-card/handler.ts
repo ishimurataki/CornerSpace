@@ -2,7 +2,7 @@ import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/get-canvas-card';
 import { AppSyncIdentityCognito, AppSyncIdentityIAM } from 'aws-lambda';
-import { listCanvasesByCanvasId } from '../../graphql/queries';
+import { getCanvasSocialStats, listCanvasesByCanvasId } from '../../graphql/queries';
 import { generateClient } from 'aws-amplify/data';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 
@@ -77,6 +77,26 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
         };
     }
 
+    const { data: getCanvasSocialStatsData, errors: getCanvasSocialStatsErrors } = await client.graphql({
+        query: getCanvasSocialStats,
+        variables: {
+            ownerUsername: canvasMetaData.ownerUsername,
+            canvasId: canvasId
+        },
+    });
+    if (getCanvasSocialStatsErrors) {
+        console.log(getCanvasSocialStatsErrors);
+        return { isCanvasCardReturned: false, canvasCard: null, errorMessage: "500 - Internal Server Error." };
+    }
+    if (!getCanvasSocialStatsData.getCanvasSocialStats) {
+        return {
+            isCanvasCardReturned: false,
+            canvasCard: null,
+            errorMessage: `Social stats for requested canvasId ${canvasId} not found.`
+        };
+    }
+    const canvasSocialStats = getCanvasSocialStatsData.getCanvasSocialStats;
+
     const canvasThumbnailGetCommand = new GetObjectCommand({
         Bucket: env.CANVASES_BUCKET_NAME,
         Key: `canvasThumbnails/${canvasMetaData.ownerUsername}/${canvasId}`
@@ -91,7 +111,9 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
             name: canvasMetaData.name,
             description: canvasMetaData.description,
             publicity: canvasMetaData.publicity,
-            thumbnail: thumbnail ? thumbnail : ""
+            thumbnail: thumbnail ? thumbnail : "",
+            likeCount: canvasSocialStats.likeCount,
+            viewCount: canvasSocialStats.viewCount
         };
         return { isCanvasCardReturned: true, canvasCard: canvasCard, errorMessage: null };
     } catch (error) {

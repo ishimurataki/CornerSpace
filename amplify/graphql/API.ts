@@ -2,6 +2,13 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
+export type getCanvasIdsForUserResponse = {
+  __typename: "getCanvasIdsForUserResponse",
+  areCanvasIdsReturned: boolean,
+  canvasIds?: Array< string > | null,
+  errorMessage?: string | null,
+};
+
 export type getCanvasCardResponse = {
   __typename: "getCanvasCardResponse",
   canvasCard?: canvasCard | null,
@@ -34,6 +41,17 @@ export type canvasData = {
   publicity: string,
 };
 
+export type CanvasSocialStats = {
+  __typename: "CanvasSocialStats",
+  canvasId: string,
+  createdAt: string,
+  likeCount: number,
+  ownerCognitoId?: string | null,
+  ownerUsername: string,
+  updatedAt: string,
+  viewCount: number,
+};
+
 export type Canvases = {
   __typename: "Canvases",
   canvasId: string,
@@ -44,13 +62,6 @@ export type Canvases = {
   ownerUsername: string,
   publicity: string,
   updatedAt: string,
-};
-
-export type getPublicCanvasIdsForUserResponse = {
-  __typename: "getPublicCanvasIdsForUserResponse",
-  areCanvasIdsReturned: boolean,
-  canvasIds?: Array< string | null > | null,
-  errorMessage?: string | null,
 };
 
 export type Users = {
@@ -72,19 +83,18 @@ export type ModelStringKeyConditionInput = {
   lt?: string | null,
 };
 
-export type ModelCanvasesFilterInput = {
-  and?: Array< ModelCanvasesFilterInput | null > | null,
+export type ModelCanvasSocialStatsFilterInput = {
+  and?: Array< ModelCanvasSocialStatsFilterInput | null > | null,
   canvasId?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
-  description?: ModelStringInput | null,
   id?: ModelIDInput | null,
-  name?: ModelStringInput | null,
-  not?: ModelCanvasesFilterInput | null,
-  or?: Array< ModelCanvasesFilterInput | null > | null,
+  likeCount?: ModelIntInput | null,
+  not?: ModelCanvasSocialStatsFilterInput | null,
+  or?: Array< ModelCanvasSocialStatsFilterInput | null > | null,
   ownerCognitoId?: ModelStringInput | null,
   ownerUsername?: ModelIDInput | null,
-  publicity?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
+  viewCount?: ModelIntInput | null,
 };
 
 export type ModelStringInput = {
@@ -143,11 +153,44 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
+export type ModelIntInput = {
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+  between?: Array< number | null > | null,
+  eq?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ne?: number | null,
+};
+
 export enum ModelSortDirection {
   ASC = "ASC",
   DESC = "DESC",
 }
 
+
+export type ModelCanvasSocialStatsConnection = {
+  __typename: "ModelCanvasSocialStatsConnection",
+  items:  Array<CanvasSocialStats | null >,
+  nextToken?: string | null,
+};
+
+export type ModelCanvasesFilterInput = {
+  and?: Array< ModelCanvasesFilterInput | null > | null,
+  canvasId?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  description?: ModelStringInput | null,
+  id?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  not?: ModelCanvasesFilterInput | null,
+  or?: Array< ModelCanvasesFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  ownerUsername?: ModelIDInput | null,
+  publicity?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
 
 export type ModelCanvasesConnection = {
   __typename: "ModelCanvasesConnection",
@@ -167,18 +210,6 @@ export type ModelUsersFilterInput = {
   username?: ModelIDInput | null,
 };
 
-export type ModelIntInput = {
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
-  between?: Array< number | null > | null,
-  eq?: number | null,
-  ge?: number | null,
-  gt?: number | null,
-  le?: number | null,
-  lt?: number | null,
-  ne?: number | null,
-};
-
 export type ModelUsersConnection = {
   __typename: "ModelUsersConnection",
   items:  Array<Users | null >,
@@ -190,6 +221,25 @@ export type createCanvasForUserResponse = {
   canvasId?: string | null,
   errorMessage?: string | null,
   isCanvasSaved: boolean,
+};
+
+export type ModelCanvasSocialStatsConditionInput = {
+  and?: Array< ModelCanvasSocialStatsConditionInput | null > | null,
+  createdAt?: ModelStringInput | null,
+  likeCount?: ModelIntInput | null,
+  not?: ModelCanvasSocialStatsConditionInput | null,
+  or?: Array< ModelCanvasSocialStatsConditionInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  viewCount?: ModelIntInput | null,
+};
+
+export type CreateCanvasSocialStatsInput = {
+  canvasId: string,
+  likeCount: number,
+  ownerCognitoId?: string | null,
+  ownerUsername: string,
+  viewCount: number,
 };
 
 export type ModelCanvasesConditionInput = {
@@ -229,6 +279,17 @@ export type CreateUsersInput = {
   username: string,
 };
 
+export type deleteCanvasForUserResponse = {
+  __typename: "deleteCanvasForUserResponse",
+  errorMessage?: string | null,
+  isCanvasDeleted: boolean,
+};
+
+export type DeleteCanvasSocialStatsInput = {
+  canvasId: string,
+  ownerUsername: string,
+};
+
 export type DeleteCanvasesInput = {
   canvasId: string,
   ownerUsername: string,
@@ -236,6 +297,14 @@ export type DeleteCanvasesInput = {
 
 export type DeleteUsersInput = {
   username: string,
+};
+
+export type UpdateCanvasSocialStatsInput = {
+  canvasId: string,
+  likeCount?: number | null,
+  ownerCognitoId?: string | null,
+  ownerUsername: string,
+  viewCount?: number | null,
 };
 
 export type UpdateCanvasesInput = {
@@ -253,18 +322,17 @@ export type UpdateUsersInput = {
   username: string,
 };
 
-export type ModelSubscriptionCanvasesFilterInput = {
-  and?: Array< ModelSubscriptionCanvasesFilterInput | null > | null,
+export type ModelSubscriptionCanvasSocialStatsFilterInput = {
+  and?: Array< ModelSubscriptionCanvasSocialStatsFilterInput | null > | null,
   canvasId?: ModelSubscriptionStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
-  description?: ModelSubscriptionStringInput | null,
   id?: ModelSubscriptionIDInput | null,
-  name?: ModelSubscriptionStringInput | null,
-  or?: Array< ModelSubscriptionCanvasesFilterInput | null > | null,
+  likeCount?: ModelSubscriptionIntInput | null,
+  or?: Array< ModelSubscriptionCanvasSocialStatsFilterInput | null > | null,
   ownerCognitoId?: ModelStringInput | null,
   ownerUsername?: ModelSubscriptionIDInput | null,
-  publicity?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
+  viewCount?: ModelSubscriptionIntInput | null,
 };
 
 export type ModelSubscriptionStringInput = {
@@ -297,17 +365,6 @@ export type ModelSubscriptionIDInput = {
   notIn?: Array< string | null > | null,
 };
 
-export type ModelSubscriptionUsersFilterInput = {
-  and?: Array< ModelSubscriptionUsersFilterInput | null > | null,
-  cognitoId?: ModelStringInput | null,
-  createdAt?: ModelSubscriptionStringInput | null,
-  id?: ModelSubscriptionIDInput | null,
-  numberOfCanvases?: ModelSubscriptionIntInput | null,
-  or?: Array< ModelSubscriptionUsersFilterInput | null > | null,
-  updatedAt?: ModelSubscriptionStringInput | null,
-  username?: ModelSubscriptionIDInput | null,
-};
-
 export type ModelSubscriptionIntInput = {
   between?: Array< number | null > | null,
   eq?: number | null,
@@ -320,9 +377,46 @@ export type ModelSubscriptionIntInput = {
   notIn?: Array< number | null > | null,
 };
 
+export type ModelSubscriptionCanvasesFilterInput = {
+  and?: Array< ModelSubscriptionCanvasesFilterInput | null > | null,
+  canvasId?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  description?: ModelSubscriptionStringInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  name?: ModelSubscriptionStringInput | null,
+  or?: Array< ModelSubscriptionCanvasesFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  ownerUsername?: ModelSubscriptionIDInput | null,
+  publicity?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+};
+
+export type ModelSubscriptionUsersFilterInput = {
+  and?: Array< ModelSubscriptionUsersFilterInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  numberOfCanvases?: ModelSubscriptionIntInput | null,
+  or?: Array< ModelSubscriptionUsersFilterInput | null > | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  username?: ModelSubscriptionIDInput | null,
+};
+
+export type GetAllCanvasIdsForAuthenticatedUserQueryVariables = {
+  ownerUsername: string,
+};
+
+export type GetAllCanvasIdsForAuthenticatedUserQuery = {
+  getAllCanvasIdsForAuthenticatedUser?:  {
+    __typename: "getCanvasIdsForUserResponse",
+    areCanvasIdsReturned: boolean,
+    canvasIds?: Array< string > | null,
+    errorMessage?: string | null,
+  } | null,
+};
+
 export type GetCanvasCardQueryVariables = {
   canvasId: string,
-  ownerUsername: string,
 };
 
 export type GetCanvasCardQuery = {
@@ -343,7 +437,6 @@ export type GetCanvasCardQuery = {
 
 export type GetCanvasDataQueryVariables = {
   canvasId: string,
-  ownerUsername: string,
 };
 
 export type GetCanvasDataQuery = {
@@ -359,6 +452,24 @@ export type GetCanvasDataQuery = {
     } | null,
     errorMessage?: string | null,
     isCanvasDataReturned: boolean,
+  } | null,
+};
+
+export type GetCanvasSocialStatsQueryVariables = {
+  canvasId: string,
+  ownerUsername: string,
+};
+
+export type GetCanvasSocialStatsQuery = {
+  getCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
   } | null,
 };
 
@@ -381,33 +492,15 @@ export type GetCanvasesQuery = {
   } | null,
 };
 
-export type GetCanvasesForUserQueryVariables = {
-  user: string,
-};
-
-export type GetCanvasesForUserQuery = {
-  getCanvasesForUser?:  Array< {
-    __typename: "Canvases",
-    canvasId: string,
-    createdAt: string,
-    description: string,
-    name: string,
-    ownerCognitoId?: string | null,
-    ownerUsername: string,
-    publicity: string,
-    updatedAt: string,
-  } | null > | null,
-};
-
 export type GetPublicCanvasIdsForUserQueryVariables = {
   ownerUsername: string,
 };
 
 export type GetPublicCanvasIdsForUserQuery = {
   getPublicCanvasIdsForUser?:  {
-    __typename: "getPublicCanvasIdsForUserResponse",
+    __typename: "getCanvasIdsForUserResponse",
     areCanvasIdsReturned: boolean,
-    canvasIds?: Array< string | null > | null,
+    canvasIds?: Array< string > | null,
     errorMessage?: string | null,
   } | null,
 };
@@ -424,6 +517,57 @@ export type GetUsersQuery = {
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
+  } | null,
+};
+
+export type ListCanvasSocialStatsQueryVariables = {
+  canvasId?: ModelStringKeyConditionInput | null,
+  filter?: ModelCanvasSocialStatsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  ownerUsername?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListCanvasSocialStatsQuery = {
+  listCanvasSocialStats?:  {
+    __typename: "ModelCanvasSocialStatsConnection",
+    items:  Array< {
+      __typename: "CanvasSocialStats",
+      canvasId: string,
+      createdAt: string,
+      likeCount: number,
+      ownerCognitoId?: string | null,
+      ownerUsername: string,
+      updatedAt: string,
+      viewCount: number,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ListCanvasSocialStatsByCanvasIdQueryVariables = {
+  canvasId: string,
+  filter?: ModelCanvasSocialStatsFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListCanvasSocialStatsByCanvasIdQuery = {
+  listCanvasSocialStatsByCanvasId?:  {
+    __typename: "ModelCanvasSocialStatsConnection",
+    items:  Array< {
+      __typename: "CanvasSocialStats",
+      canvasId: string,
+      createdAt: string,
+      likeCount: number,
+      ownerCognitoId?: string | null,
+      ownerUsername: string,
+      updatedAt: string,
+      viewCount: number,
+    } | null >,
+    nextToken?: string | null,
   } | null,
 };
 
@@ -522,6 +666,24 @@ export type CreateCanvasForUserMutation = {
   } | null,
 };
 
+export type CreateCanvasSocialStatsMutationVariables = {
+  condition?: ModelCanvasSocialStatsConditionInput | null,
+  input: CreateCanvasSocialStatsInput,
+};
+
+export type CreateCanvasSocialStatsMutation = {
+  createCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
+  } | null,
+};
+
 export type CreateCanvasesMutationVariables = {
   condition?: ModelCanvasesConditionInput | null,
   input: CreateCanvasesInput,
@@ -554,6 +716,36 @@ export type CreateUsersMutation = {
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
+  } | null,
+};
+
+export type DeleteCanvasForUserMutationVariables = {
+  canvasId: string,
+};
+
+export type DeleteCanvasForUserMutation = {
+  deleteCanvasForUser?:  {
+    __typename: "deleteCanvasForUserResponse",
+    errorMessage?: string | null,
+    isCanvasDeleted: boolean,
+  } | null,
+};
+
+export type DeleteCanvasSocialStatsMutationVariables = {
+  condition?: ModelCanvasSocialStatsConditionInput | null,
+  input: DeleteCanvasSocialStatsInput,
+};
+
+export type DeleteCanvasSocialStatsMutation = {
+  deleteCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
   } | null,
 };
 
@@ -592,6 +784,24 @@ export type DeleteUsersMutation = {
   } | null,
 };
 
+export type UpdateCanvasSocialStatsMutationVariables = {
+  condition?: ModelCanvasSocialStatsConditionInput | null,
+  input: UpdateCanvasSocialStatsInput,
+};
+
+export type UpdateCanvasSocialStatsMutation = {
+  updateCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
+  } | null,
+};
+
 export type UpdateCanvasesMutationVariables = {
   condition?: ModelCanvasesConditionInput | null,
   input: UpdateCanvasesInput,
@@ -624,6 +834,24 @@ export type UpdateUsersMutation = {
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
+  } | null,
+};
+
+export type OnCreateCanvasSocialStatsSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasSocialStatsFilterInput | null,
+  ownerCognitoId?: string | null,
+};
+
+export type OnCreateCanvasSocialStatsSubscription = {
+  onCreateCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
   } | null,
 };
 
@@ -662,6 +890,24 @@ export type OnCreateUsersSubscription = {
   } | null,
 };
 
+export type OnDeleteCanvasSocialStatsSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasSocialStatsFilterInput | null,
+  ownerCognitoId?: string | null,
+};
+
+export type OnDeleteCanvasSocialStatsSubscription = {
+  onDeleteCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
+  } | null,
+};
+
 export type OnDeleteCanvasesSubscriptionVariables = {
   filter?: ModelSubscriptionCanvasesFilterInput | null,
   ownerCognitoId?: string | null,
@@ -694,6 +940,24 @@ export type OnDeleteUsersSubscription = {
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
+  } | null,
+};
+
+export type OnUpdateCanvasSocialStatsSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasSocialStatsFilterInput | null,
+  ownerCognitoId?: string | null,
+};
+
+export type OnUpdateCanvasSocialStatsSubscription = {
+  onUpdateCanvasSocialStats?:  {
+    __typename: "CanvasSocialStats",
+    canvasId: string,
+    createdAt: string,
+    likeCount: number,
+    ownerCognitoId?: string | null,
+    ownerUsername: string,
+    updatedAt: string,
+    viewCount: number,
   } | null,
 };
 

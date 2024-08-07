@@ -201,6 +201,8 @@ export async function loadCanvasServer(canvasId: string):
         owner: dataReturned.canvasData.ownerUsername,
         description: dataReturned.canvasData.description ? dataReturned.canvasData.description : "",
         publicity: dataReturned.canvasData.publicity,
+        likeCount: dataReturned.canvasData.likeCount,
+        viewCount: dataReturned.canvasData.viewCount,
         version: canvasDataJson.version,
         dimension: canvasDataJson.dimension,
         pointLightPosition: stringToVec3(canvasDataJson.pointLightPosition),

@@ -11,6 +11,7 @@ import { renderFragmentSource, renderVertexSource } from "@/lib/shaders/render-s
 import { tracerFragmentSource, tracerVertexSource } from "@/lib/shaders/tracer-shader";
 import { plainFragmentShaderSource, plainVertexShaderSource } from "@/lib/shaders/plain-shader";
 import Link from "next/link";
+import { HeartIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 const canvasState = new CanvasState();
 
@@ -136,7 +137,14 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
                     <div>
                         {canvasData.description}
                     </div>
-                    <hr className="mt-32" />
+                    <hr className="mt-16" />
+                    <div className="flex flex-row gap-2">
+                        <HeartIcon className="text-black w-6" />{canvasData.likeCount}
+                    </div>
+                    <div className="flex flex-row gap-2">
+                        <EyeIcon className="text-black w-6" />{canvasData.viewCount}
+                    </div>
+                    <hr className="" />
                     <div>
                         <input type="checkbox" checked={rayTraceEnabled}
                             className="w-3 h-3 mr-2" onChange={() => toggleRayTrace()} />

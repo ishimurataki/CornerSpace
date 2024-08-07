@@ -16,13 +16,17 @@ export type CanvasCardData = {
     description: string,
     publicity: string,
     thumbnail: string | null,
+    likeCount: number,
+    viewCount: number,
 }
 
 export type CanvasData = {
     name: string,
     owner: string,
     description: string,
-    publicity: string
+    publicity: string,
+    likeCount: number,
+    viewCount: number,
     version: string,
     dimension: number,
     pointLightPosition: vec3,

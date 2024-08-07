@@ -6,7 +6,9 @@ import { useState } from "react";
 import {
     EllipsisVerticalIcon,
     GlobeAmericasIcon,
-    EyeSlashIcon
+    EyeSlashIcon,
+    HeartIcon,
+    EyeIcon
 } from "@heroicons/react/24/outline";
 import { deleteCanvasServer } from "@/backend-lib/actions";
 
@@ -72,6 +74,12 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
                                     }
                                 </div>
                                 <div className="p-4 absolute bottom-0 w-full text-white rounded-b-md bg-gradient-to-t from-black">
+                                    <div className="flex flex-row gap-2 text-sm">
+                                        <HeartIcon className="text-white w-5" />{canvasCardData.likeCount}
+                                    </div>
+                                    <div className="flex flex-row gap-2 text-sm">
+                                        <EyeIcon className="text-white w-5" />{canvasCardData.viewCount}
+                                    </div>
                                     <span>
                                         <Link href={`/user/${canvasCardData.ownerUsername}`} className="hover:text-cyan-400">
                                             @{canvasCardData.ownerUsername}

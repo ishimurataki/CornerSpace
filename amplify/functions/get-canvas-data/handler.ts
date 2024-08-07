@@ -3,8 +3,9 @@ import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/get-canvas-data';
 import { AppSyncIdentityCognito, AppSyncIdentityIAM } from 'aws-lambda';
 import { generateClient } from 'aws-amplify/data';
-import { listCanvasesByCanvasId } from '../../graphql/queries';
+import { getCanvasSocialStats, listCanvasesByCanvasId } from '../../graphql/queries';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { updateCanvasSocialStats } from '../../graphql/mutations';
 
 Amplify.configure(
     {
@@ -77,6 +78,41 @@ export const handler: Schema["getCanvasData"]["functionHandler"] = async (event,
         };
     }
 
+    const { data: getCanvasSocialStatsData, errors: getCanvasSocialStatsErrors } = await client.graphql({
+        query: getCanvasSocialStats,
+        variables: {
+            ownerUsername: canvasMetaData.ownerUsername,
+            canvasId: canvasId
+        },
+    });
+    if (getCanvasSocialStatsErrors) {
+        console.log(getCanvasSocialStatsErrors);
+        return { isCanvasDataReturned: false, canvasData: null, errorMessage: "500 - Internal Server Error." };
+    }
+    if (!getCanvasSocialStatsData.getCanvasSocialStats) {
+        return {
+            isCanvasDataReturned: false,
+            canvasData: null,
+            errorMessage: `Social stats for requested canvasId ${canvasId} not found.`
+        };
+    }
+    const canvasSocialStats = getCanvasSocialStatsData.getCanvasSocialStats;
+
+    const guestAccess = canvasMetaData.ownerCognitoId !== callerUsername;
+    if (guestAccess) {
+        canvasSocialStats.viewCount++;
+        await client.graphql({
+            query: updateCanvasSocialStats,
+            variables: {
+                input: {
+                    ownerUsername: canvasMetaData.ownerUsername,
+                    canvasId: canvasId,
+                    viewCount: canvasSocialStats.viewCount
+                }
+            }
+        })
+    }
+
     const canvasDataGetCommand = new GetObjectCommand({
         Bucket: env.CANVASES_BUCKET_NAME,
         Key: `canvases/${canvasMetaData.ownerUsername}/${canvasId}`
@@ -91,6 +127,8 @@ export const handler: Schema["getCanvasData"]["functionHandler"] = async (event,
             name: canvasMetaData.name,
             description: canvasMetaData.description,
             publicity: canvasMetaData.publicity,
+            likeCount: canvasSocialStats.likeCount,
+            viewCount: canvasSocialStats.viewCount,
             canvasData: canvasData ? canvasData : ""
         };
 

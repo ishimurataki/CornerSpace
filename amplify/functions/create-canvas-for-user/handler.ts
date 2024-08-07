@@ -8,7 +8,10 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { getUsers } from '../../graphql/queries';
-import { createCanvases, updateCanvases } from '../../graphql/mutations';
+import {
+    createCanvases, updateCanvases, createCanvasSocialStats,
+    deleteCanvases, deleteCanvasSocialStats
+} from '../../graphql/mutations';
 
 Amplify.configure(
     {
@@ -125,6 +128,31 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
             console.log(createCanvasErrors);
             return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
         }
+        const { errors: createCanvasSocialStatsErrors } = await dataClient.graphql({
+            query: createCanvasSocialStats,
+            variables: {
+                input: {
+                    ownerUsername: ownerUsername,
+                    ownerCognitoId: `${ownerCognitoId}::${ownerCognitoId}`,
+                    canvasId: newCanvasId,
+                    likeCount: 0,
+                    viewCount: 0
+                }
+            }
+        });
+        if (createCanvasSocialStatsErrors) {
+            console.log(createCanvasSocialStatsErrors);
+            await dataClient.graphql({
+                query: deleteCanvases,
+                variables: {
+                    input: {
+                        ownerUsername: ownerUsername,
+                        canvasId: newCanvasId
+                    }
+                }
+            });
+            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
+        }
     } else {
         const { errors: updateCanvasErrors } = await dataClient.graphql({
             query: updateCanvases,
@@ -138,7 +166,7 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
                     publicity: publicity
                 },
             }
-        })
+        });
         if (updateCanvasErrors) {
             console.log(updateCanvasErrors);
             return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
@@ -161,6 +189,24 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
         await s3Client.send(canvasThumbnailUploadCommand);
     } catch (error) {
         console.log("s3 upload failure: " + error);
+        await dataClient.graphql({
+            query: deleteCanvases,
+            variables: {
+                input: {
+                    ownerUsername: ownerUsername,
+                    canvasId: newCanvasId
+                }
+            }
+        });
+        await dataClient.graphql({
+            query: deleteCanvasSocialStats,
+            variables: {
+                input: {
+                    ownerUsername: ownerUsername,
+                    canvasId: newCanvasId
+                }
+            }
+        });
         return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
     }
 

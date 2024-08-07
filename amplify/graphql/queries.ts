@@ -8,8 +8,20 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getCanvasCard = /* GraphQL */ `query GetCanvasCard($canvasId: String!, $ownerUsername: String!) {
-  getCanvasCard(canvasId: $canvasId, ownerUsername: $ownerUsername) {
+export const getAllCanvasIdsForAuthenticatedUser = /* GraphQL */ `query GetAllCanvasIdsForAuthenticatedUser($ownerUsername: String!) {
+  getAllCanvasIdsForAuthenticatedUser(ownerUsername: $ownerUsername) {
+    areCanvasIdsReturned
+    canvasIds
+    errorMessage
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetAllCanvasIdsForAuthenticatedUserQueryVariables,
+  APITypes.GetAllCanvasIdsForAuthenticatedUserQuery
+>;
+export const getCanvasCard = /* GraphQL */ `query GetCanvasCard($canvasId: String!) {
+  getCanvasCard(canvasId: $canvasId) {
     canvasCard {
       description
       name
@@ -27,8 +39,8 @@ export const getCanvasCard = /* GraphQL */ `query GetCanvasCard($canvasId: Strin
   APITypes.GetCanvasCardQueryVariables,
   APITypes.GetCanvasCardQuery
 >;
-export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: String!, $ownerUsername: String!) {
-  getCanvasData(canvasId: $canvasId, ownerUsername: $ownerUsername) {
+export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: String!) {
+  getCanvasData(canvasId: $canvasId) {
     canvasData {
       canvasData
       description
@@ -46,6 +58,22 @@ export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: Strin
   APITypes.GetCanvasDataQueryVariables,
   APITypes.GetCanvasDataQuery
 >;
+export const getCanvasSocialStats = /* GraphQL */ `query GetCanvasSocialStats($canvasId: String!, $ownerUsername: ID!) {
+  getCanvasSocialStats(canvasId: $canvasId, ownerUsername: $ownerUsername) {
+    canvasId
+    createdAt
+    likeCount
+    ownerCognitoId
+    ownerUsername
+    updatedAt
+    viewCount
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCanvasSocialStatsQueryVariables,
+  APITypes.GetCanvasSocialStatsQuery
+>;
 export const getCanvases = /* GraphQL */ `query GetCanvases($canvasId: String!, $ownerUsername: ID!) {
   getCanvases(canvasId: $canvasId, ownerUsername: $ownerUsername) {
     canvasId
@@ -62,23 +90,6 @@ export const getCanvases = /* GraphQL */ `query GetCanvases($canvasId: String!, 
 ` as GeneratedQuery<
   APITypes.GetCanvasesQueryVariables,
   APITypes.GetCanvasesQuery
->;
-export const getCanvasesForUser = /* GraphQL */ `query GetCanvasesForUser($user: String!) {
-  getCanvasesForUser(user: $user) {
-    canvasId
-    createdAt
-    description
-    name
-    ownerCognitoId
-    ownerUsername
-    publicity
-    updatedAt
-    __typename
-  }
-}
-` as GeneratedQuery<
-  APITypes.GetCanvasesForUserQueryVariables,
-  APITypes.GetCanvasesForUserQuery
 >;
 export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIdsForUser($ownerUsername: String!) {
   getPublicCanvasIdsForUser(ownerUsername: $ownerUsername) {
@@ -103,6 +114,72 @@ export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
   }
 }
 ` as GeneratedQuery<APITypes.GetUsersQueryVariables, APITypes.GetUsersQuery>;
+export const listCanvasSocialStats = /* GraphQL */ `query ListCanvasSocialStats(
+  $canvasId: ModelStringKeyConditionInput
+  $filter: ModelCanvasSocialStatsFilterInput
+  $limit: Int
+  $nextToken: String
+  $ownerUsername: ID
+  $sortDirection: ModelSortDirection
+) {
+  listCanvasSocialStats(
+    canvasId: $canvasId
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    ownerUsername: $ownerUsername
+    sortDirection: $sortDirection
+  ) {
+    items {
+      canvasId
+      createdAt
+      likeCount
+      ownerCognitoId
+      ownerUsername
+      updatedAt
+      viewCount
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasSocialStatsQueryVariables,
+  APITypes.ListCanvasSocialStatsQuery
+>;
+export const listCanvasSocialStatsByCanvasId = /* GraphQL */ `query ListCanvasSocialStatsByCanvasId(
+  $canvasId: String!
+  $filter: ModelCanvasSocialStatsFilterInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+) {
+  listCanvasSocialStatsByCanvasId(
+    canvasId: $canvasId
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
+    items {
+      canvasId
+      createdAt
+      likeCount
+      ownerCognitoId
+      ownerUsername
+      updatedAt
+      viewCount
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasSocialStatsByCanvasIdQueryVariables,
+  APITypes.ListCanvasSocialStatsByCanvasIdQuery
+>;
 export const listCanvases = /* GraphQL */ `query ListCanvases(
   $canvasId: ModelStringKeyConditionInput
   $filter: ModelCanvasesFilterInput

@@ -36,6 +36,25 @@ export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
   APITypes.CreateCanvasForUserMutationVariables,
   APITypes.CreateCanvasForUserMutation
 >;
+export const createCanvasSocialStats = /* GraphQL */ `mutation CreateCanvasSocialStats(
+  $condition: ModelCanvasSocialStatsConditionInput
+  $input: CreateCanvasSocialStatsInput!
+) {
+  createCanvasSocialStats(condition: $condition, input: $input) {
+    canvasId
+    createdAt
+    likeCount
+    ownerCognitoId
+    ownerUsername
+    updatedAt
+    viewCount
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateCanvasSocialStatsMutationVariables,
+  APITypes.CreateCanvasSocialStatsMutation
+>;
 export const createCanvases = /* GraphQL */ `mutation CreateCanvases(
   $condition: ModelCanvasesConditionInput
   $input: CreateCanvasesInput!
@@ -73,6 +92,36 @@ export const createUsers = /* GraphQL */ `mutation CreateUsers(
   APITypes.CreateUsersMutationVariables,
   APITypes.CreateUsersMutation
 >;
+export const deleteCanvasForUser = /* GraphQL */ `mutation DeleteCanvasForUser($canvasId: String!) {
+  deleteCanvasForUser(canvasId: $canvasId) {
+    errorMessage
+    isCanvasDeleted
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteCanvasForUserMutationVariables,
+  APITypes.DeleteCanvasForUserMutation
+>;
+export const deleteCanvasSocialStats = /* GraphQL */ `mutation DeleteCanvasSocialStats(
+  $condition: ModelCanvasSocialStatsConditionInput
+  $input: DeleteCanvasSocialStatsInput!
+) {
+  deleteCanvasSocialStats(condition: $condition, input: $input) {
+    canvasId
+    createdAt
+    likeCount
+    ownerCognitoId
+    ownerUsername
+    updatedAt
+    viewCount
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteCanvasSocialStatsMutationVariables,
+  APITypes.DeleteCanvasSocialStatsMutation
+>;
 export const deleteCanvases = /* GraphQL */ `mutation DeleteCanvases(
   $condition: ModelCanvasesConditionInput
   $input: DeleteCanvasesInput!
@@ -109,6 +158,25 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
 ` as GeneratedMutation<
   APITypes.DeleteUsersMutationVariables,
   APITypes.DeleteUsersMutation
+>;
+export const updateCanvasSocialStats = /* GraphQL */ `mutation UpdateCanvasSocialStats(
+  $condition: ModelCanvasSocialStatsConditionInput
+  $input: UpdateCanvasSocialStatsInput!
+) {
+  updateCanvasSocialStats(condition: $condition, input: $input) {
+    canvasId
+    createdAt
+    likeCount
+    ownerCognitoId
+    ownerUsername
+    updatedAt
+    viewCount
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateCanvasSocialStatsMutationVariables,
+  APITypes.UpdateCanvasSocialStatsMutation
 >;
 export const updateCanvases = /* GraphQL */ `mutation UpdateCanvases(
   $condition: ModelCanvasesConditionInput

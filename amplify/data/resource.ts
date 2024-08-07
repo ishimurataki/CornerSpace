@@ -61,6 +61,36 @@ const schema = a
       .authorization(allow => [
         allow.ownerDefinedIn("ownerCognitoId").to(["read"])
       ]),
+    CanvasSocialStats: a
+      .model({
+        ownerUsername: a.id().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+          ]),
+        ownerCognitoId: a.string()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+          ]),
+        canvasId: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+          ]),
+        likeCount: a.integer().required()
+          .default(0)
+          .authorization((allow) => [
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+          ]),
+        viewCount: a.integer().required()
+          .default(0)
+          .authorization((allow) => [
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+          ])
+      })
+      .identifier(["ownerUsername", "canvasId"])
+      .secondaryIndexes((index) => [index("canvasId")])
+      .authorization(allow => [
+        allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+      ]),
     createCanvasForUserResponse: a.customType({
       isCanvasSaved: a.boolean().required(),
       canvasId: a.string(),
@@ -112,7 +142,9 @@ const schema = a
       name: a.string().required(),
       description: a.string().required(),
       publicity: a.string().required(),
-      thumbnail: a.string().required()
+      thumbnail: a.string().required(),
+      likeCount: a.integer().required(),
+      viewCount: a.integer().required()
     }),
     getCanvasCardResponse: a.customType({
       isCanvasCardReturned: a.boolean().required(),
@@ -130,6 +162,8 @@ const schema = a
       name: a.string().required(),
       description: a.string().required(),
       publicity: a.string().required(),
+      likeCount: a.integer().required(),
+      viewCount: a.integer().required(),
       canvasData: a.string().required()
     }),
     getCanvasDataResponse: a.customType({
