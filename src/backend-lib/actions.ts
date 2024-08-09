@@ -455,3 +455,31 @@ export async function isCanvasLikedForSignedInUserServer(canvasId: string):
     }
     return { isCanvasLiked: listCanvasLikesData.length > 0, errorMessage: null };
 }
+
+export async function getLikedCanvasesForSignedInUserServer():
+    Promise<{
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "User not authenticated." }
+    }
+
+    const { data: listLikedCanvasesData, errors: listLikedCanvasesErrors } = await cookieBasedClient.models.CanvasLikes.list(
+        { username: username, sortDirection: "DESC", authMode: "userPool" },
+    );
+
+    if (listLikedCanvasesErrors) {
+        console.log(listLikedCanvasesErrors)
+        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+    }
+
+    const likedCanvases = listLikedCanvasesData.map((likedCanvas) => {
+        return likedCanvas.canvasId;
+    })
+
+    return { areCanvasIdsLoaded: true, canvasIds: likedCanvases, errorMessage: null };
+}

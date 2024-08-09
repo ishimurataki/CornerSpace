@@ -21,6 +21,13 @@ const config: Config = {
         "pastel-red": "#ff8b94"
       }
     },
+    keyframes: {
+      shimmer: {
+        '100%': {
+          transform: 'translateX(100%)',
+        },
+      },
+    },
   },
   plugins: [],
 };
