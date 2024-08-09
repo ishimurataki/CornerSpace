@@ -12,16 +12,21 @@ import { tracerFragmentSource, tracerVertexSource } from "@/lib/shaders/tracer-s
 import { plainFragmentShaderSource, plainVertexShaderSource } from "@/lib/shaders/plain-shader";
 import Link from "next/link";
 import { HeartIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+import { likeCanvasForSignedInUserServer } from "@/backend-lib/actions";
 
 const canvasState = new CanvasState();
 
-export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
+export default function Canvas({ canvasId, canvasData, userSignedIn, canvasLiked }:
+    { canvasId: string, canvasData: CanvasData, userSignedIn: boolean, canvasLiked: boolean }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     let stopAnimation = false;
 
     const [rayTraceEnabled, setRayTraceEnabled] = useState(true);
     const [ambientLight, setAmbientLight] = useState(canvasData.ambientStrength);
     const [pointLight, setPointLight] = useState(canvasData.pointLightStrength);
+    const [isCanvasLiked, setIsCanvasLiked] = useState(canvasLiked);
+    const [likeCount, setLikeCount] = useState(canvasData.likeCount);
 
     const toggleRayTrace = () => {
         canvasState.rayTrace = !rayTraceEnabled;
@@ -139,7 +144,25 @@ export default function Canvas({ canvasData }: { canvasData: CanvasData }) {
                     </div>
                     <hr className="mt-16" />
                     <div className="flex flex-row gap-2">
-                        <HeartIcon className="text-black w-6" />{canvasData.likeCount}
+                        {isCanvasLiked ?
+                            <HeartIconSolid className="text-red-600 w-6"
+                                onClick={() => {
+                                    if (userSignedIn) {
+                                        setIsCanvasLiked(false);
+                                        likeCanvasForSignedInUserServer(canvasId, true);
+                                        setLikeCount(likeCount - 1);
+                                    }
+                                }} /> :
+                            <HeartIcon className={`text-black w-6 ${userSignedIn ? "hover:text-red-600" : ""}`}
+                                onClick={() => {
+                                    if (userSignedIn) {
+                                        setIsCanvasLiked(true);
+                                        likeCanvasForSignedInUserServer(canvasId);
+                                        setLikeCount(likeCount + 1);
+                                    }
+                                }} />
+                        }
+                        {likeCount}
                     </div>
                     <div className="flex flex-row gap-2">
                         <EyeIcon className="text-black w-6" />{canvasData.viewCount}

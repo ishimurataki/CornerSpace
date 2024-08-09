@@ -8,6 +8,25 @@ type GeneratedSubscription<InputType, OutputType> = string & {
   __generatedSubscriptionOutput: OutputType;
 };
 
+export const onCreateCanvasLikes = /* GraphQL */ `subscription OnCreateCanvasLikes(
+  $cognitoId: String
+  $filter: ModelSubscriptionCanvasLikesFilterInput
+) {
+  onCreateCanvasLikes(cognitoId: $cognitoId, filter: $filter) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateCanvasLikesSubscriptionVariables,
+  APITypes.OnCreateCanvasLikesSubscription
+>;
 export const onCreateCanvasSocialStats = /* GraphQL */ `subscription OnCreateCanvasSocialStats(
   $filter: ModelSubscriptionCanvasSocialStatsFilterInput
   $ownerCognitoId: String
@@ -64,6 +83,25 @@ export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
   APITypes.OnCreateUsersSubscriptionVariables,
   APITypes.OnCreateUsersSubscription
 >;
+export const onDeleteCanvasLikes = /* GraphQL */ `subscription OnDeleteCanvasLikes(
+  $cognitoId: String
+  $filter: ModelSubscriptionCanvasLikesFilterInput
+) {
+  onDeleteCanvasLikes(cognitoId: $cognitoId, filter: $filter) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteCanvasLikesSubscriptionVariables,
+  APITypes.OnDeleteCanvasLikesSubscription
+>;
 export const onDeleteCanvasSocialStats = /* GraphQL */ `subscription OnDeleteCanvasSocialStats(
   $filter: ModelSubscriptionCanvasSocialStatsFilterInput
   $ownerCognitoId: String
@@ -119,6 +157,25 @@ export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
 ` as GeneratedSubscription<
   APITypes.OnDeleteUsersSubscriptionVariables,
   APITypes.OnDeleteUsersSubscription
+>;
+export const onUpdateCanvasLikes = /* GraphQL */ `subscription OnUpdateCanvasLikes(
+  $cognitoId: String
+  $filter: ModelSubscriptionCanvasLikesFilterInput
+) {
+  onUpdateCanvasLikes(cognitoId: $cognitoId, filter: $filter) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateCanvasLikesSubscriptionVariables,
+  APITypes.OnUpdateCanvasLikesSubscription
 >;
 export const onUpdateCanvasSocialStats = /* GraphQL */ `subscription OnUpdateCanvasSocialStats(
   $filter: ModelSubscriptionCanvasSocialStatsFilterInput

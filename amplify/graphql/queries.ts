@@ -24,10 +24,12 @@ export const getCanvasCard = /* GraphQL */ `query GetCanvasCard($canvasId: Strin
   getCanvasCard(canvasId: $canvasId) {
     canvasCard {
       description
+      likeCount
       name
       ownerUsername
       publicity
       thumbnail
+      viewCount
       __typename
     }
     errorMessage
@@ -44,9 +46,11 @@ export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: Strin
     canvasData {
       canvasData
       description
+      likeCount
       name
       ownerUsername
       publicity
+      viewCount
       __typename
     }
     errorMessage
@@ -57,6 +61,22 @@ export const getCanvasData = /* GraphQL */ `query GetCanvasData($canvasId: Strin
 ` as GeneratedQuery<
   APITypes.GetCanvasDataQueryVariables,
   APITypes.GetCanvasDataQuery
+>;
+export const getCanvasLikes = /* GraphQL */ `query GetCanvasLikes($likeId: Int!, $username: ID!) {
+  getCanvasLikes(likeId: $likeId, username: $username) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCanvasLikesQueryVariables,
+  APITypes.GetCanvasLikesQuery
 >;
 export const getCanvasSocialStats = /* GraphQL */ `query GetCanvasSocialStats($canvasId: String!, $ownerUsername: ID!) {
   getCanvasSocialStats(canvasId: $canvasId, ownerUsername: $ownerUsername) {
@@ -114,6 +134,74 @@ export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
   }
 }
 ` as GeneratedQuery<APITypes.GetUsersQueryVariables, APITypes.GetUsersQuery>;
+export const listCanvasLikes = /* GraphQL */ `query ListCanvasLikes(
+  $filter: ModelCanvasLikesFilterInput
+  $likeId: ModelIntKeyConditionInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+  $username: ID
+) {
+  listCanvasLikes(
+    filter: $filter
+    likeId: $likeId
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+    username: $username
+  ) {
+    items {
+      canvasId
+      cognitoId
+      createdAt
+      likeId
+      ownerCognitoId
+      updatedAt
+      username
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasLikesQueryVariables,
+  APITypes.ListCanvasLikesQuery
+>;
+export const listCanvasLikesByCanvasIdAndUsername = /* GraphQL */ `query ListCanvasLikesByCanvasIdAndUsername(
+  $canvasId: String!
+  $filter: ModelCanvasLikesFilterInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+  $username: ModelIDKeyConditionInput
+) {
+  listCanvasLikesByCanvasIdAndUsername(
+    canvasId: $canvasId
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+    username: $username
+  ) {
+    items {
+      canvasId
+      cognitoId
+      createdAt
+      likeId
+      ownerCognitoId
+      updatedAt
+      username
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasLikesByCanvasIdAndUsernameQueryVariables,
+  APITypes.ListCanvasLikesByCanvasIdAndUsernameQuery
+>;
 export const listCanvasSocialStats = /* GraphQL */ `query ListCanvasSocialStats(
   $canvasId: ModelStringKeyConditionInput
   $filter: ModelCanvasSocialStatsFilterInput

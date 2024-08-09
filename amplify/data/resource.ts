@@ -6,6 +6,7 @@ import { getPublicCanvasIdsForUser } from '../functions/get-public-canvas-ids-fo
 import { getAllCanvasIdsForAuthenticatedUser } from '../functions/get-all-canvas-ids-for-authenticated-user/resource';
 import { getCanvasCard } from '../functions/get-canvas-card/resource';
 import { getCanvasData } from '../functions/get-canvas-data/resource';
+import { likeCanvasForUser } from '../functions/like-canvas-for-user/resource';
 
 const schema = a
   .schema({
@@ -88,6 +89,30 @@ const schema = a
       })
       .identifier(["ownerUsername", "canvasId"])
       .secondaryIndexes((index) => [index("canvasId")])
+      .authorization(allow => [
+        allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+      ]),
+    CanvasLikes: a
+      .model({
+        username: a.id().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        cognitoId: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        likeId: a.integer().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        canvasId: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+      })
+      .identifier(["username", "likeId"])
+      .secondaryIndexes((index) => [index("canvasId").sortKeys(["username"])])
       .authorization(allow => [
         allow.ownerDefinedIn("ownerCognitoId").to(["read"])
       ]),
@@ -176,7 +201,21 @@ const schema = a
       .arguments({ canvasId: a.string().required() })
       .authorization((allow) => [allow.authenticated(), allow.guest()])
       .returns(a.ref('getCanvasDataResponse'))
-      .handler(a.handler.function(getCanvasData))
+      .handler(a.handler.function(getCanvasData)),
+    likeCanvasForUserResponse: a.customType({
+      isCanvasLiked: a.boolean().required(),
+      errorMessage: a.string()
+    }),
+    likeCanvasForUser: a
+      .mutation()
+      .arguments({
+        username: a.string().required(),
+        canvasId: a.string().required(),
+        removeLike: a.boolean().required()
+      })
+      .authorization((allow) => [allow.authenticated()])
+      .returns(a.ref('likeCanvasForUserResponse'))
+      .handler(a.handler.function(likeCanvasForUser))
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
@@ -185,7 +224,8 @@ const schema = a
     allow.resource(getPublicCanvasIdsForUser),
     allow.resource(getAllCanvasIdsForAuthenticatedUser),
     allow.resource(getCanvasCard),
-    allow.resource(getCanvasData)
+    allow.resource(getCanvasData),
+    allow.resource(likeCanvasForUser)
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

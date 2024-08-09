@@ -402,3 +402,56 @@ export async function getNumberOfCanvasesForSignedInUserServer():
     }
     return { numberOfCanvases: null, errorMessage: "500 - Internal Server Error." }
 }
+
+export async function likeCanvasForSignedInUserServer(canvasId: string, removeLike: boolean = false):
+    Promise<{
+        isCanvasLiked: boolean | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        console.log("User not authenticated.");
+        return { isCanvasLiked: null, errorMessage: "User not authenticated." }
+    }
+
+    const result = await cookieBasedClient.mutations.likeCanvasForUser(
+        { username, canvasId, removeLike },
+        { authMode: "userPool" }
+    );
+
+    if (result.errors || !result.data) {
+        console.log(result.errors);
+        return { isCanvasLiked: false, errorMessage: "500 - Internal Server Error." }
+    }
+    console.log("here: " + result.data.errorMessage)
+    return {
+        isCanvasLiked: result.data.isCanvasLiked,
+        errorMessage: result.data.errorMessage ? result.data.errorMessage : null
+    };
+
+}
+
+export async function isCanvasLikedForSignedInUserServer(canvasId: string):
+    Promise<{
+        isCanvasLiked: boolean | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isCanvasLiked: null, errorMessage: "User not authenticated." }
+    }
+
+    const { data: listCanvasLikesData, errors: listCanvasLikesErrors } = await cookieBasedClient.models.CanvasLikes.listCanvasLikesByCanvasIdAndUsername(
+        { canvasId, username: { eq: username } },
+        { authMode: "userPool" }
+    )
+    if (listCanvasLikesErrors) {
+        console.log(listCanvasLikesData);
+        return { isCanvasLiked: null, errorMessage: "500 - Internal Server Error." }
+    }
+    return { isCanvasLiked: listCanvasLikesData.length > 0, errorMessage: null };
+}

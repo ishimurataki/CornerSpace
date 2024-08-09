@@ -36,6 +36,25 @@ export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
   APITypes.CreateCanvasForUserMutationVariables,
   APITypes.CreateCanvasForUserMutation
 >;
+export const createCanvasLikes = /* GraphQL */ `mutation CreateCanvasLikes(
+  $condition: ModelCanvasLikesConditionInput
+  $input: CreateCanvasLikesInput!
+) {
+  createCanvasLikes(condition: $condition, input: $input) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateCanvasLikesMutationVariables,
+  APITypes.CreateCanvasLikesMutation
+>;
 export const createCanvasSocialStats = /* GraphQL */ `mutation CreateCanvasSocialStats(
   $condition: ModelCanvasSocialStatsConditionInput
   $input: CreateCanvasSocialStatsInput!
@@ -103,6 +122,25 @@ export const deleteCanvasForUser = /* GraphQL */ `mutation DeleteCanvasForUser($
   APITypes.DeleteCanvasForUserMutationVariables,
   APITypes.DeleteCanvasForUserMutation
 >;
+export const deleteCanvasLikes = /* GraphQL */ `mutation DeleteCanvasLikes(
+  $condition: ModelCanvasLikesConditionInput
+  $input: DeleteCanvasLikesInput!
+) {
+  deleteCanvasLikes(condition: $condition, input: $input) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteCanvasLikesMutationVariables,
+  APITypes.DeleteCanvasLikesMutation
+>;
 export const deleteCanvasSocialStats = /* GraphQL */ `mutation DeleteCanvasSocialStats(
   $condition: ModelCanvasSocialStatsConditionInput
   $input: DeleteCanvasSocialStatsInput!
@@ -158,6 +196,36 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
 ` as GeneratedMutation<
   APITypes.DeleteUsersMutationVariables,
   APITypes.DeleteUsersMutation
+>;
+export const likeCanvasForUser = /* GraphQL */ `mutation LikeCanvasForUser($canvasId: String!, $username: String!) {
+  likeCanvasForUser(canvasId: $canvasId, username: $username) {
+    errorMessage
+    isCanvasLiked
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.LikeCanvasForUserMutationVariables,
+  APITypes.LikeCanvasForUserMutation
+>;
+export const updateCanvasLikes = /* GraphQL */ `mutation UpdateCanvasLikes(
+  $condition: ModelCanvasLikesConditionInput
+  $input: UpdateCanvasLikesInput!
+) {
+  updateCanvasLikes(condition: $condition, input: $input) {
+    canvasId
+    cognitoId
+    createdAt
+    likeId
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateCanvasLikesMutationVariables,
+  APITypes.UpdateCanvasLikesMutation
 >;
 export const updateCanvasSocialStats = /* GraphQL */ `mutation UpdateCanvasSocialStats(
   $condition: ModelCanvasSocialStatsConditionInput
