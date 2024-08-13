@@ -6,6 +6,8 @@ import Gallery from "./gallery";
 import LikedCanvases from "./liked-canvases";
 import Tabs from "./tabs";
 import { Suspense } from "react";
+import Following from "./following";
+import Followers from "./followers";
 
 export default async function App() {
 
@@ -33,6 +35,20 @@ export default async function App() {
             <div className={`bg-gray-200 w-full h-full rounded-lg`}>
             </div>}>
             <Gallery forOwner={true} forUser={null} />
+          </Suspense>
+        }
+        FollowingServerComponent={
+          <Suspense fallback={
+            <div className={`bg-gray-200 w-full h-full rounded-lg`}>
+            </div>}>
+            <Following />
+          </Suspense>
+        }
+        FollowersServerComponent={
+          <Suspense fallback={
+            <div className={`bg-gray-200 w-full h-full rounded-lg`}>
+            </div>}>
+            <Followers />
           </Suspense>
         }
       />

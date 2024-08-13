@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData, defineFunction } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { postConfirmation } from '../auth/post-confirmation/resource';
 import { createCanvasForUser } from '../functions/create-canvas-for-user/resource';
 import { deleteCanvasForUser } from '../functions/delete-canvas-for-user/resource';
@@ -7,6 +7,7 @@ import { getAllCanvasIdsForAuthenticatedUser } from '../functions/get-all-canvas
 import { getCanvasCard } from '../functions/get-canvas-card/resource';
 import { getCanvasData } from '../functions/get-canvas-data/resource';
 import { likeCanvasForUser } from '../functions/like-canvas-for-user/resource';
+import { followUser } from '../functions/follow-user/resource';
 
 const schema = a
   .schema({
@@ -116,6 +117,52 @@ const schema = a
       .authorization(allow => [
         allow.ownerDefinedIn("ownerCognitoId").to(["read"])
       ]),
+    UserFollowing: a
+      .model({
+        username: a.id().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        cognitoId: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        following: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        followDate: a.datetime().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+      })
+      .identifier(["username", "following"])
+      .authorization(allow => [
+        allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+      ]),
+    UserFollowers: a
+      .model({
+        username: a.id().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        cognitoId: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        follower: a.string().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        followDate: a.datetime().required()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+      })
+      .identifier(["username", "follower"])
+      .authorization(allow => [
+        allow.ownerDefinedIn("ownerCognitoId").to(["read"])
+      ]),
     createCanvasForUserResponse: a.customType({
       isCanvasSaved: a.boolean().required(),
       canvasId: a.string(),
@@ -215,7 +262,21 @@ const schema = a
       })
       .authorization((allow) => [allow.authenticated()])
       .returns(a.ref('likeCanvasForUserResponse'))
-      .handler(a.handler.function(likeCanvasForUser))
+      .handler(a.handler.function(likeCanvasForUser)),
+    followUserResponse: a.customType({
+      isUserFollowed: a.boolean().required(),
+      errorMessage: a.string()
+    }),
+    followUser: a
+      .mutation()
+      .arguments({
+        username: a.string().required(),
+        userToFollow: a.string().required(),
+        unfollow: a.boolean().required()
+      })
+      .authorization((allow) => [allow.authenticated()])
+      .returns(a.ref('followUserResponse'))
+      .handler(a.handler.function(followUser))
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
@@ -225,7 +286,8 @@ const schema = a
     allow.resource(getAllCanvasIdsForAuthenticatedUser),
     allow.resource(getCanvasCard),
     allow.resource(getCanvasData),
-    allow.resource(likeCanvasForUser)
+    allow.resource(likeCanvasForUser),
+    allow.resource(followUser),
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

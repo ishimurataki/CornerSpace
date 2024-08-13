@@ -66,6 +66,44 @@ export const onCreateCanvases = /* GraphQL */ `subscription OnCreateCanvases(
   APITypes.OnCreateCanvasesSubscriptionVariables,
   APITypes.OnCreateCanvasesSubscription
 >;
+export const onCreateUserFollowers = /* GraphQL */ `subscription OnCreateUserFollowers(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowersFilterInput
+) {
+  onCreateUserFollowers(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateUserFollowersSubscriptionVariables,
+  APITypes.OnCreateUserFollowersSubscription
+>;
+export const onCreateUserFollowing = /* GraphQL */ `subscription OnCreateUserFollowing(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowingFilterInput
+) {
+  onCreateUserFollowing(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateUserFollowingSubscriptionVariables,
+  APITypes.OnCreateUserFollowingSubscription
+>;
 export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
   $cognitoId: String
   $filter: ModelSubscriptionUsersFilterInput
@@ -141,6 +179,44 @@ export const onDeleteCanvases = /* GraphQL */ `subscription OnDeleteCanvases(
   APITypes.OnDeleteCanvasesSubscriptionVariables,
   APITypes.OnDeleteCanvasesSubscription
 >;
+export const onDeleteUserFollowers = /* GraphQL */ `subscription OnDeleteUserFollowers(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowersFilterInput
+) {
+  onDeleteUserFollowers(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteUserFollowersSubscriptionVariables,
+  APITypes.OnDeleteUserFollowersSubscription
+>;
+export const onDeleteUserFollowing = /* GraphQL */ `subscription OnDeleteUserFollowing(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowingFilterInput
+) {
+  onDeleteUserFollowing(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteUserFollowingSubscriptionVariables,
+  APITypes.OnDeleteUserFollowingSubscription
+>;
 export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
   $cognitoId: String
   $filter: ModelSubscriptionUsersFilterInput
@@ -215,6 +291,44 @@ export const onUpdateCanvases = /* GraphQL */ `subscription OnUpdateCanvases(
 ` as GeneratedSubscription<
   APITypes.OnUpdateCanvasesSubscriptionVariables,
   APITypes.OnUpdateCanvasesSubscription
+>;
+export const onUpdateUserFollowers = /* GraphQL */ `subscription OnUpdateUserFollowers(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowersFilterInput
+) {
+  onUpdateUserFollowers(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateUserFollowersSubscriptionVariables,
+  APITypes.OnUpdateUserFollowersSubscription
+>;
+export const onUpdateUserFollowing = /* GraphQL */ `subscription OnUpdateUserFollowing(
+  $cognitoId: String
+  $filter: ModelSubscriptionUserFollowingFilterInput
+) {
+  onUpdateUserFollowing(cognitoId: $cognitoId, filter: $filter) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateUserFollowingSubscriptionVariables,
+  APITypes.OnUpdateUserFollowingSubscription
 >;
 export const onUpdateUsers = /* GraphQL */ `subscription OnUpdateUsers(
   $cognitoId: String

@@ -123,6 +123,38 @@ export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIds
   APITypes.GetPublicCanvasIdsForUserQueryVariables,
   APITypes.GetPublicCanvasIdsForUserQuery
 >;
+export const getUserFollowers = /* GraphQL */ `query GetUserFollowers($follower: String!, $username: ID!) {
+  getUserFollowers(follower: $follower, username: $username) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetUserFollowersQueryVariables,
+  APITypes.GetUserFollowersQuery
+>;
+export const getUserFollowing = /* GraphQL */ `query GetUserFollowing($following: String!, $username: ID!) {
+  getUserFollowing(following: $following, username: $username) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetUserFollowingQueryVariables,
+  APITypes.GetUserFollowingQuery
+>;
 export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
   getUsers(username: $username) {
     cognitoId
@@ -335,6 +367,74 @@ export const listCanvasesByCanvasId = /* GraphQL */ `query ListCanvasesByCanvasI
 ` as GeneratedQuery<
   APITypes.ListCanvasesByCanvasIdQueryVariables,
   APITypes.ListCanvasesByCanvasIdQuery
+>;
+export const listUserFollowers = /* GraphQL */ `query ListUserFollowers(
+  $filter: ModelUserFollowersFilterInput
+  $follower: ModelStringKeyConditionInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+  $username: ID
+) {
+  listUserFollowers(
+    filter: $filter
+    follower: $follower
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+    username: $username
+  ) {
+    items {
+      cognitoId
+      createdAt
+      followDate
+      follower
+      ownerCognitoId
+      updatedAt
+      username
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListUserFollowersQueryVariables,
+  APITypes.ListUserFollowersQuery
+>;
+export const listUserFollowings = /* GraphQL */ `query ListUserFollowings(
+  $filter: ModelUserFollowingFilterInput
+  $following: ModelStringKeyConditionInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+  $username: ID
+) {
+  listUserFollowings(
+    filter: $filter
+    following: $following
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+    username: $username
+  ) {
+    items {
+      cognitoId
+      createdAt
+      followDate
+      following
+      ownerCognitoId
+      updatedAt
+      username
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListUserFollowingsQueryVariables,
+  APITypes.ListUserFollowingsQuery
 >;
 export const listUsers = /* GraphQL */ `query ListUsers(
   $filter: ModelUsersFilterInput

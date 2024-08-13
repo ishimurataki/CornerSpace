@@ -425,7 +425,6 @@ export async function likeCanvasForSignedInUserServer(canvasId: string, removeLi
         console.log(result.errors);
         return { isCanvasLiked: false, errorMessage: "500 - Internal Server Error." }
     }
-    console.log("here: " + result.data.errorMessage)
     return {
         isCanvasLiked: result.data.isCanvasLiked,
         errorMessage: result.data.errorMessage ? result.data.errorMessage : null
@@ -450,7 +449,7 @@ export async function isCanvasLikedForSignedInUserServer(canvasId: string):
         { authMode: "userPool" }
     )
     if (listCanvasLikesErrors) {
-        console.log(listCanvasLikesData);
+        console.log(listCanvasLikesErrors);
         return { isCanvasLiked: null, errorMessage: "500 - Internal Server Error." }
     }
     return { isCanvasLiked: listCanvasLikesData.length > 0, errorMessage: null };
@@ -482,4 +481,117 @@ export async function getLikedCanvasesForSignedInUserServer():
     })
 
     return { areCanvasIdsLoaded: true, canvasIds: likedCanvases, errorMessage: null };
+}
+
+export async function followUserForSignedInUserServer(userToFollow: string, unfollow: boolean = false):
+    Promise<{
+        isUserFollowed: boolean | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        console.log("User not authenticated.");
+        return { isUserFollowed: null, errorMessage: "User not authenticated." }
+    }
+
+    const result = await cookieBasedClient.mutations.followUser(
+        { username, userToFollow, unfollow },
+        { authMode: "userPool" }
+    );
+
+    if (result.errors || !result.data) {
+        console.log(result.errors);
+        return { isUserFollowed: false, errorMessage: "500 - Internal Server Error." }
+    }
+
+    return {
+        isUserFollowed: result.data.isUserFollowed,
+        errorMessage: result.data.errorMessage ? result.data.errorMessage : null
+    };
+}
+
+export async function isUserFollowedForSignedInUserServer(userToFollow: string):
+    Promise<{
+        isUserFollowed: boolean | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isUserFollowed: null, errorMessage: "User not authenticated." };
+    }
+
+    if (username == userToFollow) {
+        return { isUserFollowed: false, errorMessage: null };
+    }
+
+    const { data: getUserFollowingData, errors: getUserFollowingErrors } = await cookieBasedClient.models.UserFollowing.get(
+        { username: username, following: userToFollow },
+        { authMode: "userPool" }
+    );
+
+    if (getUserFollowingErrors) {
+        console.log(getUserFollowingErrors);
+        return { isUserFollowed: null, errorMessage: "500 - Internal Server Error." }
+    }
+    return { isUserFollowed: !!getUserFollowingData, errorMessage: null };
+}
+
+export async function getUserFollowingForSignedInUserServer():
+    Promise<{
+        areUsersReturned: boolean, users: { username: string, followDate: string }[] | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { areUsersReturned: false, users: null, errorMessage: "User not authenticated." }
+    }
+
+    const { data: listUserFollowingData, errors: listUserFollowingErrors } = await cookieBasedClient.models.UserFollowing.list(
+        { username: username, authMode: "userPool" },
+    );
+
+    if (listUserFollowingErrors) {
+        console.log(listUserFollowingErrors)
+        return { areUsersReturned: false, users: null, errorMessage: "500 - Internal Server Error." }
+    }
+
+    const users = listUserFollowingData.map((user) => {
+        return { username: user.following, followDate: user.followDate }
+    });
+
+    return { areUsersReturned: true, users: users, errorMessage: null };
+}
+
+export async function getUserFollowersForSignedInUserServer():
+    Promise<{
+        areUsersReturned: boolean, users: { username: string, followDate: string }[] | null, errorMessage: string | null
+    }> {
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { areUsersReturned: false, users: null, errorMessage: "User not authenticated." }
+    }
+
+    const { data: listUserFollowersData, errors: listUserFollowersErrors } = await cookieBasedClient.models.UserFollowers.list(
+        { username: username, authMode: "userPool" },
+    );
+
+    if (listUserFollowersErrors) {
+        console.log(listUserFollowersErrors)
+        return { areUsersReturned: false, users: null, errorMessage: "500 - Internal Server Error." }
+    }
+
+    const users = listUserFollowersData.map((user) => {
+        return { username: user.follower, followDate: user.followDate }
+    });
+
+    return { areUsersReturned: true, users: users, errorMessage: null };
 }

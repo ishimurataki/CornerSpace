@@ -94,6 +94,44 @@ export const createCanvases = /* GraphQL */ `mutation CreateCanvases(
   APITypes.CreateCanvasesMutationVariables,
   APITypes.CreateCanvasesMutation
 >;
+export const createUserFollowers = /* GraphQL */ `mutation CreateUserFollowers(
+  $condition: ModelUserFollowersConditionInput
+  $input: CreateUserFollowersInput!
+) {
+  createUserFollowers(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateUserFollowersMutationVariables,
+  APITypes.CreateUserFollowersMutation
+>;
+export const createUserFollowing = /* GraphQL */ `mutation CreateUserFollowing(
+  $condition: ModelUserFollowingConditionInput
+  $input: CreateUserFollowingInput!
+) {
+  createUserFollowing(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateUserFollowingMutationVariables,
+  APITypes.CreateUserFollowingMutation
+>;
 export const createUsers = /* GraphQL */ `mutation CreateUsers(
   $condition: ModelUsersConditionInput
   $input: CreateUsersInput!
@@ -180,6 +218,44 @@ export const deleteCanvases = /* GraphQL */ `mutation DeleteCanvases(
   APITypes.DeleteCanvasesMutationVariables,
   APITypes.DeleteCanvasesMutation
 >;
+export const deleteUserFollowers = /* GraphQL */ `mutation DeleteUserFollowers(
+  $condition: ModelUserFollowersConditionInput
+  $input: DeleteUserFollowersInput!
+) {
+  deleteUserFollowers(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteUserFollowersMutationVariables,
+  APITypes.DeleteUserFollowersMutation
+>;
+export const deleteUserFollowing = /* GraphQL */ `mutation DeleteUserFollowing(
+  $condition: ModelUserFollowingConditionInput
+  $input: DeleteUserFollowingInput!
+) {
+  deleteUserFollowing(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteUserFollowingMutationVariables,
+  APITypes.DeleteUserFollowingMutation
+>;
 export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
   $condition: ModelUsersConditionInput
   $input: DeleteUsersInput!
@@ -197,8 +273,35 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
   APITypes.DeleteUsersMutationVariables,
   APITypes.DeleteUsersMutation
 >;
-export const likeCanvasForUser = /* GraphQL */ `mutation LikeCanvasForUser($canvasId: String!, $username: String!) {
-  likeCanvasForUser(canvasId: $canvasId, username: $username) {
+export const followUser = /* GraphQL */ `mutation FollowUser(
+  $unfollow: Boolean!
+  $userToFollow: String!
+  $username: String!
+) {
+  followUser(
+    unfollow: $unfollow
+    userToFollow: $userToFollow
+    username: $username
+  ) {
+    errorMessage
+    isUserFollowed
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.FollowUserMutationVariables,
+  APITypes.FollowUserMutation
+>;
+export const likeCanvasForUser = /* GraphQL */ `mutation LikeCanvasForUser(
+  $canvasId: String!
+  $removeLike: Boolean!
+  $username: String!
+) {
+  likeCanvasForUser(
+    canvasId: $canvasId
+    removeLike: $removeLike
+    username: $username
+  ) {
     errorMessage
     isCanvasLiked
     __typename
@@ -265,6 +368,44 @@ export const updateCanvases = /* GraphQL */ `mutation UpdateCanvases(
 ` as GeneratedMutation<
   APITypes.UpdateCanvasesMutationVariables,
   APITypes.UpdateCanvasesMutation
+>;
+export const updateUserFollowers = /* GraphQL */ `mutation UpdateUserFollowers(
+  $condition: ModelUserFollowersConditionInput
+  $input: UpdateUserFollowersInput!
+) {
+  updateUserFollowers(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    follower
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateUserFollowersMutationVariables,
+  APITypes.UpdateUserFollowersMutation
+>;
+export const updateUserFollowing = /* GraphQL */ `mutation UpdateUserFollowing(
+  $condition: ModelUserFollowingConditionInput
+  $input: UpdateUserFollowingInput!
+) {
+  updateUserFollowing(condition: $condition, input: $input) {
+    cognitoId
+    createdAt
+    followDate
+    following
+    ownerCognitoId
+    updatedAt
+    username
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateUserFollowingMutationVariables,
+  APITypes.UpdateUserFollowingMutation
 >;
 export const updateUsers = /* GraphQL */ `mutation UpdateUsers(
   $condition: ModelUsersConditionInput

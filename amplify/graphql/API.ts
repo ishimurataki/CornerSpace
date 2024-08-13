@@ -79,6 +79,28 @@ export type Canvases = {
   updatedAt: string,
 };
 
+export type UserFollowers = {
+  __typename: "UserFollowers",
+  cognitoId: string,
+  createdAt: string,
+  followDate: string,
+  follower: string,
+  ownerCognitoId?: string | null,
+  updatedAt: string,
+  username: string,
+};
+
+export type UserFollowing = {
+  __typename: "UserFollowing",
+  cognitoId: string,
+  createdAt: string,
+  followDate: string,
+  following: string,
+  ownerCognitoId?: string | null,
+  updatedAt: string,
+  username: string,
+};
+
 export type Users = {
   __typename: "Users",
   cognitoId?: string | null,
@@ -252,6 +274,46 @@ export type ModelCanvasesConnection = {
   nextToken?: string | null,
 };
 
+export type ModelUserFollowersFilterInput = {
+  and?: Array< ModelUserFollowersFilterInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  followDate?: ModelStringInput | null,
+  follower?: ModelStringInput | null,
+  id?: ModelIDInput | null,
+  not?: ModelUserFollowersFilterInput | null,
+  or?: Array< ModelUserFollowersFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  username?: ModelIDInput | null,
+};
+
+export type ModelUserFollowersConnection = {
+  __typename: "ModelUserFollowersConnection",
+  items:  Array<UserFollowers | null >,
+  nextToken?: string | null,
+};
+
+export type ModelUserFollowingFilterInput = {
+  and?: Array< ModelUserFollowingFilterInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  followDate?: ModelStringInput | null,
+  following?: ModelStringInput | null,
+  id?: ModelIDInput | null,
+  not?: ModelUserFollowingFilterInput | null,
+  or?: Array< ModelUserFollowingFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  username?: ModelIDInput | null,
+};
+
+export type ModelUserFollowingConnection = {
+  __typename: "ModelUserFollowingConnection",
+  items:  Array<UserFollowing | null >,
+  nextToken?: string | null,
+};
+
 export type ModelUsersFilterInput = {
   and?: Array< ModelUsersFilterInput | null > | null,
   cognitoId?: ModelStringInput | null,
@@ -335,6 +397,42 @@ export type CreateCanvasesInput = {
   publicity: string,
 };
 
+export type ModelUserFollowersConditionInput = {
+  and?: Array< ModelUserFollowersConditionInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  followDate?: ModelStringInput | null,
+  not?: ModelUserFollowersConditionInput | null,
+  or?: Array< ModelUserFollowersConditionInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type CreateUserFollowersInput = {
+  cognitoId: string,
+  followDate: string,
+  follower: string,
+  username: string,
+};
+
+export type ModelUserFollowingConditionInput = {
+  and?: Array< ModelUserFollowingConditionInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  followDate?: ModelStringInput | null,
+  not?: ModelUserFollowingConditionInput | null,
+  or?: Array< ModelUserFollowingConditionInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type CreateUserFollowingInput = {
+  cognitoId: string,
+  followDate: string,
+  following: string,
+  username: string,
+};
+
 export type ModelUsersConditionInput = {
   and?: Array< ModelUsersConditionInput | null > | null,
   cognitoId?: ModelStringInput | null,
@@ -372,8 +470,24 @@ export type DeleteCanvasesInput = {
   ownerUsername: string,
 };
 
+export type DeleteUserFollowersInput = {
+  follower: string,
+  username: string,
+};
+
+export type DeleteUserFollowingInput = {
+  following: string,
+  username: string,
+};
+
 export type DeleteUsersInput = {
   username: string,
+};
+
+export type followUserResponse = {
+  __typename: "followUserResponse",
+  errorMessage?: string | null,
+  isUserFollowed: boolean,
 };
 
 export type likeCanvasForUserResponse = {
@@ -404,6 +518,20 @@ export type UpdateCanvasesInput = {
   ownerCognitoId?: string | null,
   ownerUsername: string,
   publicity?: string | null,
+};
+
+export type UpdateUserFollowersInput = {
+  cognitoId?: string | null,
+  followDate?: string | null,
+  follower: string,
+  username: string,
+};
+
+export type UpdateUserFollowingInput = {
+  cognitoId?: string | null,
+  followDate?: string | null,
+  following: string,
+  username: string,
 };
 
 export type UpdateUsersInput = {
@@ -492,6 +620,32 @@ export type ModelSubscriptionCanvasesFilterInput = {
   ownerUsername?: ModelSubscriptionIDInput | null,
   publicity?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
+};
+
+export type ModelSubscriptionUserFollowersFilterInput = {
+  and?: Array< ModelSubscriptionUserFollowersFilterInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  followDate?: ModelSubscriptionStringInput | null,
+  follower?: ModelSubscriptionStringInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  or?: Array< ModelSubscriptionUserFollowersFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  username?: ModelSubscriptionIDInput | null,
+};
+
+export type ModelSubscriptionUserFollowingFilterInput = {
+  and?: Array< ModelSubscriptionUserFollowingFilterInput | null > | null,
+  cognitoId?: ModelStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  followDate?: ModelSubscriptionStringInput | null,
+  following?: ModelSubscriptionStringInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  or?: Array< ModelSubscriptionUserFollowingFilterInput | null > | null,
+  ownerCognitoId?: ModelStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  username?: ModelSubscriptionIDInput | null,
 };
 
 export type ModelSubscriptionUsersFilterInput = {
@@ -627,6 +781,42 @@ export type GetPublicCanvasIdsForUserQuery = {
     areCanvasIdsReturned: boolean,
     canvasIds?: Array< string > | null,
     errorMessage?: string | null,
+  } | null,
+};
+
+export type GetUserFollowersQueryVariables = {
+  follower: string,
+  username: string,
+};
+
+export type GetUserFollowersQuery = {
+  getUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type GetUserFollowingQueryVariables = {
+  following: string,
+  username: string,
+};
+
+export type GetUserFollowingQuery = {
+  getUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
   } | null,
 };
 
@@ -801,6 +991,58 @@ export type ListCanvasesByCanvasIdQuery = {
   } | null,
 };
 
+export type ListUserFollowersQueryVariables = {
+  filter?: ModelUserFollowersFilterInput | null,
+  follower?: ModelStringKeyConditionInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+  username?: string | null,
+};
+
+export type ListUserFollowersQuery = {
+  listUserFollowers?:  {
+    __typename: "ModelUserFollowersConnection",
+    items:  Array< {
+      __typename: "UserFollowers",
+      cognitoId: string,
+      createdAt: string,
+      followDate: string,
+      follower: string,
+      ownerCognitoId?: string | null,
+      updatedAt: string,
+      username: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ListUserFollowingsQueryVariables = {
+  filter?: ModelUserFollowingFilterInput | null,
+  following?: ModelStringKeyConditionInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+  username?: string | null,
+};
+
+export type ListUserFollowingsQuery = {
+  listUserFollowings?:  {
+    __typename: "ModelUserFollowingConnection",
+    items:  Array< {
+      __typename: "UserFollowing",
+      cognitoId: string,
+      createdAt: string,
+      followDate: string,
+      following: string,
+      ownerCognitoId?: string | null,
+      updatedAt: string,
+      username: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type ListUsersQueryVariables = {
   filter?: ModelUsersFilterInput | null,
   limit?: number | null,
@@ -898,6 +1140,42 @@ export type CreateCanvasesMutation = {
   } | null,
 };
 
+export type CreateUserFollowersMutationVariables = {
+  condition?: ModelUserFollowersConditionInput | null,
+  input: CreateUserFollowersInput,
+};
+
+export type CreateUserFollowersMutation = {
+  createUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type CreateUserFollowingMutationVariables = {
+  condition?: ModelUserFollowingConditionInput | null,
+  input: CreateUserFollowingInput,
+};
+
+export type CreateUserFollowingMutation = {
+  createUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
 export type CreateUsersMutationVariables = {
   condition?: ModelUsersConditionInput | null,
   input: CreateUsersInput,
@@ -981,6 +1259,42 @@ export type DeleteCanvasesMutation = {
   } | null,
 };
 
+export type DeleteUserFollowersMutationVariables = {
+  condition?: ModelUserFollowersConditionInput | null,
+  input: DeleteUserFollowersInput,
+};
+
+export type DeleteUserFollowersMutation = {
+  deleteUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type DeleteUserFollowingMutationVariables = {
+  condition?: ModelUserFollowingConditionInput | null,
+  input: DeleteUserFollowingInput,
+};
+
+export type DeleteUserFollowingMutation = {
+  deleteUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
 export type DeleteUsersMutationVariables = {
   condition?: ModelUsersConditionInput | null,
   input: DeleteUsersInput,
@@ -997,8 +1311,23 @@ export type DeleteUsersMutation = {
   } | null,
 };
 
+export type FollowUserMutationVariables = {
+  unfollow: boolean,
+  userToFollow: string,
+  username: string,
+};
+
+export type FollowUserMutation = {
+  followUser?:  {
+    __typename: "followUserResponse",
+    errorMessage?: string | null,
+    isUserFollowed: boolean,
+  } | null,
+};
+
 export type LikeCanvasForUserMutationVariables = {
   canvasId: string,
+  removeLike: boolean,
   username: string,
 };
 
@@ -1062,6 +1391,42 @@ export type UpdateCanvasesMutation = {
     ownerUsername: string,
     publicity: string,
     updatedAt: string,
+  } | null,
+};
+
+export type UpdateUserFollowersMutationVariables = {
+  condition?: ModelUserFollowersConditionInput | null,
+  input: UpdateUserFollowersInput,
+};
+
+export type UpdateUserFollowersMutation = {
+  updateUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type UpdateUserFollowingMutationVariables = {
+  condition?: ModelUserFollowingConditionInput | null,
+  input: UpdateUserFollowingInput,
+};
+
+export type UpdateUserFollowingMutation = {
+  updateUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
   } | null,
 };
 
@@ -1136,6 +1501,42 @@ export type OnCreateCanvasesSubscription = {
   } | null,
 };
 
+export type OnCreateUserFollowersSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowersFilterInput | null,
+};
+
+export type OnCreateUserFollowersSubscription = {
+  onCreateUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type OnCreateUserFollowingSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowingFilterInput | null,
+};
+
+export type OnCreateUserFollowingSubscription = {
+  onCreateUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
 export type OnCreateUsersSubscriptionVariables = {
   cognitoId?: string | null,
   filter?: ModelSubscriptionUsersFilterInput | null,
@@ -1207,6 +1608,42 @@ export type OnDeleteCanvasesSubscription = {
   } | null,
 };
 
+export type OnDeleteUserFollowersSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowersFilterInput | null,
+};
+
+export type OnDeleteUserFollowersSubscription = {
+  onDeleteUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type OnDeleteUserFollowingSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowingFilterInput | null,
+};
+
+export type OnDeleteUserFollowingSubscription = {
+  onDeleteUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
 export type OnDeleteUsersSubscriptionVariables = {
   cognitoId?: string | null,
   filter?: ModelSubscriptionUsersFilterInput | null,
@@ -1275,6 +1712,42 @@ export type OnUpdateCanvasesSubscription = {
     ownerUsername: string,
     publicity: string,
     updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateUserFollowersSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowersFilterInput | null,
+};
+
+export type OnUpdateUserFollowersSubscription = {
+  onUpdateUserFollowers?:  {
+    __typename: "UserFollowers",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    follower: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
+  } | null,
+};
+
+export type OnUpdateUserFollowingSubscriptionVariables = {
+  cognitoId?: string | null,
+  filter?: ModelSubscriptionUserFollowingFilterInput | null,
+};
+
+export type OnUpdateUserFollowingSubscription = {
+  onUpdateUserFollowing?:  {
+    __typename: "UserFollowing",
+    cognitoId: string,
+    createdAt: string,
+    followDate: string,
+    following: string,
+    ownerCognitoId?: string | null,
+    updatedAt: string,
+    username: string,
   } | null,
 };
 
