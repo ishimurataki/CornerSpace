@@ -16,7 +16,7 @@ export default async function Following() {
 
     const tableRows = users.map((user) => {
         return (
-            <tr>
+            <tr key={"following-" + user}>
                 <td className="pr-10 py-1">
                     <Link className="hover:text-cyan-500" href={`user/${user.username}`}>@{user.username}</Link>
                 </td>
