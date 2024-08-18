@@ -10,6 +10,7 @@ import { getCanvasData } from './functions/get-canvas-data/resource';
 import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { deleteCanvasForUser } from './functions/delete-canvas-for-user/resource';
 import { canvasesStreamingEvent } from './functions/canvases-streaming-event/resource';
+import { canvasLikesStreamingEvent } from './functions/canvas-likes-streaming-event/resource';
 import { EventSourceMapping, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Stack } from 'aws-cdk-lib';
 
@@ -23,7 +24,8 @@ const backend = defineBackend({
   getAllCanvasIdsForAuthenticatedUser,
   getCanvasCard,
   getCanvasData,
-  canvasesStreamingEvent
+  canvasesStreamingEvent,
+  canvasLikesStreamingEvent
 });
 
 let ddbReadPolicy = new PolicyStatement({
@@ -86,6 +88,39 @@ new EventSourceMapping(
   {
     target: backend.canvasesStreamingEvent.resources.lambda,
     eventSourceArn: canvasesTable.tableStreamArn,
+    startingPosition: StartingPosition.LATEST,
+  }
+);
+
+const canvasLikesTable = backend.data.resources.tables["CanvasLikes"];
+backend.canvasLikesStreamingEvent.resources.lambda.role?.attachInlinePolicy(
+  new Policy(
+    Stack.of(canvasLikesTable),
+    "DynamoDBPolicy",
+    {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            "dynamodb:DescribeStream",
+            "dynamodb:GetRecords",
+            "dynamodb:GetShardIterator",
+            "dynamodb:ListStreams",
+          ],
+          resources: ["*"],
+        }),
+      ],
+    }
+  )
+);
+backend.canvasLikesStreamingEvent.resources.lambda.addToRolePolicy(ddbReadWritePolicy);
+
+new EventSourceMapping(
+  Stack.of(canvasLikesTable),
+  "CanvasLikesStreamingEventSourceMapping",
+  {
+    target: backend.canvasLikesStreamingEvent.resources.lambda,
+    eventSourceArn: canvasLikesTable.tableStreamArn,
     startingPosition: StartingPosition.LATEST,
   }
 );

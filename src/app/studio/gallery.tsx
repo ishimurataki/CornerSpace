@@ -47,7 +47,7 @@ export default async function Gallery({ forOwner, forUser }: { forOwner: boolean
                     <Suspense fallback={
                         <div className={`bg-gray-200 w-full h-full rounded-lg`}>
                         </div>} key={`canvasCard-${canvasId}`}>
-                        <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={true} />
+                        <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={forOwner} />
                     </Suspense>
                 );
             })}
