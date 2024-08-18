@@ -79,6 +79,16 @@ export type Canvases = {
   updatedAt: string,
 };
 
+export type CanvasesDigest = {
+  __typename: "CanvasesDigest",
+  canvasId?: string | null,
+  count?: number | null,
+  createdAt: string,
+  partitionKey: string,
+  sortKey: number,
+  updatedAt: string,
+};
+
 export type UserFollowers = {
   __typename: "UserFollowers",
   cognitoId: string,
@@ -274,6 +284,46 @@ export type ModelCanvasesConnection = {
   nextToken?: string | null,
 };
 
+export type ModelCanvasesDigestFilterInput = {
+  and?: Array< ModelCanvasesDigestFilterInput | null > | null,
+  canvasId?: ModelStringInput | null,
+  count?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  id?: ModelIDInput | null,
+  not?: ModelCanvasesDigestFilterInput | null,
+  or?: Array< ModelCanvasesDigestFilterInput | null > | null,
+  partitionKey?: ModelStringInput | null,
+  sortKey?: ModelFloatInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type ModelFloatInput = {
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+  between?: Array< number | null > | null,
+  eq?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ne?: number | null,
+};
+
+export type ModelCanvasesDigestConnection = {
+  __typename: "ModelCanvasesDigestConnection",
+  items:  Array<CanvasesDigest | null >,
+  nextToken?: string | null,
+};
+
+export type ModelFloatKeyConditionInput = {
+  between?: Array< number | null > | null,
+  eq?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  le?: number | null,
+  lt?: number | null,
+};
+
 export type ModelUserFollowersFilterInput = {
   and?: Array< ModelUserFollowersFilterInput | null > | null,
   cognitoId?: ModelStringInput | null,
@@ -397,6 +447,23 @@ export type CreateCanvasesInput = {
   publicity: string,
 };
 
+export type ModelCanvasesDigestConditionInput = {
+  and?: Array< ModelCanvasesDigestConditionInput | null > | null,
+  canvasId?: ModelStringInput | null,
+  count?: ModelIntInput | null,
+  createdAt?: ModelStringInput | null,
+  not?: ModelCanvasesDigestConditionInput | null,
+  or?: Array< ModelCanvasesDigestConditionInput | null > | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type CreateCanvasesDigestInput = {
+  canvasId?: string | null,
+  count?: number | null,
+  partitionKey: string,
+  sortKey: number,
+};
+
 export type ModelUserFollowersConditionInput = {
   and?: Array< ModelUserFollowersConditionInput | null > | null,
   cognitoId?: ModelStringInput | null,
@@ -470,6 +537,11 @@ export type DeleteCanvasesInput = {
   ownerUsername: string,
 };
 
+export type DeleteCanvasesDigestInput = {
+  partitionKey: string,
+  sortKey: number,
+};
+
 export type DeleteUserFollowersInput = {
   follower: string,
   username: string,
@@ -518,6 +590,13 @@ export type UpdateCanvasesInput = {
   ownerCognitoId?: string | null,
   ownerUsername: string,
   publicity?: string | null,
+};
+
+export type UpdateCanvasesDigestInput = {
+  canvasId?: string | null,
+  count?: number | null,
+  partitionKey: string,
+  sortKey: number,
 };
 
 export type UpdateUserFollowersInput = {
@@ -620,6 +699,30 @@ export type ModelSubscriptionCanvasesFilterInput = {
   ownerUsername?: ModelSubscriptionIDInput | null,
   publicity?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
+};
+
+export type ModelSubscriptionCanvasesDigestFilterInput = {
+  and?: Array< ModelSubscriptionCanvasesDigestFilterInput | null > | null,
+  canvasId?: ModelSubscriptionStringInput | null,
+  count?: ModelSubscriptionIntInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  id?: ModelSubscriptionIDInput | null,
+  or?: Array< ModelSubscriptionCanvasesDigestFilterInput | null > | null,
+  partitionKey?: ModelSubscriptionStringInput | null,
+  sortKey?: ModelSubscriptionFloatInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+};
+
+export type ModelSubscriptionFloatInput = {
+  between?: Array< number | null > | null,
+  eq?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  in?: Array< number | null > | null,
+  le?: number | null,
+  lt?: number | null,
+  ne?: number | null,
+  notIn?: Array< number | null > | null,
 };
 
 export type ModelSubscriptionUserFollowersFilterInput = {
@@ -767,6 +870,23 @@ export type GetCanvasesQuery = {
     ownerCognitoId?: string | null,
     ownerUsername: string,
     publicity: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type GetCanvasesDigestQueryVariables = {
+  partitionKey: string,
+  sortKey: number,
+};
+
+export type GetCanvasesDigestQuery = {
+  getCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
     updatedAt: string,
   } | null,
 };
@@ -991,6 +1111,55 @@ export type ListCanvasesByCanvasIdQuery = {
   } | null,
 };
 
+export type ListCanvasesDigestByCanvasIdQueryVariables = {
+  canvasId: string,
+  filter?: ModelCanvasesDigestFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListCanvasesDigestByCanvasIdQuery = {
+  listCanvasesDigestByCanvasId?:  {
+    __typename: "ModelCanvasesDigestConnection",
+    items:  Array< {
+      __typename: "CanvasesDigest",
+      canvasId?: string | null,
+      count?: number | null,
+      createdAt: string,
+      partitionKey: string,
+      sortKey: number,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type ListCanvasesDigestsQueryVariables = {
+  filter?: ModelCanvasesDigestFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  partitionKey?: string | null,
+  sortDirection?: ModelSortDirection | null,
+  sortKey?: ModelFloatKeyConditionInput | null,
+};
+
+export type ListCanvasesDigestsQuery = {
+  listCanvasesDigests?:  {
+    __typename: "ModelCanvasesDigestConnection",
+    items:  Array< {
+      __typename: "CanvasesDigest",
+      canvasId?: string | null,
+      count?: number | null,
+      createdAt: string,
+      partitionKey: string,
+      sortKey: number,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type ListUserFollowersQueryVariables = {
   filter?: ModelUserFollowersFilterInput | null,
   follower?: ModelStringKeyConditionInput | null,
@@ -1140,6 +1309,23 @@ export type CreateCanvasesMutation = {
   } | null,
 };
 
+export type CreateCanvasesDigestMutationVariables = {
+  condition?: ModelCanvasesDigestConditionInput | null,
+  input: CreateCanvasesDigestInput,
+};
+
+export type CreateCanvasesDigestMutation = {
+  createCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
+    updatedAt: string,
+  } | null,
+};
+
 export type CreateUserFollowersMutationVariables = {
   condition?: ModelUserFollowersConditionInput | null,
   input: CreateUserFollowersInput,
@@ -1255,6 +1441,23 @@ export type DeleteCanvasesMutation = {
     ownerCognitoId?: string | null,
     ownerUsername: string,
     publicity: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteCanvasesDigestMutationVariables = {
+  condition?: ModelCanvasesDigestConditionInput | null,
+  input: DeleteCanvasesDigestInput,
+};
+
+export type DeleteCanvasesDigestMutation = {
+  deleteCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
     updatedAt: string,
   } | null,
 };
@@ -1394,6 +1597,23 @@ export type UpdateCanvasesMutation = {
   } | null,
 };
 
+export type UpdateCanvasesDigestMutationVariables = {
+  condition?: ModelCanvasesDigestConditionInput | null,
+  input: UpdateCanvasesDigestInput,
+};
+
+export type UpdateCanvasesDigestMutation = {
+  updateCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
+    updatedAt: string,
+  } | null,
+};
+
 export type UpdateUserFollowersMutationVariables = {
   condition?: ModelUserFollowersConditionInput | null,
   input: UpdateUserFollowersInput,
@@ -1497,6 +1717,22 @@ export type OnCreateCanvasesSubscription = {
     ownerCognitoId?: string | null,
     ownerUsername: string,
     publicity: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateCanvasesDigestSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasesDigestFilterInput | null,
+};
+
+export type OnCreateCanvasesDigestSubscription = {
+  onCreateCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
     updatedAt: string,
   } | null,
 };
@@ -1608,6 +1844,22 @@ export type OnDeleteCanvasesSubscription = {
   } | null,
 };
 
+export type OnDeleteCanvasesDigestSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasesDigestFilterInput | null,
+};
+
+export type OnDeleteCanvasesDigestSubscription = {
+  onDeleteCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
+    updatedAt: string,
+  } | null,
+};
+
 export type OnDeleteUserFollowersSubscriptionVariables = {
   cognitoId?: string | null,
   filter?: ModelSubscriptionUserFollowersFilterInput | null,
@@ -1711,6 +1963,22 @@ export type OnUpdateCanvasesSubscription = {
     ownerCognitoId?: string | null,
     ownerUsername: string,
     publicity: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateCanvasesDigestSubscriptionVariables = {
+  filter?: ModelSubscriptionCanvasesDigestFilterInput | null,
+};
+
+export type OnUpdateCanvasesDigestSubscription = {
+  onUpdateCanvasesDigest?:  {
+    __typename: "CanvasesDigest",
+    canvasId?: string | null,
+    count?: number | null,
+    createdAt: string,
+    partitionKey: string,
+    sortKey: number,
     updatedAt: string,
   } | null,
 };

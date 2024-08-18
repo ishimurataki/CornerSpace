@@ -1,8 +1,8 @@
 import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/get-public-canvas-ids-for-user';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { generateClient } from 'aws-amplify/data';
+import { listCanvases } from '../../graphql/queries';
 
 Amplify.configure(
     {
@@ -32,31 +32,27 @@ Amplify.configure(
     }
 );
 
-const dynamoDBClient = new DynamoDBClient({});
-const dynamoDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
+const dataClient = generateClient<Schema>({
+    authMode: "iam",
+});
 
 export const handler: Schema["getPublicCanvasIdsForUser"]["functionHandler"] = async (event, context) => {
     const { ownerUsername } = event.arguments;
 
     console.log(`Starting getPublicCanvasIdsForUser lambda function invocation for ${ownerUsername}.`);
 
-    const queryCommand = new QueryCommand({
-        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
-        ProjectionExpression: "canvasId,publicity",
-        KeyConditionExpression:
-            "ownerUsername = :user",
-        ExpressionAttributeValues: {
-            ":user": ownerUsername
-        },
-        ConsistentRead: true,
+    const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
+        query: listCanvases,
+        variables: {
+            ownerUsername: ownerUsername
+        }
     });
-
-    const response = await dynamoDocClient.send(queryCommand);
-    if (response.$metadata.httpStatusCode !== 200 || !response.Items) {
-        console.log("DDB query command failed.");
+    if (listCanvasesErrors) {
+        console.log(listCanvasesErrors);
         return { areCanvasIdsReturned: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
     }
-    const canvasIds: string[] = response.Items
+    const canvases = listCanvasesData.listCanvases.items;
+    const canvasIds: string[] = canvases
         .filter((canvas) => canvas.publicity === "PUBLIC")
         .map((canvas) => canvas.canvasId);
 

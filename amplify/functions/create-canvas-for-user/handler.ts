@@ -4,12 +4,10 @@ import { generateClient } from 'aws-amplify/data';
 import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/create-canvas-for-user';
 import { v4 as uuidv4 } from 'uuid';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { getUsers } from '../../graphql/queries';
+import { getUsers, listCanvases } from '../../graphql/queries';
 import {
-    createCanvases, updateCanvases, createCanvasSocialStats,
+    createCanvases, updateCanvases,
     deleteCanvases, deleteCanvasSocialStats
 } from '../../graphql/mutations';
 
@@ -45,9 +43,6 @@ const dataClient = generateClient<Schema>({
     authMode: "iam",
 });
 
-const dynamoDBClient = new DynamoDBClient({});
-const dynamoDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
-
 const s3Client = new S3Client();
 
 export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (event, context) => {
@@ -78,24 +73,18 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
         };
     }
 
-    // Obtain correct canvasId
-    const queryCommand = new QueryCommand({
-        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
-        ProjectionExpression: "canvasId",
-        KeyConditionExpression:
-            "ownerUsername = :user",
-        ExpressionAttributeValues: {
-            ":user": ownerUsername
-        },
-        ConsistentRead: true,
+    const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
+        query: listCanvases,
+        variables: {
+            ownerUsername: ownerUsername
+        }
     });
-
-    const response = await dynamoDocClient.send(queryCommand);
-    if (response.$metadata.httpStatusCode !== 200 || !response.Items) {
-        console.log("DDB query command failed.");
+    if (listCanvasesErrors) {
+        console.log(listCanvasesErrors);
         return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
     }
-    const canvases = response.Items;
+    const canvases = listCanvasesData.listCanvases.items
+
     if (canvasId && !canvases.some((canvas) => canvas.canvasId == canvasId)) {
         return { isCanvasSaved: false, canvasId: null, errorMessage: "400 - Invalid canvas ID." };
     } else if (!canvasId) {
@@ -126,31 +115,6 @@ export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (
         });
         if (createCanvasErrors) {
             console.log(createCanvasErrors);
-            return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
-        }
-        const { errors: createCanvasSocialStatsErrors } = await dataClient.graphql({
-            query: createCanvasSocialStats,
-            variables: {
-                input: {
-                    ownerUsername: ownerUsername,
-                    ownerCognitoId: `${ownerCognitoId}::${ownerCognitoId}`,
-                    canvasId: newCanvasId,
-                    likeCount: 0,
-                    viewCount: 0
-                }
-            }
-        });
-        if (createCanvasSocialStatsErrors) {
-            console.log(createCanvasSocialStatsErrors);
-            await dataClient.graphql({
-                query: deleteCanvases,
-                variables: {
-                    input: {
-                        ownerUsername: ownerUsername,
-                        canvasId: newCanvasId
-                    }
-                }
-            });
             return { isCanvasSaved: false, canvasId: null, errorMessage: "500 - Internal Server Error." };
         }
     } else {

@@ -163,6 +163,19 @@ const schema = a
       .authorization(allow => [
         allow.ownerDefinedIn("ownerCognitoId").to(["read"])
       ]),
+    CanvasesDigest: a
+      .model({
+        partitionKey: a.string().required(),
+        sortKey: a.float().required(),
+        canvasId: a.string(),
+        count: a.integer()
+      })
+      .identifier(["partitionKey", "sortKey"])
+      .secondaryIndexes((index) => [index("canvasId").sortKeys(["partitionKey"])])
+      .authorization(allow => [
+        allow.guest().to(["read"]),
+        allow.authenticated().to(["read"])
+      ]),
     createCanvasForUserResponse: a.customType({
       isCanvasSaved: a.boolean().required(),
       canvasId: a.string(),
@@ -287,7 +300,7 @@ const schema = a
     allow.resource(getCanvasCard),
     allow.resource(getCanvasData),
     allow.resource(likeCanvasForUser),
-    allow.resource(followUser),
+    allow.resource(followUser)
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

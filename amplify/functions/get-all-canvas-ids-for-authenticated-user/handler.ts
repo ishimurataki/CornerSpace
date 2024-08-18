@@ -1,11 +1,9 @@
 import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/get-all-canvas-ids-for-authenticated-user';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { generateClient } from 'aws-amplify/data';
 import { AppSyncIdentityCognito } from 'aws-lambda';
-import { getUsers } from '../../graphql/queries';
+import { getUsers, listCanvases } from '../../graphql/queries';
 
 Amplify.configure(
     {
@@ -39,9 +37,6 @@ const dataClient = generateClient<Schema>({
     authMode: "iam",
 });
 
-const dynamoDBClient = new DynamoDBClient({});
-const dynamoDocClient = DynamoDBDocumentClient.from(dynamoDBClient);
-
 export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHandler"] = async (event, context) => {
     const { ownerUsername } = event.arguments;
 
@@ -68,23 +63,17 @@ export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHan
         };
     }
 
-    const queryCommand = new QueryCommand({
-        TableName: "Canvases-mt3da4wpdbbf5i2vssvzjqur4m-NONE",
-        ProjectionExpression: "canvasId",
-        KeyConditionExpression:
-            "ownerUsername = :user",
-        ExpressionAttributeValues: {
-            ":user": ownerUsername
-        },
-        ConsistentRead: true,
+    const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
+        query: listCanvases,
+        variables: {
+            ownerUsername: ownerUsername
+        }
     });
-
-    const response = await dynamoDocClient.send(queryCommand);
-    if (response.$metadata.httpStatusCode !== 200 || !response.Items) {
-        console.log("DDB query command failed.");
+    if (listCanvasesErrors) {
+        console.log(listCanvasesErrors);
         return { areCanvasIdsReturned: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
     }
-    const canvasIds: string[] = response.Items.map((canvas) => canvas.canvasId);
+    const canvasIds: string[] = listCanvasesData.listCanvases.items.map((canvas) => canvas.canvasId);
 
     return { areCanvasIdsReturned: true, canvasIds: canvasIds, errorMessage: null };
 };

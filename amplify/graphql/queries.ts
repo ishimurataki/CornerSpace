@@ -111,6 +111,21 @@ export const getCanvases = /* GraphQL */ `query GetCanvases($canvasId: String!, 
   APITypes.GetCanvasesQueryVariables,
   APITypes.GetCanvasesQuery
 >;
+export const getCanvasesDigest = /* GraphQL */ `query GetCanvasesDigest($partitionKey: String!, $sortKey: Float!) {
+  getCanvasesDigest(partitionKey: $partitionKey, sortKey: $sortKey) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetCanvasesDigestQueryVariables,
+  APITypes.GetCanvasesDigestQuery
+>;
 export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIdsForUser($ownerUsername: String!) {
   getPublicCanvasIdsForUser(ownerUsername: $ownerUsername) {
     areCanvasIdsReturned
@@ -367,6 +382,70 @@ export const listCanvasesByCanvasId = /* GraphQL */ `query ListCanvasesByCanvasI
 ` as GeneratedQuery<
   APITypes.ListCanvasesByCanvasIdQueryVariables,
   APITypes.ListCanvasesByCanvasIdQuery
+>;
+export const listCanvasesDigestByCanvasId = /* GraphQL */ `query ListCanvasesDigestByCanvasId(
+  $canvasId: String!
+  $filter: ModelCanvasesDigestFilterInput
+  $limit: Int
+  $nextToken: String
+  $sortDirection: ModelSortDirection
+) {
+  listCanvasesDigestByCanvasId(
+    canvasId: $canvasId
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
+    items {
+      canvasId
+      count
+      createdAt
+      partitionKey
+      sortKey
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasesDigestByCanvasIdQueryVariables,
+  APITypes.ListCanvasesDigestByCanvasIdQuery
+>;
+export const listCanvasesDigests = /* GraphQL */ `query ListCanvasesDigests(
+  $filter: ModelCanvasesDigestFilterInput
+  $limit: Int
+  $nextToken: String
+  $partitionKey: String
+  $sortDirection: ModelSortDirection
+  $sortKey: ModelFloatKeyConditionInput
+) {
+  listCanvasesDigests(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    partitionKey: $partitionKey
+    sortDirection: $sortDirection
+    sortKey: $sortKey
+  ) {
+    items {
+      canvasId
+      count
+      createdAt
+      partitionKey
+      sortKey
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListCanvasesDigestsQueryVariables,
+  APITypes.ListCanvasesDigestsQuery
 >;
 export const listUserFollowers = /* GraphQL */ `query ListUserFollowers(
   $filter: ModelUserFollowersFilterInput
