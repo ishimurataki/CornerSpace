@@ -94,6 +94,24 @@ export const createCanvases = /* GraphQL */ `mutation CreateCanvases(
   APITypes.CreateCanvasesMutationVariables,
   APITypes.CreateCanvasesMutation
 >;
+export const createCanvasesDigest = /* GraphQL */ `mutation CreateCanvasesDigest(
+  $condition: ModelCanvasesDigestConditionInput
+  $input: CreateCanvasesDigestInput!
+) {
+  createCanvasesDigest(condition: $condition, input: $input) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateCanvasesDigestMutationVariables,
+  APITypes.CreateCanvasesDigestMutation
+>;
 export const createUserFollowers = /* GraphQL */ `mutation CreateUserFollowers(
   $condition: ModelUserFollowersConditionInput
   $input: CreateUserFollowersInput!
@@ -217,6 +235,24 @@ export const deleteCanvases = /* GraphQL */ `mutation DeleteCanvases(
 ` as GeneratedMutation<
   APITypes.DeleteCanvasesMutationVariables,
   APITypes.DeleteCanvasesMutation
+>;
+export const deleteCanvasesDigest = /* GraphQL */ `mutation DeleteCanvasesDigest(
+  $condition: ModelCanvasesDigestConditionInput
+  $input: DeleteCanvasesDigestInput!
+) {
+  deleteCanvasesDigest(condition: $condition, input: $input) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteCanvasesDigestMutationVariables,
+  APITypes.DeleteCanvasesDigestMutation
 >;
 export const deleteUserFollowers = /* GraphQL */ `mutation DeleteUserFollowers(
   $condition: ModelUserFollowersConditionInput
@@ -368,6 +404,24 @@ export const updateCanvases = /* GraphQL */ `mutation UpdateCanvases(
 ` as GeneratedMutation<
   APITypes.UpdateCanvasesMutationVariables,
   APITypes.UpdateCanvasesMutation
+>;
+export const updateCanvasesDigest = /* GraphQL */ `mutation UpdateCanvasesDigest(
+  $condition: ModelCanvasesDigestConditionInput
+  $input: UpdateCanvasesDigestInput!
+) {
+  updateCanvasesDigest(condition: $condition, input: $input) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateCanvasesDigestMutationVariables,
+  APITypes.UpdateCanvasesDigestMutation
 >;
 export const updateUserFollowers = /* GraphQL */ `mutation UpdateUserFollowers(
   $condition: ModelUserFollowersConditionInput

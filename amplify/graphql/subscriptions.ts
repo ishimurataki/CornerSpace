@@ -66,6 +66,23 @@ export const onCreateCanvases = /* GraphQL */ `subscription OnCreateCanvases(
   APITypes.OnCreateCanvasesSubscriptionVariables,
   APITypes.OnCreateCanvasesSubscription
 >;
+export const onCreateCanvasesDigest = /* GraphQL */ `subscription OnCreateCanvasesDigest(
+  $filter: ModelSubscriptionCanvasesDigestFilterInput
+) {
+  onCreateCanvasesDigest(filter: $filter) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateCanvasesDigestSubscriptionVariables,
+  APITypes.OnCreateCanvasesDigestSubscription
+>;
 export const onCreateUserFollowers = /* GraphQL */ `subscription OnCreateUserFollowers(
   $cognitoId: String
   $filter: ModelSubscriptionUserFollowersFilterInput
@@ -179,6 +196,23 @@ export const onDeleteCanvases = /* GraphQL */ `subscription OnDeleteCanvases(
   APITypes.OnDeleteCanvasesSubscriptionVariables,
   APITypes.OnDeleteCanvasesSubscription
 >;
+export const onDeleteCanvasesDigest = /* GraphQL */ `subscription OnDeleteCanvasesDigest(
+  $filter: ModelSubscriptionCanvasesDigestFilterInput
+) {
+  onDeleteCanvasesDigest(filter: $filter) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteCanvasesDigestSubscriptionVariables,
+  APITypes.OnDeleteCanvasesDigestSubscription
+>;
 export const onDeleteUserFollowers = /* GraphQL */ `subscription OnDeleteUserFollowers(
   $cognitoId: String
   $filter: ModelSubscriptionUserFollowersFilterInput
@@ -291,6 +325,23 @@ export const onUpdateCanvases = /* GraphQL */ `subscription OnUpdateCanvases(
 ` as GeneratedSubscription<
   APITypes.OnUpdateCanvasesSubscriptionVariables,
   APITypes.OnUpdateCanvasesSubscription
+>;
+export const onUpdateCanvasesDigest = /* GraphQL */ `subscription OnUpdateCanvasesDigest(
+  $filter: ModelSubscriptionCanvasesDigestFilterInput
+) {
+  onUpdateCanvasesDigest(filter: $filter) {
+    canvasId
+    count
+    createdAt
+    partitionKey
+    sortKey
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateCanvasesDigestSubscriptionVariables,
+  APITypes.OnUpdateCanvasesDigestSubscription
 >;
 export const onUpdateUserFollowers = /* GraphQL */ `subscription OnUpdateUserFollowers(
   $cognitoId: String

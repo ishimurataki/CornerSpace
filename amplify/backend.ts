@@ -7,8 +7,11 @@ import { getPublicCanvasIdsForUser } from './functions/get-public-canvas-ids-for
 import { getAllCanvasIdsForAuthenticatedUser } from './functions/get-all-canvas-ids-for-authenticated-user/resource';
 import { getCanvasCard } from './functions/get-canvas-card/resource';
 import { getCanvasData } from './functions/get-canvas-data/resource';
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { deleteCanvasForUser } from './functions/delete-canvas-for-user/resource';
+import { canvasesStreamingEvent } from './functions/canvases-streaming-event/resource';
+import { EventSourceMapping, StartingPosition } from 'aws-cdk-lib/aws-lambda';
+import { Stack } from 'aws-cdk-lib';
 
 const backend = defineBackend({
   auth,
@@ -19,7 +22,8 @@ const backend = defineBackend({
   getPublicCanvasIdsForUser,
   getAllCanvasIdsForAuthenticatedUser,
   getCanvasCard,
-  getCanvasData
+  getCanvasData,
+  canvasesStreamingEvent
 });
 
 let ddbReadPolicy = new PolicyStatement({
@@ -31,6 +35,19 @@ let ddbReadPolicy = new PolicyStatement({
     "dynamodb:Query",
     "dynamodb:GetRecords"],
   resources: ['*'] // Table ARN is needed here.
+});
+
+let ddbReadWritePolicy = new PolicyStatement({
+  effect: Effect.ALLOW,
+  actions: [
+    "dynamodb:GetItem",
+    "dynamodb:PutItem",
+    "dynamodb:UpdateItem",
+    "dynamodb:Query",
+    "dynamodb:DeleteItem",
+    "dynamodb:BatchWriteItem"
+  ],
+  resources: ['*']
 })
 
 backend.createCanvasForUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
@@ -39,3 +56,36 @@ backend.getPublicCanvasIdsForUser.resources.lambda.addToRolePolicy(ddbReadPolicy
 backend.getAllCanvasIdsForAuthenticatedUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
 backend.getCanvasCard.resources.lambda.addToRolePolicy(ddbReadPolicy);
 backend.getCanvasData.resources.lambda.addToRolePolicy(ddbReadPolicy);
+
+const canvasesTable = backend.data.resources.tables["Canvases"];
+backend.canvasesStreamingEvent.resources.lambda.role?.attachInlinePolicy(
+  new Policy(
+    Stack.of(canvasesTable),
+    "DynamoDBPolicy",
+    {
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            "dynamodb:DescribeStream",
+            "dynamodb:GetRecords",
+            "dynamodb:GetShardIterator",
+            "dynamodb:ListStreams",
+          ],
+          resources: ["*"],
+        }),
+      ],
+    }
+  )
+);
+backend.canvasesStreamingEvent.resources.lambda.addToRolePolicy(ddbReadWritePolicy);
+
+new EventSourceMapping(
+  Stack.of(canvasesTable),
+  "CanvasesStreamingEventSourceMapping",
+  {
+    target: backend.canvasesStreamingEvent.resources.lambda,
+    eventSourceArn: canvasesTable.tableStreamArn,
+    startingPosition: StartingPosition.LATEST,
+  }
+);
