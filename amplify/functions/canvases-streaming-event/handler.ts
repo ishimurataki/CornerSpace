@@ -4,9 +4,9 @@ import { BatchWriteItemCommand, DeleteItemCommand, DynamoDBClient, GetItemComman
 const dynamoDBClient = new DynamoDBClient({});
 
 const EPOCH_01_01_2024 = Date.parse("01 Jan 2024 00:00:00 GMT");
-const CANVASES_DIGEST_TABLE_NAME = "CanvasesDigest-ny7dviy5njboxk6q65y6zqeloi-NONE";
-const CANVASES_SOCIAL_STATS_TABLE = "CanvasSocialStats-ny7dviy5njboxk6q65y6zqeloi-NONE";
-const CANVASES_LIKES_TABLE = "CanvasLikes-ny7dviy5njboxk6q65y6zqeloi-NONE";
+const CANVASES_DIGEST_TABLE_NAME = "CanvasesDigest-ilyzhif74beipboijg6ytrysoa-NONE";
+const CANVASES_SOCIAL_STATS_TABLE = "CanvasSocialStats-ilyzhif74beipboijg6ytrysoa-NONE";
+const CANVASES_LIKES_TABLE = "CanvasLikes-ilyzhif74beipboijg6ytrysoa-NONE";
 const MAX_NEW_CANVASES_IN_DIGEST_TABLE = 4;
 
 export const handler: DynamoDBStreamHandler = async (event) => {
@@ -186,10 +186,11 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
                 // Delete all like records in CanvasLikes table
                 const queryLikesCommand = new QueryCommand({
+                    IndexName: "canvasLikesByCanvasIdAndUsername",
+                    KeyConditionExpression: "canvasId = :canvasId",
                     ExpressionAttributeValues: {
-                        ":username": { "S": ownerUsername },
+                        ":canvasId": { "S": canvasId }
                     },
-                    KeyConditionExpression: "username = :username",
                     TableName: CANVASES_LIKES_TABLE
                 });
 
@@ -232,66 +233,121 @@ export const handler: DynamoDBStreamHandler = async (event) => {
                 if (queryNewCanvasRecordCommandResponse.$metadata.httpStatusCode !== 200 ||
                     !queryNewCanvasRecordCommandResponse.Items) {
                     console.log("DDB query command failed for retrieving digest canvas within canvases#new.");
-                    return;
+                } else if (queryNewCanvasRecordCommandResponse.Items.length > 0) {
+                    const canvasToRemove = queryNewCanvasRecordCommandResponse.Items[0];
+
+                    const deleteNewCanvasCommand = new DeleteItemCommand({
+                        Key: {
+                            partitionKey: { S: "canvases#new" },
+                            sortKey: canvasToRemove.sortKey,
+                        },
+                        TableName: CANVASES_DIGEST_TABLE_NAME
+                    });
+                    const deleteNewCanvasCommandResponse = await dynamoDBClient.send(deleteNewCanvasCommand);
+                    if (deleteNewCanvasCommandResponse.$metadata.httpStatusCode !== 200) {
+                        console.log("DDB delete command failed for deleting new record from Digest table.");
+                    } else {
+                        const getCommand = new GetItemCommand({
+                            Key: {
+                                partitionKey: { S: "canvases#new#count" },
+                                sortKey: { N: "0" }
+                            },
+                            TableName: CANVASES_DIGEST_TABLE_NAME
+                        });
+                        const getCommandResponse = await dynamoDBClient.send(getCommand);
+                        if (getCommandResponse.$metadata.httpStatusCode !== 200 || !getCommandResponse.Item) {
+                            console.log("DDB get command failed for retrieving canvases#new#count.");
+                        } else if (!getCommandResponse.Item.count.N) {
+                            console.log("No item count associated with canvases#new#count in Digest table");
+                        } else {
+                            const newCountString = String(Number(getCommandResponse.Item.count.N) - 1);
+
+                            const updateCommand = new UpdateItemCommand({
+                                Key: {
+                                    partitionKey: { S: "canvases#new#count" },
+                                    sortKey: { N: "0" },
+                                },
+                                UpdateExpression: "SET #count = :count",
+                                ExpressionAttributeNames: {
+                                    "#count": "count",
+                                },
+                                ExpressionAttributeValues: {
+                                    ":count": { "N": newCountString },
+                                },
+                                TableName: CANVASES_DIGEST_TABLE_NAME
+                            });
+                            const updateCommandResponse = await dynamoDBClient.send(updateCommand);
+                            if (updateCommandResponse.$metadata.httpStatusCode !== 200) {
+                                console.log("DDB update command failed for updating new canvases count.");
+                            }
+                        }
+                    }
                 }
 
-                if (queryNewCanvasRecordCommandResponse.Items.length === 0) {
-                    return;
-                }
-                const canvasToRemove = queryNewCanvasRecordCommandResponse.Items[0];
-                if (!canvasToRemove.sortKey.N) {
-                    console.log("No sortKey found for canvas to remove in Digest table.")
-                }
-                const deleteNewCanvasCommand = new DeleteItemCommand({
-                    Key: {
-                        partitionKey: { S: "canvases#new" },
-                        sortKey: canvasToRemove.sortKey,
-                    },
-                    TableName: CANVASES_DIGEST_TABLE_NAME
-                });
-                const deleteNewCanvasCommandResponse = await dynamoDBClient.send(deleteNewCanvasCommand);
-                if (deleteNewCanvasCommandResponse.$metadata.httpStatusCode !== 200) {
-                    console.log("DDB delete command failed for deleting new record from Digest table.");
-                    return;
-                }
-
-                const getCommand = new GetItemCommand({
-                    Key: {
-                        partitionKey: { S: "canvases#new#count" },
-                        sortKey: { N: "0" }
-                    },
-                    TableName: CANVASES_DIGEST_TABLE_NAME
-                });
-                const getCommandResponse = await dynamoDBClient.send(getCommand);
-                if (getCommandResponse.$metadata.httpStatusCode !== 200 || !getCommandResponse.Item) {
-                    console.log("DDB get command failed for retrieving canvases#new#count.");
-                    return;
-                }
-
-                if (!getCommandResponse.Item.count.N) {
-                    "No item count associated with canvases#new#count in Digest table";
-                }
-
-                const newCountString = String(Number(getCommandResponse.Item.count.N) - 1);
-
-                const updateCommand = new UpdateItemCommand({
-                    Key: {
-                        partitionKey: { S: "canvases#new#count" },
-                        sortKey: { N: "0" },
-                    },
-                    UpdateExpression: "SET #count = :count",
-                    ExpressionAttributeNames: {
-                        "#count": "count",
-                    },
+                // Remove popular canvas record in CanvasesDigest table
+                const queryPopularCanvasRecordCommand = new QueryCommand({
+                    TableName: CANVASES_DIGEST_TABLE_NAME,
+                    IndexName: "canvasesDigestsByCanvasIdAndPartitionKey",
+                    Limit: 1,
+                    KeyConditionExpression: "canvasId = :canvasId AND partitionKey = :partitionKeyValue",
                     ExpressionAttributeValues: {
-                        ":count": { "N": newCountString },
+                        ":canvasId": { "S": canvasId },
+                        ":partitionKeyValue": { "S": "canvases#popular" }
                     },
-                    TableName: CANVASES_DIGEST_TABLE_NAME
                 });
-                const updateCommandResponse = await dynamoDBClient.send(updateCommand);
-                if (updateCommandResponse.$metadata.httpStatusCode !== 200) {
-                    console.log("DDB update command failed for updating new canvases count.");
-                    return;
+                const queryPopularCanvasRecordCommandResponse = await dynamoDBClient.send(queryPopularCanvasRecordCommand);
+                if (queryPopularCanvasRecordCommandResponse.$metadata.httpStatusCode !== 200 ||
+                    !queryPopularCanvasRecordCommandResponse.Items) {
+                    console.log("DDB query command failed for retrieving digest canvas within canvases#popular.");
+                } else if (queryPopularCanvasRecordCommandResponse.Items.length > 0) {
+                    const canvasToRemove = queryPopularCanvasRecordCommandResponse.Items[0];
+
+                    const deletePopularCanvasCommand = new DeleteItemCommand({
+                        Key: {
+                            partitionKey: { S: "canvases#popular" },
+                            sortKey: canvasToRemove.sortKey,
+                        },
+                        TableName: CANVASES_DIGEST_TABLE_NAME
+                    });
+                    const deletePopularCanvasCommandResponse = await dynamoDBClient.send(deletePopularCanvasCommand);
+                    if (deletePopularCanvasCommandResponse.$metadata.httpStatusCode !== 200) {
+                        console.log("DDB delete command failed for deleting popular record from Digest table.");
+                    } else {
+                        const getPopularCountCommand = new GetItemCommand({
+                            Key: {
+                                partitionKey: { S: "canvases#popular#count" },
+                                sortKey: { N: "0" }
+                            },
+                            TableName: CANVASES_DIGEST_TABLE_NAME
+                        });
+                        const getPopularCountCommandResponse = await dynamoDBClient.send(getPopularCountCommand);
+                        if (getPopularCountCommandResponse.$metadata.httpStatusCode !== 200 || !getPopularCountCommandResponse.Item) {
+                            console.log("DDB get command failed for retrieving canvases#popular#count.");
+                        } else if (!getPopularCountCommandResponse.Item.count.N) {
+                            console.log("No item count associated with canvases#popular#count in Digest table");
+                        } else {
+                            const newCountString = String(Number(getPopularCountCommandResponse.Item.count.N) - 1);
+
+                            const updateCommand = new UpdateItemCommand({
+                                Key: {
+                                    partitionKey: { S: "canvases#popular#count" },
+                                    sortKey: { N: "0" },
+                                },
+                                UpdateExpression: "SET #count = :count",
+                                ExpressionAttributeNames: {
+                                    "#count": "count",
+                                },
+                                ExpressionAttributeValues: {
+                                    ":count": { "N": newCountString },
+                                },
+                                TableName: CANVASES_DIGEST_TABLE_NAME
+                            });
+                            const updateCommandResponse = await dynamoDBClient.send(updateCommand);
+                            if (updateCommandResponse.$metadata.httpStatusCode !== 200) {
+                                console.log("DDB update command failed for updating popular canvases count.");
+                            }
+                        }
+                    }
                 }
             }
         }
