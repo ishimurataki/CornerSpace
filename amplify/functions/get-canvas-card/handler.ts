@@ -46,19 +46,16 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
 
     const callerUsername = (event.identity as (AppSyncIdentityIAM | AppSyncIdentityCognito)).username;
 
-    console.log("here 1");
     const { data: listCanvasData, errors: listCanvasErrors } = await client.graphql({
         query: listCanvasesByCanvasId,
         variables: {
             canvasId: canvasId
         },
     });
-    console.log("here 2");
     if (listCanvasErrors) {
         console.log(listCanvasErrors);
         return { isCanvasCardReturned: false, canvasCard: null, errorMessage: "500 - Internal Server Error." };
     }
-    console.log("here 3");
     if (!listCanvasData.listCanvasesByCanvasId || listCanvasData.listCanvasesByCanvasId.items.length === 0) {
         return {
             isCanvasCardReturned: false,
@@ -67,13 +64,11 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
         };
     }
 
-    console.log("here 4");
     const canvasMetaData = listCanvasData.listCanvasesByCanvasId.items[0];
 
     const authorizedAccess = canvasMetaData.publicity === "PUBLIC" ||
         canvasMetaData.ownerCognitoId === callerUsername;
 
-    console.log("here 5");
     if (!authorizedAccess) {
         return {
             isCanvasCardReturned: false,
@@ -82,7 +77,6 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
         };
     }
 
-    console.log("here 6");
     const { data: getCanvasSocialStatsData, errors: getCanvasSocialStatsErrors } = await client.graphql({
         query: getCanvasSocialStats,
         variables: {
@@ -90,12 +84,10 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
             canvasId: canvasId
         },
     });
-    console.log("here 7");
     if (getCanvasSocialStatsErrors) {
         console.log(getCanvasSocialStatsErrors);
         return { isCanvasCardReturned: false, canvasCard: null, errorMessage: "500 - Internal Server Error." };
     }
-    console.log("here 8");
     if (!getCanvasSocialStatsData.getCanvasSocialStats) {
         return {
             isCanvasCardReturned: false,
@@ -103,10 +95,8 @@ export const handler: Schema["getCanvasCard"]["functionHandler"] = async (event,
             errorMessage: `Social stats for requested canvasId ${canvasId} not found.`
         };
     }
-    console.log("here 9");
     const canvasSocialStats = getCanvasSocialStatsData.getCanvasSocialStats;
 
-    console.log("here 10");
     const canvasThumbnailGetCommand = new GetObjectCommand({
         Bucket: env.CANVASES_BUCKET_NAME,
         Key: `canvasThumbnails/${canvasMetaData.ownerUsername}/${canvasId}`

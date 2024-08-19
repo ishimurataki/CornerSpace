@@ -10,8 +10,6 @@ import {
     getCanvasSocialStats, getUsers, listCanvasesByCanvasId, listCanvasLikesByCanvasIdAndUsername
 } from '../../graphql/queries';
 
-const POPULAR_COUNT_MAX = 20;
-
 Amplify.configure(
     {
         API: {

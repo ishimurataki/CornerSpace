@@ -11,6 +11,8 @@ import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
 import { unstable_noStore } from "next/cache";
 import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data';
 import { cookies } from 'next/headers';
+import { listCanvasesDigests } from "@/../amplify/graphql/queries"
+import { ModelSortDirection } from "../../amplify/graphql/API";
 
 Amplify.configure(outputs, { ssr: true });
 
@@ -105,30 +107,27 @@ function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, error
     return { valid: true, errorMessage: null };
 }
 
-export async function loadCanvasCardDataServer(canvasId: string, forOwner: boolean):
+export async function loadCanvasCardDataServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
 
     let dataReturned = null;
     let errorsReturned = null;
-    if (forOwner) {
-        const currentUser = await fetchUserAttributesServer();
-        const signedIn = currentUser != undefined;
-        const username = currentUser?.preferred_username;
 
-        if (!signedIn || !username) {
-            return { isCanvasLoaded: false, canvasCardData: null, errorMessage: "User not authenticated." }
-        }
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
 
-        const { data, errors } = await cookieBasedClient.queries.getCanvasCard(
+    if (!signedIn || !username) {
+        const { data, errors } = await guestClient.queries.getCanvasCard(
             { canvasId: canvasId },
-            { authMode: "userPool" }
+            { authMode: "identityPool" }
         );
         dataReturned = data;
         errorsReturned = errors;
     } else {
-        const { data, errors } = await guestClient.queries.getCanvasCard(
+        const { data, errors } = await cookieBasedClient.queries.getCanvasCard(
             { canvasId: canvasId },
-            { authMode: "identityPool" }
+            { authMode: "userPool" }
         );
         dataReturned = data;
         errorsReturned = errors;
@@ -585,8 +584,8 @@ export async function getUserFollowersForSignedInUserServer():
     );
 
     if (listUserFollowersErrors) {
-        console.log(listUserFollowersErrors)
-        return { areUsersReturned: false, users: null, errorMessage: "500 - Internal Server Error." }
+        console.log(listUserFollowersErrors);
+        return { areUsersReturned: false, users: null, errorMessage: "500 - Internal Server Error." };
     }
 
     const users = listUserFollowersData.map((user) => {
@@ -594,4 +593,54 @@ export async function getUserFollowersForSignedInUserServer():
     });
 
     return { areUsersReturned: true, users: users, errorMessage: null };
+}
+
+export async function getPopularCanvasesServer():
+    Promise<{
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+    }> {
+
+    const { data: listPopularCanvasesData, errors: listPopularCanvasesErrors } = await guestClient.graphql({
+        query: listCanvasesDigests,
+        variables: {
+            partitionKey: "canvases#popular",
+            sortDirection: ModelSortDirection.DESC,
+        },
+        authMode: "identityPool"
+    });
+
+    if (listPopularCanvasesErrors) {
+        console.log(listPopularCanvasesErrors);
+        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+    }
+
+    const popularCanvases = listPopularCanvasesData.listCanvasesDigests.items.map((canvas) => canvas.canvasId)
+        .filter((canvasId) => canvasId !== null && canvasId !== undefined);
+
+    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, errorMessage: null };
+}
+
+export async function getNewCanvasesServer():
+    Promise<{
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+    }> {
+
+    const { data: listPopularCanvasesData, errors: listPopularCanvasesErrors } = await guestClient.graphql({
+        query: listCanvasesDigests,
+        variables: {
+            partitionKey: "canvases#new",
+            sortDirection: ModelSortDirection.DESC,
+        },
+        authMode: "identityPool"
+    });
+
+    if (listPopularCanvasesErrors) {
+        console.log(listPopularCanvasesErrors);
+        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+    }
+
+    const popularCanvases = listPopularCanvasesData.listCanvasesDigests.items.map((canvas) => canvas.canvasId)
+        .filter((canvasId) => canvasId !== null && canvasId !== undefined);
+
+    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, errorMessage: null };
 }
