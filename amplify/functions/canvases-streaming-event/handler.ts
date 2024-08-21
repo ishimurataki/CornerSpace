@@ -4,9 +4,9 @@ import { BatchWriteItemCommand, DeleteItemCommand, DynamoDBClient, GetItemComman
 const dynamoDBClient = new DynamoDBClient({});
 
 const EPOCH_01_01_2024 = Date.parse("01 Jan 2024 00:00:00 GMT");
-const CANVASES_DIGEST_TABLE_NAME = "CanvasesDigest-ilyzhif74beipboijg6ytrysoa-NONE";
-const CANVASES_SOCIAL_STATS_TABLE = "CanvasSocialStats-ilyzhif74beipboijg6ytrysoa-NONE";
-const CANVASES_LIKES_TABLE = "CanvasLikes-ilyzhif74beipboijg6ytrysoa-NONE";
+const CANVASES_DIGEST_TABLE_NAME = "CanvasesDigest-733hb3qq5ncurbnrgxvauqy7ny-NONE";
+const CANVASES_SOCIAL_STATS_TABLE = "CanvasSocialStats-733hb3qq5ncurbnrgxvauqy7ny-NONE";
+const CANVASES_LIKES_TABLE = "CanvasLikes-733hb3qq5ncurbnrgxvauqy7ny-NONE";
 const MAX_NEW_CANVASES_IN_DIGEST_TABLE = 4;
 
 export const handler: DynamoDBStreamHandler = async (event) => {

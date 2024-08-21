@@ -28,36 +28,21 @@ const backend = defineBackend({
   canvasLikesStreamingEvent
 });
 
-let ddbReadPolicy = new PolicyStatement({
+let ddbReadWritePolicy = new PolicyStatement({
   effect: Effect.ALLOW,
   actions: [
     "dynamodb:BatchGetItem",
     "dynamodb:GetItem",
     "dynamodb:Scan",
-    "dynamodb:Query",
-    "dynamodb:GetRecords"],
-  resources: ['*'] // Table ARN is needed here.
-});
-
-let ddbReadWritePolicy = new PolicyStatement({
-  effect: Effect.ALLOW,
-  actions: [
-    "dynamodb:GetItem",
     "dynamodb:PutItem",
     "dynamodb:UpdateItem",
     "dynamodb:Query",
+    "dynamodb:GetRecords",
     "dynamodb:DeleteItem",
     "dynamodb:BatchWriteItem"
   ],
   resources: ['*']
 })
-
-backend.createCanvasForUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
-backend.deleteCanvasForUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
-backend.getPublicCanvasIdsForUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
-backend.getAllCanvasIdsForAuthenticatedUser.resources.lambda.addToRolePolicy(ddbReadPolicy);
-backend.getCanvasCard.resources.lambda.addToRolePolicy(ddbReadPolicy);
-backend.getCanvasData.resources.lambda.addToRolePolicy(ddbReadPolicy);
 
 const canvasesTable = backend.data.resources.tables["Canvases"];
 backend.canvasesStreamingEvent.resources.lambda.role?.attachInlinePolicy(
