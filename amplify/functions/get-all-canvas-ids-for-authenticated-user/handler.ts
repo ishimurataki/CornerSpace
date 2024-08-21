@@ -63,23 +63,11 @@ export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHan
         };
     }
 
-<<<<<<< HEAD
-    const queryCommand = new QueryCommand({
-        TableName: "Canvases-zbc4ytvn7bgdxfym6bbpnpl2gu-NONE",
-        ProjectionExpression: "canvasId",
-        KeyConditionExpression:
-            "ownerUsername = :user",
-        ExpressionAttributeValues: {
-            ":user": ownerUsername
-        },
-        ConsistentRead: true,
-=======
     const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
         query: listCanvases,
         variables: {
             ownerUsername: ownerUsername
         }
->>>>>>> dc9571a (Set up new canvas digest processing as a ddb streams lambda trigger)
     });
     if (listCanvasesErrors) {
         console.log(listCanvasesErrors);
