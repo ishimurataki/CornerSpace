@@ -36,7 +36,7 @@ const loadMoreNewCanvases: loadMoreActionType = async (currentToken: string | nu
         return [null, null];
     }
 
-    return [<CanvasesList canvasIds={canvasIds} />, nextToken] as const;
+    return [<CanvasesList canvasIds={canvasIds} key="NewCanvasesList" />, nextToken] as const;
 }
 
 export default async function NewCanvases() {

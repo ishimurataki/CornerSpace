@@ -36,7 +36,7 @@ const loadMorePopularCanvases: loadMoreActionType = async (currentToken: string 
     if (canvasIds.length === 0) {
         return [null, null];
     }
-    return [<CanvasesList canvasIds={canvasIds} />, nextToken] as const;
+    return [<CanvasesList canvasIds={canvasIds} key="NewCanvasesList" />, nextToken] as const;
 }
 
 export default async function PopularCanvases() {
