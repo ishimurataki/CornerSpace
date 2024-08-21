@@ -34,7 +34,12 @@ export default function CanvasesTabs({
                     New
                 </button>
             </div>
-            {tabContent}
+            <div className={`${tabState !== TabStates.PopularCanvases ? "invisible h-0" : ""}`}>
+                {PopularCanvasesServerComponent}
+            </div>
+            <div className={`${tabState !== TabStates.NewCanvases ? "invisible h-0" : ""}`}>
+                {NewCanvasesServerComponent}
+            </div>
         </div>
 
     );

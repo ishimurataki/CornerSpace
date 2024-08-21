@@ -22,12 +22,7 @@ const cookieBasedClient = generateServerClientUsingCookies<Schema>({
     cookies
 });
 
-type User = {
-    username: string,
-    numberOfCanvases: number,
-    createdAt: string,
-    updatedAt: string
-}
+const CANVAS_LIST_LIMIT = 10;
 
 export async function doesUserExist(username: string): Promise<boolean> {
     if (!username) return false;
@@ -110,6 +105,7 @@ function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, error
 export async function loadCanvasCardDataServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
 
+    console.log("HERE INSIDE LOAD CANVAS CARD SERVER");
     let dataReturned = null;
     let errorsReturned = null;
 
@@ -595,9 +591,9 @@ export async function getUserFollowersForSignedInUserServer():
     return { areUsersReturned: true, users: users, errorMessage: null };
 }
 
-export async function getPopularCanvasesServer():
+export async function getPopularCanvasesServer(nextToken: string | null = null):
     Promise<{
-        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, nextToken: string | null, errorMessage: string | null
     }> {
 
     const { data: listPopularCanvasesData, errors: listPopularCanvasesErrors } = await guestClient.graphql({
@@ -605,24 +601,29 @@ export async function getPopularCanvasesServer():
         variables: {
             partitionKey: "canvases#popular",
             sortDirection: ModelSortDirection.DESC,
+            limit: CANVAS_LIST_LIMIT,
+            nextToken: nextToken
         },
         authMode: "identityPool"
     });
 
     if (listPopularCanvasesErrors) {
         console.log(listPopularCanvasesErrors);
-        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+        return { areCanvasIdsLoaded: false, canvasIds: null, nextToken: null, errorMessage: "500 - Internal Server Error." };
     }
+
+    let nextTokenToReturn = listPopularCanvasesData.listCanvasesDigests.nextToken;
+    nextTokenToReturn ??= null;
 
     const popularCanvases = listPopularCanvasesData.listCanvasesDigests.items.map((canvas) => canvas.canvasId)
         .filter((canvasId) => canvasId !== null && canvasId !== undefined);
 
-    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, errorMessage: null };
+    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, nextToken: nextTokenToReturn, errorMessage: null };
 }
 
-export async function getNewCanvasesServer():
+export async function getNewCanvasesServer(nextToken: string | null = null):
     Promise<{
-        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, nextToken: string | null, errorMessage: string | null
     }> {
 
     const { data: listPopularCanvasesData, errors: listPopularCanvasesErrors } = await guestClient.graphql({
@@ -630,17 +631,22 @@ export async function getNewCanvasesServer():
         variables: {
             partitionKey: "canvases#new",
             sortDirection: ModelSortDirection.DESC,
+            limit: CANVAS_LIST_LIMIT,
+            nextToken: nextToken
         },
         authMode: "identityPool"
     });
 
     if (listPopularCanvasesErrors) {
         console.log(listPopularCanvasesErrors);
-        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+        return { areCanvasIdsLoaded: false, canvasIds: null, nextToken: null, errorMessage: "500 - Internal Server Error." };
     }
+
+    let nextTokenToReturn = listPopularCanvasesData.listCanvasesDigests.nextToken;
+    nextTokenToReturn ??= null;
 
     const popularCanvases = listPopularCanvasesData.listCanvasesDigests.items.map((canvas) => canvas.canvasId)
         .filter((canvasId) => canvasId !== null && canvasId !== undefined);
 
-    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, errorMessage: null };
+    return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, nextToken: nextTokenToReturn, errorMessage: null };
 }

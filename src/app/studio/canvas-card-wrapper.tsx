@@ -1,5 +1,4 @@
 "use server";
-
 import { loadCanvasCardDataServer } from "@/backend-lib/actions";
 import CanvasCard from "./canvas-card";
 
