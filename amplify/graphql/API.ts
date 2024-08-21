@@ -1111,16 +1111,17 @@ export type ListCanvasesByCanvasIdQuery = {
   } | null,
 };
 
-export type ListCanvasesDigestByCanvasIdQueryVariables = {
+export type ListCanvasesDigestByCanvasIdAndPartitionKeyQueryVariables = {
   canvasId: string,
   filter?: ModelCanvasesDigestFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
+  partitionKey?: ModelStringKeyConditionInput | null,
   sortDirection?: ModelSortDirection | null,
 };
 
-export type ListCanvasesDigestByCanvasIdQuery = {
-  listCanvasesDigestByCanvasId?:  {
+export type ListCanvasesDigestByCanvasIdAndPartitionKeyQuery = {
+  listCanvasesDigestByCanvasIdAndPartitionKey?:  {
     __typename: "ModelCanvasesDigestConnection",
     items:  Array< {
       __typename: "CanvasesDigest",

@@ -383,18 +383,20 @@ export const listCanvasesByCanvasId = /* GraphQL */ `query ListCanvasesByCanvasI
   APITypes.ListCanvasesByCanvasIdQueryVariables,
   APITypes.ListCanvasesByCanvasIdQuery
 >;
-export const listCanvasesDigestByCanvasId = /* GraphQL */ `query ListCanvasesDigestByCanvasId(
+export const listCanvasesDigestByCanvasIdAndPartitionKey = /* GraphQL */ `query ListCanvasesDigestByCanvasIdAndPartitionKey(
   $canvasId: String!
   $filter: ModelCanvasesDigestFilterInput
   $limit: Int
   $nextToken: String
+  $partitionKey: ModelStringKeyConditionInput
   $sortDirection: ModelSortDirection
 ) {
-  listCanvasesDigestByCanvasId(
+  listCanvasesDigestByCanvasIdAndPartitionKey(
     canvasId: $canvasId
     filter: $filter
     limit: $limit
     nextToken: $nextToken
+    partitionKey: $partitionKey
     sortDirection: $sortDirection
   ) {
     items {
@@ -411,8 +413,8 @@ export const listCanvasesDigestByCanvasId = /* GraphQL */ `query ListCanvasesDig
   }
 }
 ` as GeneratedQuery<
-  APITypes.ListCanvasesDigestByCanvasIdQueryVariables,
-  APITypes.ListCanvasesDigestByCanvasIdQuery
+  APITypes.ListCanvasesDigestByCanvasIdAndPartitionKeyQueryVariables,
+  APITypes.ListCanvasesDigestByCanvasIdAndPartitionKeyQuery
 >;
 export const listCanvasesDigests = /* GraphQL */ `query ListCanvasesDigests(
   $filter: ModelCanvasesDigestFilterInput
