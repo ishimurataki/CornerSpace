@@ -105,7 +105,6 @@ function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, error
 export async function loadCanvasCardDataServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
 
-    console.log("HERE INSIDE LOAD CANVAS CARD SERVER");
     let dataReturned = null;
     let errorsReturned = null;
 
@@ -293,29 +292,32 @@ export async function testServer() {
     }
 }
 
-export async function getPublicCanvasIdsForUserServer(username: string):
+export async function getPublicCanvasIdsForUserServer(username: string, nextToken: string | null = null):
     Promise<{
         areCanvasIdsLoaded: boolean, username: string | null,
-        canvasIds: string[] | null, errorMessage: string | null
+        canvasIds: string[] | null, nextToken: string | null, errorMessage: string | null
     }> {
     const { data, errors } = await guestClient.queries.getPublicCanvasIdsForUser(
-        { ownerUsername: username },
+        { ownerUsername: username, nextToken: nextToken },
         { authMode: "identityPool" }
     );
     if (errors || !data) {
         console.log(errors);
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, nextToken: null, errorMessage: "500 - Internal Server Error." };
     }
     if (!data.areCanvasIdsReturned) {
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: data.errorMessage ? data.errorMessage : null };
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, nextToken: null, errorMessage: data.errorMessage ? data.errorMessage : null };
     }
-    return { areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null, errorMessage: null };
+    return {
+        areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null,
+        nextToken: data.nextToken ? data.nextToken : null, errorMessage: null
+    };
 }
 
-export async function getCanvasIdsForSignedInUserServer():
+export async function getCanvasIdsForSignedInUserServer(nextToken: string | null = null):
     Promise<{
         areCanvasIdsLoaded: boolean, username: string | null,
-        canvasIds: string[] | null, errorMessage: string | null
+        canvasIds: string[] | null, nextToken: string | null, errorMessage: string | null
     }> {
 
     const currentUser = await fetchUserAttributesServer();
@@ -323,21 +325,24 @@ export async function getCanvasIdsForSignedInUserServer():
     const username = currentUser?.preferred_username;
 
     if (!signedIn || !username) {
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "User not authenticated." };
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, nextToken: null, errorMessage: "User not authenticated." };
     }
 
     const { data, errors } = await cookieBasedClient.queries.getAllCanvasIdsForAuthenticatedUser(
-        { ownerUsername: username },
+        { ownerUsername: username, nextToken: nextToken },
         { authMode: "userPool" }
     );
     if (errors || !data) {
         console.log(errors);
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: "500 - Internal Server Error." };
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, nextToken: null, errorMessage: "500 - Internal Server Error." };
     }
     if (!data.areCanvasIdsReturned) {
-        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, errorMessage: data.errorMessage ? data.errorMessage : null };
+        return { areCanvasIdsLoaded: false, username: null, canvasIds: null, nextToken: null, errorMessage: data.errorMessage ? data.errorMessage : null };
     }
-    return { areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null, errorMessage: null };
+    return {
+        areCanvasIdsLoaded: true, username: username, canvasIds: data.canvasIds ? data.canvasIds : null,
+        nextToken: data.nextToken ? data.nextToken : null, errorMessage: null
+    };
 }
 
 export async function deleteCanvasServer(canvasId: string):
@@ -450,32 +455,35 @@ export async function isCanvasLikedForSignedInUserServer(canvasId: string):
     return { isCanvasLiked: listCanvasLikesData.length > 0, errorMessage: null };
 }
 
-export async function getLikedCanvasesForSignedInUserServer():
+export async function getLikedCanvasesForSignedInUserServer(nextToken: string | null = null):
     Promise<{
-        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, errorMessage: string | null
+        areCanvasIdsLoaded: boolean, canvasIds: string[] | null, nextToken: string | null, errorMessage: string | null
     }> {
     const currentUser = await fetchUserAttributesServer();
     const signedIn = currentUser != undefined;
     const username = currentUser?.preferred_username;
 
     if (!signedIn || !username) {
-        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "User not authenticated." }
+        return { areCanvasIdsLoaded: false, canvasIds: null, nextToken: null, errorMessage: "User not authenticated." }
     }
 
-    const { data: listLikedCanvasesData, errors: listLikedCanvasesErrors } = await cookieBasedClient.models.CanvasLikes.list(
-        { username: username, sortDirection: "DESC", authMode: "userPool" },
+    const { data: listLikedCanvasesData, errors: listLikedCanvasesErrors, nextToken: nextTokenToReturn } = await cookieBasedClient.models.CanvasLikes.list(
+        { username: username, sortDirection: "DESC", authMode: "userPool", limit: CANVAS_LIST_LIMIT, nextToken },
     );
 
     if (listLikedCanvasesErrors) {
         console.log(listLikedCanvasesErrors)
-        return { areCanvasIdsLoaded: false, canvasIds: null, errorMessage: "500 - Internal Server Error." }
+        return { areCanvasIdsLoaded: false, canvasIds: null, nextToken: null, errorMessage: "500 - Internal Server Error." }
     }
 
     const likedCanvases = listLikedCanvasesData.map((likedCanvas) => {
         return likedCanvas.canvasId;
     })
 
-    return { areCanvasIdsLoaded: true, canvasIds: likedCanvases, errorMessage: null };
+    return {
+        areCanvasIdsLoaded: true, canvasIds: likedCanvases,
+        nextToken: nextTokenToReturn ? nextTokenToReturn : null, errorMessage: null
+    };
 }
 
 export async function followUserForSignedInUserServer(userToFollow: string, unfollow: boolean = false):

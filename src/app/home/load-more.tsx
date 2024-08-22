@@ -8,10 +8,12 @@ export default function LoadMore({
     children,
     firstNextToken,
     loadMoreAction,
+    forStudio,
 }: {
     children: React.ReactNode,
     firstNextToken: string | null,
-    loadMoreAction: loadMoreActionType
+    loadMoreAction: loadMoreActionType,
+    forStudio: boolean
 }) {
 
     const ref = useRef<HTMLButtonElement>(null);
@@ -71,19 +73,33 @@ export default function LoadMore({
     }, [loadMore, scrollLoad]);
 
     return (
-        <div className="flex flex-row justify-between items-center gap-0">
-            <div className="w-full flex flex-row gap-4 overflow-x-scroll items-center">
+        <div className={`flex ${forStudio ? "flex-col" : "flex-row"} justify-between items-center gap-0`}>
+            <div className={`${forStudio ?
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll mb-6" :
+                "w-full flex flex-row gap-4 overflow-x-scroll items-center min-h-80"}`}>
                 {children}
                 {loadMoreNodes}
-                <button
+                {
+                    !forStudio ? <button
+                        onClick={() => loadMore()}
+                        disabled={loading || disabled || nextToken.current === null}
+                        className="p-2 flex-none rotate-90 bg-slate-400 text-white rounded-md hover:bg-slate-600 disabled:hover:bg-slate-400"
+                        ref={ref}
+                    >
+                        {nextToken.current === null ? "No more to load" : loading ? "Loading..." : "Load More"}
+                    </button> : <></>
+                }
+            </div>
+            {
+                forStudio ? <button
                     onClick={() => loadMore()}
                     disabled={loading || disabled || nextToken.current === null}
-                    className="h-ful p-2 flex-none rotate-90 bg-slate-400 text-white rounded-md hover:bg-slate-600 disabled:hover:bg-slate-400"
+                    className="p-2 mb-10 flex-none bg-slate-400 text-white rounded-md hover:bg-slate-600 disabled:hover:bg-slate-400"
                     ref={ref}
                 >
-                    {nextToken.current === null ? "No more" : loading ? "Loading..." : "Load More"}
-                </button>
-            </div>
+                    {nextToken.current === null ? "No more to load" : loading ? "Loading..." : "Load More"}
+                </button> : <></>
+            }
         </div>
     )
 }

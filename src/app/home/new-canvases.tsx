@@ -2,28 +2,7 @@
 
 import { getNewCanvasesServer } from "@/backend-lib/actions";
 import LoadMore, { loadMoreActionType } from "./load-more";
-import { Suspense } from "react";
-import CanvasCardWrapper from "../studio/canvas-card-wrapper";
-
-const CanvasesList = async ({
-    canvasIds
-}: {
-    canvasIds: string[]
-}) => {
-    return (
-        <>{canvasIds.map((canvasId) => {
-            return (
-                <Suspense fallback={
-                    <div className={`bg-gray-500 w-80 md:w-96 lg:w-1/3 rounded-lg`}>
-                    </div>} key={`canvasCard-${canvasId}`}>
-                    <div className="w-80 md:w-96 lg:w-1/3 flex-none">
-                        <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={false} displayOnError={false} />
-                    </div>
-                </Suspense>
-            );
-        })}</>
-    )
-}
+import { CanvasesList } from "./popular-canvases";
 
 const loadMoreNewCanvases: loadMoreActionType = async (currentToken: string | null) => {
     "use server";
@@ -50,7 +29,8 @@ export default async function NewCanvases() {
     }
 
     return (
-        <LoadMore firstNextToken={nextToken} loadMoreAction={loadMoreNewCanvases} key={"loadMoreContainerForNewCanvases"}>
+        <LoadMore firstNextToken={nextToken} loadMoreAction={loadMoreNewCanvases}
+            key={"loadMoreContainerForNewCanvases"} forStudio={false}>
             <CanvasesList canvasIds={initialCanvasIds} />
         </LoadMore>
     );

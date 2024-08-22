@@ -9,7 +9,7 @@ const dynamoDBClient = new DynamoDBClient({});
 const CANVASES_TABLE_NAME = "Canvases-733hb3qq5ncurbnrgxvauqy7ny-NONE";
 const CANVASES_DIGEST_TABLE_NAME = "CanvasesDigest-733hb3qq5ncurbnrgxvauqy7ny-NONE";
 const CANVAS_SOCIAL_STATS_TABLE_NAME = "CanvasSocialStats-733hb3qq5ncurbnrgxvauqy7ny-NONE";
-const MAX_POPULAR_CANVASES_IN_DIGEST_TABLE = 4;
+const MAX_POPULAR_CANVASES_IN_DIGEST_TABLE = 100;
 
 export const handler: DynamoDBStreamHandler = async (event) => {
 

@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import CanvasCardWrapper from "../studio/canvas-card-wrapper";
 import LoadMore, { loadMoreActionType } from "./load-more";
 
-const CanvasesList = async ({
+export const CanvasesList = async ({
     canvasIds
 }: {
     canvasIds: string[]
@@ -50,7 +50,8 @@ export default async function PopularCanvases() {
     }
 
     return (
-        <LoadMore firstNextToken={nextToken} loadMoreAction={loadMorePopularCanvases} key={"loadMoreContainerForPopularCanvases"}>
+        <LoadMore firstNextToken={nextToken} loadMoreAction={loadMorePopularCanvases}
+            key={"loadMoreContainerForPopularCanvases"} forStudio={false}>
             <CanvasesList canvasIds={initialCanvasIds} />
         </LoadMore>
     );

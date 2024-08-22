@@ -4,6 +4,8 @@ import { env } from '$amplify/env/get-public-canvas-ids-for-user';
 import { generateClient } from 'aws-amplify/data';
 import { listCanvases } from '../../graphql/queries';
 
+const CANVAS_LIST_LIMIT = 10;
+
 Amplify.configure(
     {
         API: {
@@ -37,24 +39,32 @@ const dataClient = generateClient<Schema>({
 });
 
 export const handler: Schema["getPublicCanvasIdsForUser"]["functionHandler"] = async (event, context) => {
-    const { ownerUsername } = event.arguments;
+    const { ownerUsername, nextToken } = event.arguments;
 
     console.log(`Starting getPublicCanvasIdsForUser lambda function invocation for ${ownerUsername}.`);
 
     const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
         query: listCanvases,
         variables: {
-            ownerUsername: ownerUsername
-        }
+            ownerUsername: ownerUsername,
+            limit: CANVAS_LIST_LIMIT,
+            nextToken: nextToken,
+            filter: {
+                publicity: {
+                    eq: "PUBLIC"
+                }
+            },
+        },
     });
     if (listCanvasesErrors) {
         console.log(listCanvasesErrors);
         return { areCanvasIdsReturned: false, canvasIds: null, errorMessage: "500 - Internal Server Error." };
     }
     const canvases = listCanvasesData.listCanvases.items;
-    const canvasIds: string[] = canvases
-        .filter((canvas) => canvas.publicity === "PUBLIC")
-        .map((canvas) => canvas.canvasId);
+    const canvasIds: string[] = canvases.map((canvas) => canvas.canvasId);
 
-    return { areCanvasIdsReturned: true, canvasIds: canvasIds, errorMessage: null };
+    let nextTokenToReturn = listCanvasesData.listCanvases.nextToken;
+    nextTokenToReturn ??= null;
+
+    return { areCanvasIdsReturned: true, canvasIds: canvasIds, nextToken: nextTokenToReturn, errorMessage: null };
 };

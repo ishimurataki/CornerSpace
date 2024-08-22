@@ -5,6 +5,8 @@ import { generateClient } from 'aws-amplify/data';
 import { AppSyncIdentityCognito } from 'aws-lambda';
 import { getUsers, listCanvases } from '../../graphql/queries';
 
+const CANVAS_LIST_LIMIT = 10;
+
 Amplify.configure(
     {
         API: {
@@ -38,7 +40,7 @@ const dataClient = generateClient<Schema>({
 });
 
 export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHandler"] = async (event, context) => {
-    const { ownerUsername } = event.arguments;
+    const { ownerUsername, nextToken } = event.arguments;
 
     console.log(`Starting getAllCanvasIdsForAuthenticatedUser lambda function invocation for ${ownerUsername}.`);
 
@@ -66,7 +68,9 @@ export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHan
     const { data: listCanvasesData, errors: listCanvasesErrors } = await dataClient.graphql({
         query: listCanvases,
         variables: {
-            ownerUsername: ownerUsername
+            ownerUsername: ownerUsername,
+            limit: CANVAS_LIST_LIMIT,
+            nextToken: nextToken
         }
     });
     if (listCanvasesErrors) {
@@ -75,5 +79,8 @@ export const handler: Schema["getAllCanvasIdsForAuthenticatedUser"]["functionHan
     }
     const canvasIds: string[] = listCanvasesData.listCanvases.items.map((canvas) => canvas.canvasId);
 
-    return { areCanvasIdsReturned: true, canvasIds: canvasIds, errorMessage: null };
+    let nextTokenToReturn = listCanvasesData.listCanvases.nextToken;
+    nextTokenToReturn ??= null;
+
+    return { areCanvasIdsReturned: true, canvasIds: canvasIds, nextToken: nextTokenToReturn, errorMessage: null };
 };

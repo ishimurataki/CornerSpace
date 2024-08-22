@@ -208,17 +208,18 @@ const schema = a
     getCanvasIdsForUserResponse: a.customType({
       areCanvasIdsReturned: a.boolean().required(),
       canvasIds: a.string().required().array(),
+      nextToken: a.string(),
       errorMessage: a.string()
     }),
     getPublicCanvasIdsForUser: a
       .query()
-      .arguments({ ownerUsername: a.string().required() })
+      .arguments({ ownerUsername: a.string().required(), nextToken: a.string() })
       .authorization((allow) => [allow.authenticated(), allow.guest()])
       .returns(a.ref('getCanvasIdsForUserResponse'))
       .handler(a.handler.function(getPublicCanvasIdsForUser)),
     getAllCanvasIdsForAuthenticatedUser: a
       .query()
-      .arguments({ ownerUsername: a.string().required() })
+      .arguments({ ownerUsername: a.string().required(), nextToken: a.string() })
       .authorization((allow) => [allow.authenticated()])
       .returns(a.ref('getCanvasIdsForUserResponse'))
       .handler(a.handler.function(getAllCanvasIdsForAuthenticatedUser)),
