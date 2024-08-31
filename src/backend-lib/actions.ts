@@ -57,7 +57,7 @@ export async function signUpServer(username: string, email: string, password: st
                 autoSignIn: true
             }
         });
-        if (userId) {
+        if (userId && nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
             return { isSignedUp: true, userId, errorMessage: null };
         }
         return { isSignedUp: false, userId: null, errorMessage: "500 - Internal Server Error." }
@@ -70,7 +70,7 @@ export async function signUpServer(username: string, email: string, password: st
     }
 }
 
-export async function confirmSignUpServer(username: string, userId: string, confirmationCode: string) {
+export async function confirmSignUpServer(userId: string, confirmationCode: string) {
     try {
         const { isSignUpComplete, nextStep } = await confirmSignUp({
             username: userId,
@@ -657,4 +657,24 @@ export async function getNewCanvasesServer(nextToken: string | null = null):
         .filter((canvasId) => canvasId !== null && canvasId !== undefined);
 
     return { areCanvasIdsLoaded: true, canvasIds: popularCanvases, nextToken: nextTokenToReturn, errorMessage: null };
+}
+
+export async function resendConfirmationCodeServer(email: string):
+    Promise<{
+        isConfirmationCodeResent: boolean, userId: string | null, errorMessage: string | null
+    }> {
+    const { data, errors } = await guestClient.queries.resendConfirmationCode(
+        { email },
+        { authMode: "identityPool" }
+    );
+    if (errors || !data) {
+        console.log(errors);
+        return { isConfirmationCodeResent: false, userId: null, errorMessage: "500 - Internal Server Error. " }
+    }
+    console.log(data);
+    return {
+        isConfirmationCodeResent: data.isConfirmationCodeResent,
+        userId: data.userId ? data.userId : null,
+        errorMessage: data.errorMessage ? data.errorMessage : null
+    };
 }

@@ -4,16 +4,15 @@ import { useFormState, useFormStatus } from "react-dom";
 import { ArrowRightIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { confirmSignUpServer } from "@/backend-lib/actions";
 
-export default function ConfirmSignUpForm({ userId, username, setToSignIn }:
-    { userId: string | null, username: string | null, setToSignIn: () => void }) {
+export default function ConfirmSignUpForm({ userId, setToSignIn }:
+    { userId: string | null, setToSignIn: () => void }) {
     const [errorMessage, confirmSignUpDispatch] = useFormState(confirmSignUpSubmit, null);
 
     async function confirmSignUpSubmit(previousState: string | null, formData: FormData) {
         const confirmationCode = formData.get("confirmationCode")?.toString();
         if (!userId) return "userId is not specified.";
-        if (!username) return "username is not specified.";
         if (!confirmationCode) return "Provide confirmation code.";
-        const { isSignedUp, errorMessage } = await confirmSignUpServer(username, userId, confirmationCode);
+        const { isSignedUp, errorMessage } = await confirmSignUpServer(userId, confirmationCode);
         if (isSignedUp) {
             setToSignIn();
             return null;

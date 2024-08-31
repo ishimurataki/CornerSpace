@@ -8,6 +8,7 @@ import { getCanvasCard } from '../functions/get-canvas-card/resource';
 import { getCanvasData } from '../functions/get-canvas-data/resource';
 import { likeCanvasForUser } from '../functions/like-canvas-for-user/resource';
 import { followUser } from '../functions/follow-user/resource';
+import { resendConfirmationCode } from '../functions/resend-confirmation-code/resource';
 
 const schema = a
   .schema({
@@ -290,7 +291,20 @@ const schema = a
       })
       .authorization((allow) => [allow.authenticated()])
       .returns(a.ref('followUserResponse'))
-      .handler(a.handler.function(followUser))
+      .handler(a.handler.function(followUser)),
+    resendConfirmationCodeResponse: a.customType({
+      isConfirmationCodeResent: a.boolean().required(),
+      userId: a.string(),
+      errorMessage: a.string()
+    }),
+    resendConfirmationCode: a
+      .query()
+      .arguments({
+        email: a.string().required()
+      })
+      .authorization((allow) => [allow.guest()])
+      .returns(a.ref('resendConfirmationCodeResponse'))
+      .handler(a.handler.function(resendConfirmationCode))
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
