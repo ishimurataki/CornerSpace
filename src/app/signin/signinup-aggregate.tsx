@@ -3,6 +3,7 @@
 import { useState } from "react"
 import SignInForm from "./signin-form";
 import SignUpAggregate from "./signup-aggregate";
+import SignInAggregate from "./signin-aggregate";
 
 enum Mode {
     SignIn = "signIn",
@@ -15,7 +16,7 @@ export default function SignInUpAggregate() {
         <div className="relative w-2/3 max-w-2xl min-w-fit mx-auto flex flex-row h-100">
             <div className="flex flex-col gap-6 w-1/2 bg-green-400 rounded-l-2xl py-10 px-6">
                 <text className="text-xl text-white font-extrabold">Sign In</text>
-                <SignInForm />
+                <SignInAggregate />
             </div>
             <div className="flex flex-col gap-6 w-1/2 bg-green-400 rounded-r-2xl py-10 px-6">
                 <text className="text-xl text-white font-extrabold">Sign Up</text>

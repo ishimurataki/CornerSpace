@@ -5,8 +5,12 @@ import { EnvelopeIcon, LockClosedIcon, ExclamationCircleIcon, ArrowRightIcon, Ey
 import { AuthError, signIn } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { resetPasswordServer } from "@/backend-lib/actions";
 
-export default function SignInForm() {
+export default function SignInForm({ changeToRequestResetPassword }:
+    {
+        changeToRequestResetPassword: () => void,
+    }) {
     const [errorMessage, signInDispatch] = useFormState(signInSubmit, null);
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
@@ -29,42 +33,49 @@ export default function SignInForm() {
     }
 
     return (
-        <form action={signInDispatch} className="flex flex-col gap-4 w-72">
-            <label htmlFor="email" className="relative text-gray-600 focus-within:text-black block">
-                <EnvelopeIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
-                <input
-                    className="block rounded-lg w-full p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
-                    id="email"
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                />
-            </label>
-            <label htmlFor="password" className="relative text-gray-600 focus-within:text-black block">
-                <LockClosedIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
-                <input
-                    className="block rounded-lg w-full p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Password"
-                />
-                <EyeIcon className="hover:text-green-600 w-5 h-5 absolute top-1/2 transform -translate-y-1/2 right-3"
-                    onClick={() => setShowPassword(!showPassword)} />
-            </label>
-            <div className="flex items-start space-x-1"
-                aria-live="polite"
-                aria-atomic="true"
-            >
-                {errorMessage && (
-                    <>
-                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                        <p className="text-sm text-red-500 w-56">{errorMessage}</p>
-                    </>
-                )}
-            </div>
-            <SignInButton />
-        </form>
+        <div>
+            <form action={signInDispatch} className="flex flex-col gap-4 w-72">
+                <label htmlFor="email" className="relative text-gray-600 focus-within:text-black block">
+                    <EnvelopeIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
+                    <input
+                        className="block rounded-lg w-full p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
+                        id="email"
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                    />
+                </label>
+                <label htmlFor="password" className="relative text-gray-600 focus-within:text-black block">
+                    <LockClosedIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
+                    <input
+                        className="block rounded-lg w-full p-2 text-sm outline-2 placeholder:text-gray-500 pl-12"
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Password"
+                    />
+                    <EyeIcon className="hover:text-green-600 w-5 h-5 absolute top-1/2 transform -translate-y-1/2 right-3"
+                        onClick={() => setShowPassword(!showPassword)} />
+                </label>
+                <div className="flex items-start space-x-1"
+                    aria-live="polite"
+                    aria-atomic="true"
+                >
+                    {errorMessage && (
+                        <>
+                            <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                            <p className="text-sm text-red-500 w-56">{errorMessage}</p>
+                        </>
+                    )}
+                </div>
+                <SignInButton />
+            </form>
+            <button className="absolute bottom-0 left-0 mb-2 ml-4 text-sm underline" onClick={() => {
+                changeToRequestResetPassword();
+            }}>
+                Forgot password?
+            </button>
+        </div>
     );
 }
 

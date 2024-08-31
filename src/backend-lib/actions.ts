@@ -4,7 +4,7 @@ import { type Schema } from "@/../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data'
 import outputs from "@/../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
-import { AuthError, confirmSignUp, signUp } from "aws-amplify/auth";
+import { AuthError, confirmResetPassword, confirmSignUp, resetPassword, signUp } from "aws-amplify/auth";
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import { CanvasCardData, CanvasData, CanvasDataSave } from "./data";
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
@@ -70,7 +70,8 @@ export async function signUpServer(username: string, email: string, password: st
     }
 }
 
-export async function confirmSignUpServer(userId: string, confirmationCode: string) {
+export async function confirmSignUpServer(userId: string, confirmationCode: string)
+    : Promise<{ isSignedUp: boolean, errorMessage: string | null }> {
     try {
         const { isSignUpComplete, nextStep } = await confirmSignUp({
             username: userId,
@@ -86,6 +87,47 @@ export async function confirmSignUpServer(userId: string, confirmationCode: stri
         } else {
             return { isSignedUp: false, errorMessage: "500 - Internal Server Error." }
         }
+    }
+}
+
+export async function requestResetPasswordServer(email: string):
+    Promise<{
+        isPasswordResetInitiated: boolean, errorMessage: string | null
+    }> {
+    try {
+        const output = await resetPassword({
+            username: email
+        });
+        if (output.nextStep.resetPasswordStep === "CONFIRM_RESET_PASSWORD_WITH_CODE") {
+            return { isPasswordResetInitiated: true, errorMessage: null };
+        }
+        return { isPasswordResetInitiated: false, errorMessage: "500 - Internal Server Error." }
+    } catch (err) {
+        let message = "500 - Internal Server Error.";
+        if (err instanceof Error) {
+            message = err.message;
+        }
+        return { isPasswordResetInitiated: false, errorMessage: message };
+    }
+}
+
+export async function resetPasswordServer(email: string, confirmationCode: string, newPassword: string):
+    Promise<{
+        isPasswordReset: boolean, errorMessage: string | null
+    }> {
+    try {
+        await confirmResetPassword({
+            username: email,
+            confirmationCode: confirmationCode,
+            newPassword: newPassword,
+        });
+        return { isPasswordReset: true, errorMessage: null };
+    } catch (err) {
+        let message = "500 - Internal Server Error.";
+        if (err instanceof Error) {
+            message = err.message;
+        }
+        return { isPasswordReset: false, errorMessage: message };
     }
 }
 
@@ -669,7 +711,7 @@ export async function resendConfirmationCodeServer(email: string):
     );
     if (errors || !data) {
         console.log(errors);
-        return { isConfirmationCodeResent: false, userId: null, errorMessage: "500 - Internal Server Error. " }
+        return { isConfirmationCodeResent: false, userId: null, errorMessage: "500 - Internal Server Error." }
     }
     console.log(data);
     return {

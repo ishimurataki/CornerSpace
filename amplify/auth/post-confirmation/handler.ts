@@ -4,6 +4,7 @@ import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/data";
 import { env } from "$amplify/env/post-confirmation";
 import { createUsers } from "../../graphql/mutations";
+import { getUsers } from "../../graphql/queries";
 
 Amplify.configure(
     {
@@ -38,6 +39,7 @@ const client = generateClient<Schema>({
 });
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
+    if (event.triggerSource === "PostConfirmation_ConfirmForgotPassword") return event;
     await client.graphql({
         query: createUsers,
         variables: {

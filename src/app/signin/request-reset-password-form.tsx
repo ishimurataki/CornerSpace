@@ -5,31 +5,31 @@ import {
     EnvelopeIcon, ArrowRightIcon, ExclamationCircleIcon,
 } from "@heroicons/react/24/solid";
 import { z } from "zod";
-import { resendConfirmationCodeServer } from "@/backend-lib/actions";
+import { requestResetPasswordServer } from "@/backend-lib/actions";
 
-const resendConfirmationSchema = z.object({
+const resetPasswordSchema = z.object({
     email: z.string()
         .email("Must be of valid format")
 });
 
-type resendConfirmationState = {
+type resetPasswordState = {
     errors?: {
         email?: string[];
     };
     message?: string | null;
 };
 
-export default function ResendConfirmationForm({ updateUserIdHandler, updateShowResendConfirmationHandler }:
+export default function RequestResetPasswordForm({ changeToResetPassword, changeToSignIn }:
     {
-        updateUserIdHandler: (newUserId: string | null) => void,
-        updateShowResendConfirmationHandler: (show: boolean) => void
+        changeToResetPassword: (userEmail: string) => void,
+        changeToSignIn: () => void
     }) {
     const initialState = { message: null, errors: undefined };
-    const [resendConfirmationFormState, resendConfirmationDispatch] = useFormState(resendConfirmationSubmit, initialState);
+    const [resetPasswordFormState, resetPasswordDispatch] = useFormState(resetPasswordSubmit, initialState);
 
-    async function resendConfirmationSubmit(previousState: resendConfirmationState, formData: FormData) {
+    async function resetPasswordSubmit(previousState: resetPasswordState, formData: FormData) {
 
-        const validatedSignUpFields = resendConfirmationSchema.safeParse({
+        const validatedSignUpFields = resetPasswordSchema.safeParse({
             email: formData.get("email"),
         });
 
@@ -42,9 +42,9 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
 
         const { email } = validatedSignUpFields.data;
 
-        const { isConfirmationCodeResent, userId, errorMessage } = await resendConfirmationCodeServer(email);
-        if (isConfirmationCodeResent && userId) {
-            updateUserIdHandler(userId);
+        const { isPasswordResetInitiated, errorMessage } = await requestResetPasswordServer(email);
+        if (isPasswordResetInitiated) {
+            changeToResetPassword(email);
             return initialState;
         }
         return {
@@ -53,7 +53,7 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
     }
     return (
         <div>
-            <form action={resendConfirmationDispatch} className="flex flex-col gap-4 w-72">
+            <form action={resetPasswordDispatch} className="flex flex-col gap-4 w-72">
                 <label htmlFor="email" className="relative text-gray-600 focus-within:text-black block">
                     <div className="relative">
                         <EnvelopeIcon className="pointer-events-none w-5 h-5 absolute top-1/2 transform -translate-y-1/2 left-3" />
@@ -65,8 +65,8 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
                         />
                     </div>
                     <div id="email-error" aria-live="polite" aria-atomic="true">
-                        {resendConfirmationFormState.errors?.email &&
-                            resendConfirmationFormState.errors.email.map((error: string) => (
+                        {resetPasswordFormState.errors?.email &&
+                            resetPasswordFormState.errors.email.map((error: string) => (
                                 <p className="mt-2 -mb-2 text-xs text-red-500" key={error}>
                                     {error}
                                 </p>
@@ -77,17 +77,17 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
                     aria-live="polite"
                     aria-atomic="true"
                 >
-                    {resendConfirmationFormState.message && (
+                    {resetPasswordFormState.message && (
                         <>
                             <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                            <p className="text-sm text-red-500">{resendConfirmationFormState.message}</p>
+                            <p className="text-sm text-red-500">{resetPasswordFormState.message}</p>
                         </>
                     )}
                 </div>
-                <ResendConfirmationButton label="Resend Code" />
+                <ResetPasswordButton label="Reset Password" />
             </form >
-            <button className="absolute bottom-0 right-0 mb-2 mr-4 text-sm underline" onClick={() => {
-                updateShowResendConfirmationHandler(false);
+            <button className="absolute bottom-0 left-0 mb-2 ml-4 text-sm underline" onClick={() => {
+                changeToSignIn();
             }}>
                 Go back
             </button>
@@ -95,7 +95,7 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
     );
 }
 
-function ResendConfirmationButton({ label }: { label: string }) {
+function ResetPasswordButton({ label }: { label: string }) {
     const { pending } = useFormStatus();
     return (
         <button className="flex flex-row w-full bg-blue-400 rounded-lg p-1.5 text-white hover:font-bold 
