@@ -17,14 +17,17 @@ import {
     CubeTransparentIcon,
     ChevronUpIcon,
     ChevronDownIcon,
-    CubeIcon
+    CubeIcon,
+    ArrowDownOnSquareIcon
 } from "@heroicons/react/24/outline";
 import { hexToRgb, rgbToHex } from "@/utils/functions";
 import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
 import { useRouter } from "next/navigation";
-import { testServer } from "@/backend-lib/actions";
+
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_TITLE_LENGTH = 100;
 
 const canvasSizeOptions = [16, 32, 48, 64, 78, 96];
 
@@ -73,6 +76,10 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
     const [saved, setSaved] = useState(false);
     const [saveError, setSaveError] = useState<null | string>(null);
     const [editorAxis, setEditorAxis] = useState(canvasState.editorAxis);
+    const [descriptionCharacterCount, setDescriptionCharacterCount] = useState(canvasData ?
+        canvasData.description.length : 0);
+    const [titleCharacterCount, setTitleCharacterCount] = useState(canvasData ?
+        canvasData.name.length : 0);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     let stopAnimation = false;
 
@@ -281,12 +288,34 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         Title:
                     </div>
                     <textarea className="h-8 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Blank Canvas"
-                        onChange={(e) => setTitle(e.target.value)}></textarea>
+                        onChange={(e) => {
+                            const newCharacterCount = e.target.value.length;
+                            if (newCharacterCount > MAX_TITLE_LENGTH) {
+                                e.target.value = e.target.value.substring(0, MAX_TITLE_LENGTH);
+                            }
+                            setTitle(e.target.value);
+                            setTitleCharacterCount(e.target.value.length);
+                        }}>
+                    </textarea>
+                    <div className="text-xs text-gray-500 self-end">
+                        {`${MAX_TITLE_LENGTH - titleCharacterCount} / ${MAX_TITLE_LENGTH} characters remaining`}
+                    </div>
                     <div className="font-bold">
                         Description:
                     </div>
                     <textarea className=" h-40 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Add a description"
-                        onChange={(e) => setDescription(e.target.value)}></textarea>
+                        onChange={(e) => {
+                            const newCharacterCount = e.target.value.length;
+                            if (newCharacterCount > MAX_DESCRIPTION_LENGTH) {
+                                e.target.value = e.target.value.substring(0, MAX_DESCRIPTION_LENGTH);
+                            }
+                            setDescription(e.target.value);
+                            setDescriptionCharacterCount(e.target.value.length);
+                        }}>
+                    </textarea>
+                    <div className="text-xs text-gray-500 self-end">
+                        {`${MAX_DESCRIPTION_LENGTH - descriptionCharacterCount} / ${MAX_DESCRIPTION_LENGTH} characters remaining`}
+                    </div>
                     <div className="font-bold">
                         Canvas Size:
                     </div>
@@ -340,7 +369,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                         Save
                     </button>
                 </div>
-                <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1 overflow-y-scroll`}>
+                <div className={`${showTools ? "" : "hidden"} bg-sea-green px-1 w-[12.5rem] flex-1 overflow-y-scroll no-scrollbar`}>
                     <div className={`${toolsMenuMode == "edit" ? "visible" : "hidden"}`}>
                         <div className="grid grid-cols-4 gap-1 h-8 my-2">
                             <button className={`${editorAxis == Axis.X ? "bg-pastel-green text-base" : "bg-sky-100 text-sm"} 
@@ -428,7 +457,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             </div>
                         </div>
                     </div>
-                    <div className={`${toolsMenuMode == "render" ? "visible" : "hidden"} h-full overflow-auto`}>
+                    <div className={`${toolsMenuMode == "render" ? "visible" : "hidden"} h-full overflow-auto no-scrollbar`}>
                         <label className="inline-flex items-center cursor-pointer mt-2">
                             <input type="checkbox" checked={rayTraceEnabled}
                                 onChange={() => {
@@ -462,37 +491,58 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             </div>
                         </div>
                     </div>
-                    <div className={`${toolsMenuMode == "save" ? "visible" : "hidden"} h-full`}>
+                    <div className={`${toolsMenuMode == "save" ? "visible" : "hidden"} h-full overflow-auto no-scrollbar`}>
                         <input placeholder="Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="bg-sea-green h-8 block mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white" />
+                            defaultValue={title}
+                            onChange={(e) => {
+                                const newCharacterCount = e.target.value.length;
+                                if (newCharacterCount > MAX_TITLE_LENGTH) {
+                                    e.target.value = e.target.value.substring(0, MAX_TITLE_LENGTH);
+                                }
+                                setTitle(e.target.value);
+                                setTitleCharacterCount(e.target.value.length);
+                            }}
+                            className="bg-white h-8 block mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white" />
+                        <div className="text-xs text-gray-500 mt-2 ml-1">
+                            {`${MAX_TITLE_LENGTH - titleCharacterCount} / ${MAX_TITLE_LENGTH} characters remaining`}
+                        </div>
                         <textarea
                             placeholder="Add a description here"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="bg-sea-green block h-40 mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white"></textarea>
-                        <div className="pt-2">
-                            <label className="mb-2 text-sm font-medium text-gray-900 dark:text-white">Publicity: </label>
+                            defaultValue={description}
+                            onChange={(e) => {
+                                const newCharacterCount = e.target.value.length;
+                                if (newCharacterCount > MAX_DESCRIPTION_LENGTH) {
+                                    e.target.value = e.target.value.substring(0, MAX_DESCRIPTION_LENGTH);
+                                }
+                                setDescription(e.target.value);
+                                setDescriptionCharacterCount(e.target.value.length);
+                            }}
+                            className="bg-white block h-40 mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white">
+                        </textarea>
+                        <div className="text-xs text-gray-500 mt-2 ml-1">
+                            {`${MAX_DESCRIPTION_LENGTH - descriptionCharacterCount} / ${MAX_DESCRIPTION_LENGTH} characters remaining`}
+                        </div>
+                        <div className="pt-2 ml-1">
+                            <label className="mb-2 text-sm font-medium text-gray-900">Publicity: </label>
                             <select
                                 onChange={(e) => {
                                     setPublicity(e.target.value == "PUBLIC" ? "PUBLIC" : "PRIVATE")
                                 }}
                                 value={String(publicity)}
-                                className="bg-sea-green border-2 border-white text-gray-900 text-sm rounded-full px-2 py-1.5 outline-none hover:text-cyan-800 hover:border-cyan-800">
+                                className="bg-sea-green border-2 border-white text-gray-900 text-sm rounded-lg px-2 py-1.5 outline-none hover:text-cyan-800 hover:border-cyan-800">
                                 <option value={"PUBLIC"}>Public</option>
                                 <option value={"PRIVATE"}>Private</option>
                             </select>
                         </div>
                         <div className="flex flex-row">
                             <button className={`${saved ? "text-green" : "text-gray-800"} px-3 py-1 mt-2 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 border-2 border-white 
-                            rounded-full hover:text-cyan-800 hover:border-cyan-800 text-lg`}
+                            rounded-lg text-white hover:text-cyan-200 hover:border-cyan-800 text-lg bg-cyan-600 flex flex-row items-center gap-2`}
                                 aria-disabled={saving || saved}
                                 disabled={saving || saved}
                                 onClick={handleSave}>
+                                <ArrowDownOnSquareIcon className="h-5" />
                                 {saved ? "Saved" : "Save"}
                             </button>
-                            <button onClick={() => testServer()}>Test</button>
                         </div>
                         {saveError ?
                             <div className="text-red-600 text-sm p-2">Save failed: {saveError}</div>

@@ -75,8 +75,8 @@ export default function LoadMore({
     return (
         <div className={`flex ${forStudio ? "flex-col" : "flex-row"} justify-between items-center gap-0`}>
             <div className={`${forStudio ?
-                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll mb-6" :
-                "w-full flex flex-row gap-4 overflow-x-scroll items-center min-h-80"}`}>
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mx-3 md:mx-6 lg:mx-10 mt-2 md:mt-3 lg:mt-5 overflow-scroll mb-6 no-scrollbar" :
+                "w-full flex flex-row gap-4 overflow-x-scroll items-center min-h-80 no-scrollbar"}`}>
                 {children}
                 {loadMoreNodes}
                 {

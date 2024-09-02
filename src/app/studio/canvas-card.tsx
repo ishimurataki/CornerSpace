@@ -48,7 +48,7 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
                     <div>
                         {showDescription ?
                             <div className="p-4 absolute top-0 w-full h-full text-white rounded-b-md bg-slate-600 bg-opacity-50 flex flex-col justify-between">
-                                <div>{canvasCardData.description}</div>
+                                <div className="overflow-y-scroll no-scrollbar">{canvasCardData.description}</div>
                                 <button className="text-xs hover:text-cyan-400 text-left" onClick={() => setShowDescription(false)}>
                                     hide description
                                 </button>

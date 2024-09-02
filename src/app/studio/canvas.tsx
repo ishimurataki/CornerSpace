@@ -127,7 +127,7 @@ export default function Canvas({ canvasId, canvasData, userSignedIn, canvasLiked
     }, [canvasData])
 
     return (
-        <div className="z-40 top-0 left-0 w-screen h-full flex flex-col flex-nowrap gap-2 md:flex-row bg-black bg-opacity-80 overflow-scroll">
+        <div className="z-40 top-0 left-0 w-screen h-full flex flex-col flex-nowrap gap-2 md:flex-row bg-black bg-opacity-80 overflow-scroll no-scrollbar">
             <div className="grow flex justify-center items-center w-full h-4/5 min-h-[calc(75%)] md:h-full">
                 <canvas ref={canvasRef} className="w-[calc(100%-30px)] md:w-11/12 h-full md:h-full rounded-lg" />
             </div>
