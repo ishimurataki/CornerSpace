@@ -101,7 +101,7 @@ export default function ProfileSettings({ username, email, bio }:
                                 </div>
                                 {(!bio || bio.length === 0) &&
                                     <div className="text-xs text-gray-500">
-                                        Looks like you've got no bio yet! Add one to spice up your user page.
+                                        Looks like you have no bio yet! Add one to spice up your user page.
                                     </div>
                                 }
                                 <ChangeBioForm oldBio={bio} />
