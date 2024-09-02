@@ -9,6 +9,7 @@ import { getCanvasData } from '../functions/get-canvas-data/resource';
 import { likeCanvasForUser } from '../functions/like-canvas-for-user/resource';
 import { followUser } from '../functions/follow-user/resource';
 import { resendConfirmationCode } from '../functions/resend-confirmation-code/resource';
+import { changeBioForUser } from '../functions/change-bio-for-user/resource';
 
 const schema = a
   .schema({
@@ -17,6 +18,7 @@ const schema = a
         username: a.id().required()
           .authorization((allow) => [
             allow.guest().to(["read"]),
+            allow.authenticated().to(["read"]),
             allow.ownerDefinedIn("cognitoId").to(["read"])
           ]),
         cognitoId: a.string()
@@ -26,6 +28,19 @@ const schema = a
         numberOfCanvases: a.integer().default(3)
           .authorization((allow) => [
             allow.ownerDefinedIn("cognitoId").to(["read"])
+          ]),
+        biography: a.string()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read", "delete"]),
+            allow.guest().to(["read"]),
+            allow.authenticated().to(["read"])
+          ]),
+        emailVisible: a.boolean().required()
+          .default(false)
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read", "update"]),
+            allow.guest().to(["read"]),
+            allow.authenticated().to(["read"])
           ])
       })
       .authorization(allow => [
@@ -304,7 +319,20 @@ const schema = a
       })
       .authorization((allow) => [allow.guest()])
       .returns(a.ref('resendConfirmationCodeResponse'))
-      .handler(a.handler.function(resendConfirmationCode))
+      .handler(a.handler.function(resendConfirmationCode)),
+    changeBioForUserResponse: a.customType({
+      isBioChanged: a.boolean().required(),
+      errorMessage: a.string()
+    }),
+    changeBioForUser: a
+      .mutation()
+      .arguments({
+        username: a.string().required(),
+        newBio: a.string()
+      })
+      .authorization((allow) => [allow.authenticated()])
+      .returns(a.ref('changeBioForUserResponse'))
+      .handler(a.handler.function(changeBioForUser)),
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
@@ -315,7 +343,8 @@ const schema = a
     allow.resource(getCanvasCard),
     allow.resource(getCanvasData),
     allow.resource(likeCanvasForUser),
-    allow.resource(followUser)
+    allow.resource(followUser),
+    allow.resource(changeBioForUser)
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

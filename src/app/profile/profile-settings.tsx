@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import UpdatePasswordForm from "./update-password-form";
+import ChangeBioForm from "./change-bio-form";
 
 enum ProfileSettingsTabs {
     ChangePassword,
@@ -13,7 +14,8 @@ enum ProfileSettingsTabs {
     AddChangeBio
 }
 
-export default function ProfileSettings({ username, email }: { username: string, email: string }) {
+export default function ProfileSettings({ username, email, bio }:
+    { username: string, email: string, bio: string | null }) {
 
     const [profileSettingsTab, setProfileSettingsTab] = useState<ProfileSettingsTabs | null>(null);
 
@@ -74,7 +76,7 @@ export default function ProfileSettings({ username, email }: { username: string,
                 </div>
                 {
                     profileSettingsTab === ProfileSettingsTabs.ChangePassword ?
-                        <div className="grow flex flex-row align-top bg-green-100 rounded-lg px-2 lg:px-5 py-2 gap-2">
+                        <div className="grow flex flex-row align-top bg-green-100 rounded-lg px-2 lg:px-5 py-4 gap-2">
                             <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
                                 onClick={() => setProfileSettingsTab(null)} />
                             <div className="flex flex-col gap-4">
@@ -89,21 +91,27 @@ export default function ProfileSettings({ username, email }: { username: string,
                 }
                 {
                     profileSettingsTab === ProfileSettingsTabs.AddChangeBio ?
-                        <div className="grow flex flex-row align-top bg-blue-100 rounded-lg px-2 lg:px-5 py-2 gap-2">
+                        <div className="grow flex flex-row align-top bg-blue-100 rounded-lg pl-2 lg:pl-5 pr-10 py-4 gap-2">
                             <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
                                 onClick={() => setProfileSettingsTab(null)} />
-                            <div className="flex flex-col divide-y-2 divide-white">
+                            <div className="flex flex-col gap-4 w-full">
                                 <div className="flex flex-row items-center gap-2">
                                     <IdentificationIcon className="h-4" />
                                     <div>Add/change your bio</div>
                                 </div>
+                                {(!bio || bio.length === 0) &&
+                                    <div className="text-xs text-gray-500">
+                                        Looks like you've got no bio yet! Add one to spice up your user page.
+                                    </div>
+                                }
+                                <ChangeBioForm oldBio={bio} />
                             </div>
                         </div>
                         : ""
                 }
                 {
                     profileSettingsTab === ProfileSettingsTabs.ChangeEmailVisibility ?
-                        <div className="grow flex flex-row align-top bg-purple-100 rounded-lg px-2 lg:px-5 py-2 gap-2">
+                        <div className="grow flex flex-row align-top bg-purple-100 rounded-lg px-2 lg:px-5 py-4 gap-2">
                             <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
                                 onClick={() => setProfileSettingsTab(null)} />
                             <div className="flex flex-col divide-y-2 divide-white">

@@ -45,6 +45,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
             input: {
                 username: event.request.userAttributes.preferred_username,
                 cognitoId: `${event.request.userAttributes.sub}::${event.userName}`,
+                emailVisible: false,
                 numberOfCanvases: 4
             },
         },

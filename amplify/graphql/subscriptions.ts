@@ -126,8 +126,10 @@ export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
   $filter: ModelSubscriptionUsersFilterInput
 ) {
   onCreateUsers(cognitoId: $cognitoId, filter: $filter) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username
@@ -256,8 +258,10 @@ export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
   $filter: ModelSubscriptionUsersFilterInput
 ) {
   onDeleteUsers(cognitoId: $cognitoId, filter: $filter) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username
@@ -386,8 +390,10 @@ export const onUpdateUsers = /* GraphQL */ `subscription OnUpdateUsers(
   $filter: ModelSubscriptionUsersFilterInput
 ) {
   onUpdateUsers(cognitoId: $cognitoId, filter: $filter) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username

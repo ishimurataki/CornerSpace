@@ -7,6 +7,7 @@ export type getCanvasIdsForUserResponse = {
   areCanvasIdsReturned: boolean,
   canvasIds?: Array< string > | null,
   errorMessage?: string | null,
+  nextToken?: string | null,
 };
 
 export type getCanvasCardResponse = {
@@ -113,8 +114,10 @@ export type UserFollowing = {
 
 export type Users = {
   __typename: "Users",
+  biography?: string | null,
   cognitoId?: string | null,
   createdAt: string,
+  emailVisible: boolean,
   numberOfCanvases?: number | null,
   updatedAt: string,
   username: string,
@@ -366,8 +369,10 @@ export type ModelUserFollowingConnection = {
 
 export type ModelUsersFilterInput = {
   and?: Array< ModelUsersFilterInput | null > | null,
+  biography?: ModelStringInput | null,
   cognitoId?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  emailVisible?: ModelBooleanInput | null,
   id?: ModelIDInput | null,
   not?: ModelUsersFilterInput | null,
   numberOfCanvases?: ModelIntInput | null,
@@ -376,10 +381,24 @@ export type ModelUsersFilterInput = {
   username?: ModelIDInput | null,
 };
 
+export type ModelBooleanInput = {
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+  eq?: boolean | null,
+  ne?: boolean | null,
+};
+
 export type ModelUsersConnection = {
   __typename: "ModelUsersConnection",
   items:  Array<Users | null >,
   nextToken?: string | null,
+};
+
+export type resendConfirmationCodeResponse = {
+  __typename: "resendConfirmationCodeResponse",
+  errorMessage?: string | null,
+  isConfirmationCodeResent: boolean,
+  userId?: string | null,
 };
 
 export type createCanvasForUserResponse = {
@@ -502,8 +521,10 @@ export type CreateUserFollowingInput = {
 
 export type ModelUsersConditionInput = {
   and?: Array< ModelUsersConditionInput | null > | null,
+  biography?: ModelStringInput | null,
   cognitoId?: ModelStringInput | null,
   createdAt?: ModelStringInput | null,
+  emailVisible?: ModelBooleanInput | null,
   not?: ModelUsersConditionInput | null,
   numberOfCanvases?: ModelIntInput | null,
   or?: Array< ModelUsersConditionInput | null > | null,
@@ -511,7 +532,9 @@ export type ModelUsersConditionInput = {
 };
 
 export type CreateUsersInput = {
+  biography?: string | null,
   cognitoId?: string | null,
+  emailVisible: boolean,
   numberOfCanvases?: number | null,
   username: string,
 };
@@ -614,7 +637,9 @@ export type UpdateUserFollowingInput = {
 };
 
 export type UpdateUsersInput = {
+  biography?: string | null,
   cognitoId?: string | null,
+  emailVisible?: boolean | null,
   numberOfCanvases?: number | null,
   username: string,
 };
@@ -753,8 +778,10 @@ export type ModelSubscriptionUserFollowingFilterInput = {
 
 export type ModelSubscriptionUsersFilterInput = {
   and?: Array< ModelSubscriptionUsersFilterInput | null > | null,
+  biography?: ModelSubscriptionStringInput | null,
   cognitoId?: ModelStringInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
+  emailVisible?: ModelSubscriptionBooleanInput | null,
   id?: ModelSubscriptionIDInput | null,
   numberOfCanvases?: ModelSubscriptionIntInput | null,
   or?: Array< ModelSubscriptionUsersFilterInput | null > | null,
@@ -762,7 +789,13 @@ export type ModelSubscriptionUsersFilterInput = {
   username?: ModelSubscriptionIDInput | null,
 };
 
+export type ModelSubscriptionBooleanInput = {
+  eq?: boolean | null,
+  ne?: boolean | null,
+};
+
 export type GetAllCanvasIdsForAuthenticatedUserQueryVariables = {
+  nextToken?: string | null,
   ownerUsername: string,
 };
 
@@ -772,6 +805,7 @@ export type GetAllCanvasIdsForAuthenticatedUserQuery = {
     areCanvasIdsReturned: boolean,
     canvasIds?: Array< string > | null,
     errorMessage?: string | null,
+    nextToken?: string | null,
   } | null,
 };
 
@@ -892,6 +926,7 @@ export type GetCanvasesDigestQuery = {
 };
 
 export type GetPublicCanvasIdsForUserQueryVariables = {
+  nextToken?: string | null,
   ownerUsername: string,
 };
 
@@ -901,6 +936,7 @@ export type GetPublicCanvasIdsForUserQuery = {
     areCanvasIdsReturned: boolean,
     canvasIds?: Array< string > | null,
     errorMessage?: string | null,
+    nextToken?: string | null,
   } | null,
 };
 
@@ -947,8 +983,10 @@ export type GetUsersQueryVariables = {
 export type GetUsersQuery = {
   getUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -1226,13 +1264,28 @@ export type ListUsersQuery = {
     __typename: "ModelUsersConnection",
     items:  Array< {
       __typename: "Users",
+      biography?: string | null,
       cognitoId?: string | null,
       createdAt: string,
+      emailVisible: boolean,
       numberOfCanvases?: number | null,
       updatedAt: string,
       username: string,
     } | null >,
     nextToken?: string | null,
+  } | null,
+};
+
+export type ResendConfirmationCodeQueryVariables = {
+  email: string,
+};
+
+export type ResendConfirmationCodeQuery = {
+  resendConfirmationCode?:  {
+    __typename: "resendConfirmationCodeResponse",
+    errorMessage?: string | null,
+    isConfirmationCodeResent: boolean,
+    userId?: string | null,
   } | null,
 };
 
@@ -1371,8 +1424,10 @@ export type CreateUsersMutationVariables = {
 export type CreateUsersMutation = {
   createUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -1507,8 +1562,10 @@ export type DeleteUsersMutationVariables = {
 export type DeleteUsersMutation = {
   deleteUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -1659,8 +1716,10 @@ export type UpdateUsersMutationVariables = {
 export type UpdateUsersMutation = {
   updateUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -1782,8 +1841,10 @@ export type OnCreateUsersSubscriptionVariables = {
 export type OnCreateUsersSubscription = {
   onCreateUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -1905,8 +1966,10 @@ export type OnDeleteUsersSubscriptionVariables = {
 export type OnDeleteUsersSubscription = {
   onDeleteUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,
@@ -2028,8 +2091,10 @@ export type OnUpdateUsersSubscriptionVariables = {
 export type OnUpdateUsersSubscription = {
   onUpdateUsers?:  {
     __typename: "Users",
+    biography?: string | null,
     cognitoId?: string | null,
     createdAt: string,
+    emailVisible: boolean,
     numberOfCanvases?: number | null,
     updatedAt: string,
     username: string,

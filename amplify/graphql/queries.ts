@@ -8,11 +8,18 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getAllCanvasIdsForAuthenticatedUser = /* GraphQL */ `query GetAllCanvasIdsForAuthenticatedUser($ownerUsername: String!) {
-  getAllCanvasIdsForAuthenticatedUser(ownerUsername: $ownerUsername) {
+export const getAllCanvasIdsForAuthenticatedUser = /* GraphQL */ `query GetAllCanvasIdsForAuthenticatedUser(
+  $nextToken: String
+  $ownerUsername: String!
+) {
+  getAllCanvasIdsForAuthenticatedUser(
+    nextToken: $nextToken
+    ownerUsername: $ownerUsername
+  ) {
     areCanvasIdsReturned
     canvasIds
     errorMessage
+    nextToken
     __typename
   }
 }
@@ -126,11 +133,15 @@ export const getCanvasesDigest = /* GraphQL */ `query GetCanvasesDigest($partiti
   APITypes.GetCanvasesDigestQueryVariables,
   APITypes.GetCanvasesDigestQuery
 >;
-export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIdsForUser($ownerUsername: String!) {
-  getPublicCanvasIdsForUser(ownerUsername: $ownerUsername) {
+export const getPublicCanvasIdsForUser = /* GraphQL */ `query GetPublicCanvasIdsForUser($nextToken: String, $ownerUsername: String!) {
+  getPublicCanvasIdsForUser(
+    nextToken: $nextToken
+    ownerUsername: $ownerUsername
+  ) {
     areCanvasIdsReturned
     canvasIds
     errorMessage
+    nextToken
     __typename
   }
 }
@@ -172,8 +183,10 @@ export const getUserFollowing = /* GraphQL */ `query GetUserFollowing($following
 >;
 export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
   getUsers(username: $username) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username
@@ -532,8 +545,10 @@ export const listUsers = /* GraphQL */ `query ListUsers(
     username: $username
   ) {
     items {
+      biography
       cognitoId
       createdAt
+      emailVisible
       numberOfCanvases
       updatedAt
       username
@@ -544,3 +559,15 @@ export const listUsers = /* GraphQL */ `query ListUsers(
   }
 }
 ` as GeneratedQuery<APITypes.ListUsersQueryVariables, APITypes.ListUsersQuery>;
+export const resendConfirmationCode = /* GraphQL */ `query ResendConfirmationCode($email: String!) {
+  resendConfirmationCode(email: $email) {
+    errorMessage
+    isConfirmationCodeResent
+    userId
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ResendConfirmationCodeQueryVariables,
+  APITypes.ResendConfirmationCodeQuery
+>;

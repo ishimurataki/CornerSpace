@@ -155,8 +155,10 @@ export const createUsers = /* GraphQL */ `mutation CreateUsers(
   $input: CreateUsersInput!
 ) {
   createUsers(condition: $condition, input: $input) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username
@@ -297,8 +299,10 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
   $input: DeleteUsersInput!
 ) {
   deleteUsers(condition: $condition, input: $input) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username
@@ -466,8 +470,10 @@ export const updateUsers = /* GraphQL */ `mutation UpdateUsers(
   $input: UpdateUsersInput!
 ) {
   updateUsers(condition: $condition, input: $input) {
+    biography
     cognitoId
     createdAt
+    emailVisible
     numberOfCanvases
     updatedAt
     username

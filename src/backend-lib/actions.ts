@@ -720,3 +720,53 @@ export async function resendConfirmationCodeServer(email: string):
         errorMessage: data.errorMessage ? data.errorMessage : null
     };
 }
+
+export async function getBioServer(username: string):
+    Promise<{
+        bio: string | null, errorMessage: string | null
+    }> {
+    const { data, errors } = await guestClient.models.Users.get(
+        { username },
+        {
+            selectionSet: ['biography'],
+            authMode: "identityPool"
+        }
+    );
+    if (errors) {
+        console.log(errors);
+        return { bio: null, errorMessage: "500 - Internal Server Error." };
+    }
+    if (!data) {
+        return { bio: null, errorMessage: "No bio exists for requested user." };
+    }
+    return { bio: data.biography, errorMessage: null };
+}
+
+export async function changeBioServer(newBio: string | null):
+    Promise<{
+        isBioChanged: boolean, errorMessage: string | null
+    }> {
+
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isBioChanged: false, errorMessage: "User not authenticated." }
+    }
+
+    const result = await cookieBasedClient.mutations.changeBioForUser(
+        { username, newBio },
+        { authMode: "userPool" }
+    );
+
+    if (result.errors || !result.data) {
+        return { isBioChanged: false, errorMessage: "500 - Internal Server Error." }
+    }
+
+    if (result.data.errorMessage) {
+        return { isBioChanged: false, errorMessage: result.data.errorMessage }
+    }
+
+    return { isBioChanged: result.data.isBioChanged, errorMessage: null };
+}
