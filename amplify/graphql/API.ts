@@ -401,6 +401,12 @@ export type resendConfirmationCodeResponse = {
   userId?: string | null,
 };
 
+export type changeBioForUserResponse = {
+  __typename: "changeBioForUserResponse",
+  errorMessage?: string | null,
+  isBioChanged: boolean,
+};
+
 export type createCanvasForUserResponse = {
   __typename: "createCanvasForUserResponse",
   canvasId?: string | null,
@@ -1286,6 +1292,19 @@ export type ResendConfirmationCodeQuery = {
     errorMessage?: string | null,
     isConfirmationCodeResent: boolean,
     userId?: string | null,
+  } | null,
+};
+
+export type ChangeBioForUserMutationVariables = {
+  newBio?: string | null,
+  username: string,
+};
+
+export type ChangeBioForUserMutation = {
+  changeBioForUser?:  {
+    __typename: "changeBioForUserResponse",
+    errorMessage?: string | null,
+    isBioChanged: boolean,
   } | null,
 };
 

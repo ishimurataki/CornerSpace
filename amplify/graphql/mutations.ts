@@ -8,6 +8,17 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
+export const changeBioForUser = /* GraphQL */ `mutation ChangeBioForUser($newBio: String, $username: String!) {
+  changeBioForUser(newBio: $newBio, username: $username) {
+    errorMessage
+    isBioChanged
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.ChangeBioForUserMutationVariables,
+  APITypes.ChangeBioForUserMutation
+>;
 export const createCanvasForUser = /* GraphQL */ `mutation CreateCanvasForUser(
   $canvasData: String!
   $canvasId: String
