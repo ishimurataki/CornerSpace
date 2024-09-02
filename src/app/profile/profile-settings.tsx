@@ -5,6 +5,7 @@ import {
     ChevronLeftIcon, UserIcon, IdentificationIcon
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import UpdatePasswordForm from "./update-password-form";
 
 enum ProfileSettingsTabs {
     ChangePassword,
@@ -76,11 +77,12 @@ export default function ProfileSettings({ username, email }: { username: string,
                         <div className="grow flex flex-row align-top bg-green-100 rounded-lg px-2 lg:px-5 py-2 gap-2">
                             <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
                                 onClick={() => setProfileSettingsTab(null)} />
-                            <div className="flex flex-col divide-y-2 divide-white">
+                            <div className="flex flex-col gap-4">
                                 <div className="flex flex-row items-center gap-2">
                                     <LockClosedIcon className="h-4" />
                                     <div>Change your password</div>
                                 </div>
+                                <UpdatePasswordForm />
                             </div>
                         </div>
                         : ""

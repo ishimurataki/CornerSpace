@@ -5,7 +5,6 @@ import { EnvelopeIcon, LockClosedIcon, ExclamationCircleIcon, ArrowRightIcon, Ey
 import { AuthError, signIn } from "aws-amplify/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { resetPasswordServer } from "@/backend-lib/actions";
 
 export default function SignInForm({ changeToRequestResetPassword }:
     {

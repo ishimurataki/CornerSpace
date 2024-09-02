@@ -29,18 +29,18 @@ export default function RequestResetPasswordForm({ changeToResetPassword, change
 
     async function resetPasswordSubmit(previousState: resetPasswordState, formData: FormData) {
 
-        const validatedSignUpFields = resetPasswordSchema.safeParse({
+        const validatedResetPasswordFields = resetPasswordSchema.safeParse({
             email: formData.get("email"),
         });
 
-        if (!validatedSignUpFields.success) {
+        if (!validatedResetPasswordFields.success) {
             return {
-                errors: validatedSignUpFields.error.flatten().fieldErrors,
+                errors: validatedResetPasswordFields.error.flatten().fieldErrors,
                 message: "Field validations failed."
             }
         }
 
-        const { email } = validatedSignUpFields.data;
+        const { email } = validatedResetPasswordFields.data;
 
         const { isPasswordResetInitiated, errorMessage } = await requestResetPasswordServer(email);
         if (isPasswordResetInitiated) {

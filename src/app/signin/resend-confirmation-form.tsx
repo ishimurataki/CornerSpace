@@ -29,18 +29,18 @@ export default function ResendConfirmationForm({ updateUserIdHandler, updateShow
 
     async function resendConfirmationSubmit(previousState: resendConfirmationState, formData: FormData) {
 
-        const validatedSignUpFields = resendConfirmationSchema.safeParse({
+        const validatedResendConfirmationFields = resendConfirmationSchema.safeParse({
             email: formData.get("email"),
         });
 
-        if (!validatedSignUpFields.success) {
+        if (!validatedResendConfirmationFields.success) {
             return {
-                errors: validatedSignUpFields.error.flatten().fieldErrors,
+                errors: validatedResendConfirmationFields.error.flatten().fieldErrors,
                 message: "Field validations failed."
             }
         }
 
-        const { email } = validatedSignUpFields.data;
+        const { email } = validatedResendConfirmationFields.data;
 
         const { isConfirmationCodeResent, userId, errorMessage } = await resendConfirmationCodeServer(email);
         if (isConfirmationCodeResent && userId) {

@@ -39,23 +39,23 @@ export default function ResetPasswordForm({ userEmail, changeToSignIn }:
 
     async function resetPasswordSubmit(previousState: resetPasswordState, formData: FormData) {
 
-        const validatedSignUpFields = resetPasswordSchema.safeParse({
+        const validatedResetPasswordFields = resetPasswordSchema.safeParse({
             email: userEmail,
             newPassword: formData.get("newPassword")
         });
 
-        if (!validatedSignUpFields.success) {
+        if (!validatedResetPasswordFields.success) {
             return {
-                errors: validatedSignUpFields.error.flatten().fieldErrors,
+                errors: validatedResetPasswordFields.error.flatten().fieldErrors,
                 message: "Field validations failed."
             }
         }
 
-        const { email, newPassword } = validatedSignUpFields.data;
+        const { email, newPassword } = validatedResetPasswordFields.data;
         const confirmationCode = formData.get("confirmationCode")?.toString();
 
         if (!confirmationCode) return {
-            message: "No confirmation code provded."
+            message: "No confirmation code provided."
         }
 
         const { isPasswordReset, errorMessage } = await resetPasswordServer(email, confirmationCode, newPassword);

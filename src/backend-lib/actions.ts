@@ -4,7 +4,7 @@ import { type Schema } from "@/../../amplify/data/resource";
 import { generateClient } from 'aws-amplify/data'
 import outputs from "@/../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
-import { AuthError, confirmResetPassword, confirmSignUp, resetPassword, signUp } from "aws-amplify/auth";
+import { AuthError, confirmResetPassword, confirmSignUp, getCurrentUser, resetPassword, signUp, updatePassword } from "aws-amplify/auth";
 import { fetchUserAttributesServer } from "@/utils/amplify-utils";
 import { CanvasCardData, CanvasData, CanvasDataSave } from "./data";
 import { hexToRgb, rgbToHex, stringToVec3 } from "@/utils/functions";
