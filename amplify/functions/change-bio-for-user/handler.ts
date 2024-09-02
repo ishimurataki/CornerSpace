@@ -2,7 +2,7 @@ import type { AppSyncIdentityCognito } from 'aws-lambda';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from "../../data/resource";
-import { env } from '$amplify/env/create-canvas-for-user';
+import { env } from '$amplify/env/change-bio-for-user';
 import { getUsers } from '../../graphql/queries';
 import { updateUsers } from '../../graphql/mutations';
 

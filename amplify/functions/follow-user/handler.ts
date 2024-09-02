@@ -1,6 +1,6 @@
 import { Amplify } from 'aws-amplify';
 import { type Schema } from "../../data/resource";
-import { env } from '$amplify/env/get-all-canvas-ids-for-authenticated-user';
+import { env } from '$amplify/env/follow-user';
 import { generateClient } from 'aws-amplify/data';
 import { AppSyncIdentityCognito } from 'aws-lambda';
 import { getUserFollowing, getUsers } from '../../graphql/queries';

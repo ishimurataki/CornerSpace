@@ -2,7 +2,7 @@ import type { AppSyncIdentityCognito } from 'aws-lambda';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from "../../data/resource";
-import { env } from '$amplify/env/delete-canvas-for-user';
+import { env } from '$amplify/env/like-canvas-for-user';
 import {
     createCanvasLikes, deleteCanvasLikes, updateCanvasSocialStats
 } from '../../graphql/mutations';
