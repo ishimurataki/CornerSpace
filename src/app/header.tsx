@@ -96,10 +96,12 @@ export default function Header({ signedIn, username }: { signedIn: boolean, user
                     <PhotoIcon className="w-4" />
                     Your Studio
                 </Link>
-                <div className="text-sm flex flex-row gap-1 hover:text-cyan-400 cursor-pointer rounded-md p-1 hover:bg-gray-500">
+                <Link className="text-sm flex flex-row gap-1 hover:text-cyan-400 cursor-pointer rounded-md p-1 hover:bg-gray-500"
+                    href="/profile"
+                    onClick={() => setShowRightMenu(false)}>
                     <UserIcon className="w-4" />
                     Your Profile
-                </div>
+                </Link>
                 <hr className="h-px my-2 bg-gray-400 border-0" />
                 <div className="text-sm flex flex-row gap-1 hover:text-cyan-400 cursor-pointer rounded-md p-1 hover:bg-gray-500
                     aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
