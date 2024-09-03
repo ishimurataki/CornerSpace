@@ -20,12 +20,12 @@ export default async function Following() {
                 <td className="pr-10 py-1">
                     <Link className="hover:text-cyan-500" href={`user/${user.username}`}>@{user.username}</Link>
                 </td>
-                <td>{new Date(user.followDate).toDateString()}</td>
+                <td className="text-sm md:text-base">{new Date(user.followDate).toDateString()}</td>
             </tr>
         )
     })
     return (
-        <div className="border-2 border-black rounded-xl p-4 w-fit mt-4 ml-10">
+        <div className="border-2 border-black rounded-xl p-4 w-fit mt-1 md:mt-4 md:ml-10">
             <table className="table-auto">
                 <tbody>
                     <tr>
