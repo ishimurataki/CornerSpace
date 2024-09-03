@@ -315,6 +315,7 @@ const schema = a
     resendConfirmationCode: a
       .query()
       .arguments({
+        cognitoClientId: a.string().required(),
         email: a.string().required()
       })
       .authorization((allow) => [allow.guest()])

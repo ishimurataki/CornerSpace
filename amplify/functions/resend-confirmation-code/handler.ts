@@ -4,13 +4,11 @@ import {
   AdminGetUserCommand, CognitoIdentityProviderClient,
   ResendConfirmationCodeCommand, UserNotFoundException
 } from "@aws-sdk/client-cognito-identity-provider"
-import outputs from "@/../../amplify_outputs.json";
 
 const client = new CognitoIdentityProviderClient()
 
 export const handler: Schema["resendConfirmationCode"]["functionHandler"] = async (event) => {
-  const { email } = event.arguments;
-  const cognitoClientId = outputs.auth.user_pool_client_id;
+  const { email, cognitoClientId } = event.arguments;
   const getUserCommand = new AdminGetUserCommand({
     Username: email,
     UserPoolId: env.AMPLIFY_AUTH_USERPOOL_ID,

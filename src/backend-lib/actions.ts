@@ -21,6 +21,7 @@ const cookieBasedClient = generateServerClientUsingCookies<Schema>({
     config: outputs,
     cookies
 });
+const cognitoClientId = outputs.auth.user_pool_client_id;
 
 const CANVAS_LIST_LIMIT = 10;
 
@@ -706,7 +707,7 @@ export async function resendConfirmationCodeServer(email: string):
         isConfirmationCodeResent: boolean, userId: string | null, errorMessage: string | null
     }> {
     const { data, errors } = await guestClient.queries.resendConfirmationCode(
-        { email },
+        { cognitoClientId, email },
         { authMode: "identityPool" }
     );
     if (errors || !data) {
