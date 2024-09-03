@@ -169,6 +169,7 @@ export const createUsers = /* GraphQL */ `mutation CreateUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt
@@ -313,6 +314,7 @@ export const deleteUsers = /* GraphQL */ `mutation DeleteUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt
@@ -484,6 +486,7 @@ export const updateUsers = /* GraphQL */ `mutation UpdateUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt

@@ -722,25 +722,25 @@ export async function resendConfirmationCodeServer(email: string):
     };
 }
 
-export async function getBioServer(username: string):
+export async function getBioAndEmailVisibilityServer(username: string):
     Promise<{
-        bio: string | null, errorMessage: string | null
+        bio: string | null, emailVisbility: boolean, errorMessage: string | null
     }> {
     const { data, errors } = await guestClient.models.Users.get(
         { username },
         {
-            selectionSet: ['biography'],
+            selectionSet: ['biography', 'emailVisible'],
             authMode: "identityPool"
         }
     );
     if (errors) {
         console.log(errors);
-        return { bio: null, errorMessage: "500 - Internal Server Error." };
+        return { bio: null, emailVisbility: false, errorMessage: "500 - Internal Server Error." };
     }
     if (!data) {
-        return { bio: null, errorMessage: "No bio exists for requested user." };
+        return { bio: null, emailVisbility: false, errorMessage: "No bio exists for requested user." };
     }
-    return { bio: data.biography, errorMessage: null };
+    return { bio: data.biography, emailVisbility: data.emailVisible, errorMessage: null };
 }
 
 export async function changeBioServer(newBio: string | null):
@@ -770,4 +770,48 @@ export async function changeBioServer(newBio: string | null):
     }
 
     return { isBioChanged: result.data.isBioChanged, errorMessage: null };
+}
+
+export async function setEmailVisibilityServer(emailVisibility: boolean):
+    Promise<{
+        isEmailVisibilityChanged: boolean, errorMessage: string | null
+    }> {
+
+    const currentUser = await fetchUserAttributesServer();
+    const signedIn = currentUser != undefined;
+    const username = currentUser?.preferred_username;
+
+    if (!signedIn || !username) {
+        return { isEmailVisibilityChanged: false, errorMessage: "User not authenticated." }
+    }
+
+    const result = await cookieBasedClient.models.Users.update(
+        { username, emailVisible: emailVisibility },
+        { authMode: "userPool" }
+    );
+
+    if (result.errors || !result.data) {
+        return { isEmailVisibilityChanged: false, errorMessage: "500 - Internal Server Error." }
+    }
+
+    return { isEmailVisibilityChanged: true, errorMessage: null };
+}
+
+export async function getUserEmailServer(username: string):
+    Promise<{
+        isEmailReturned: boolean, email: string | null, errorMessage: string | null
+    }> {
+    const { data, errors } = await guestClient.queries.getUserEmail(
+        { username },
+        { authMode: "identityPool" }
+    );
+    if (errors || !data) {
+        console.log(errors);
+        return { isEmailReturned: false, email: null, errorMessage: "500 - Internal Server Error." }
+    }
+    return {
+        isEmailReturned: data.isEmailReturned,
+        email: data.email ? data.email : null,
+        errorMessage: data.errorMessage ? data.errorMessage : null
+    };
 }

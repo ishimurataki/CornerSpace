@@ -10,6 +10,7 @@ import { likeCanvasForUser } from '../functions/like-canvas-for-user/resource';
 import { followUser } from '../functions/follow-user/resource';
 import { resendConfirmationCode } from '../functions/resend-confirmation-code/resource';
 import { changeBioForUser } from '../functions/change-bio-for-user/resource';
+import { getUserEmail } from '../functions/get-user-email/resource';
 
 const schema = a
   .schema({
@@ -34,6 +35,10 @@ const schema = a
             allow.ownerDefinedIn("cognitoId").to(["read", "delete"]),
             allow.guest().to(["read"]),
             allow.authenticated().to(["read"])
+          ]),
+        email: a.email()
+          .authorization((allow) => [
+            allow.ownerDefinedIn("cognitoId").to(["read"])
           ]),
         emailVisible: a.boolean().required()
           .default(false)
@@ -334,6 +339,19 @@ const schema = a
       .authorization((allow) => [allow.authenticated()])
       .returns(a.ref('changeBioForUserResponse'))
       .handler(a.handler.function(changeBioForUser)),
+    getUserEmailResponse: a.customType({
+      isEmailReturned: a.boolean().required(),
+      email: a.string(),
+      errorMessage: a.string()
+    }),
+    getUserEmail: a
+      .query()
+      .arguments({
+        username: a.string().required()
+      })
+      .authorization((allow) => [allow.guest()])
+      .returns(a.ref('getUserEmailResponse'))
+      .handler(a.handler.function(getUserEmail)),
   })
   .authorization((allow) => [
     allow.resource(postConfirmation),
@@ -345,7 +363,8 @@ const schema = a
     allow.resource(getCanvasData),
     allow.resource(likeCanvasForUser),
     allow.resource(followUser),
-    allow.resource(changeBioForUser)
+    allow.resource(changeBioForUser),
+    allow.resource(getUserEmail)
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

@@ -129,6 +129,7 @@ export const onCreateUsers = /* GraphQL */ `subscription OnCreateUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt
@@ -261,6 +262,7 @@ export const onDeleteUsers = /* GraphQL */ `subscription OnDeleteUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt
@@ -393,6 +395,7 @@ export const onUpdateUsers = /* GraphQL */ `subscription OnUpdateUsers(
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt

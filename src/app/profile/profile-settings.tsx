@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import UpdatePasswordForm from "./update-password-form";
 import ChangeBioForm from "./change-bio-form";
+import { setEmailVisibilityServer } from "@/backend-lib/actions";
 
 enum ProfileSettingsTabs {
     ChangePassword,
@@ -14,10 +15,25 @@ enum ProfileSettingsTabs {
     AddChangeBio
 }
 
-export default function ProfileSettings({ username, email, bio }:
-    { username: string, email: string, bio: string | null }) {
+export default function ProfileSettings({ username, email, bio, emailVisbility }:
+    { username: string, email: string, bio: string | null, emailVisbility: boolean }) {
 
     const [profileSettingsTab, setProfileSettingsTab] = useState<ProfileSettingsTabs | null>(null);
+    const [emailVisible, setEmailVisible] = useState(emailVisbility);
+    const [updatingEmailVisibility, setUpdatingEmailVisibility] = useState(false);
+    const [emailVisibilityErrors, setEmailVisibilityErrors] = useState<string | null>(null);
+
+    const updateEmailVisibility = async (newEmailVisibility: boolean) => {
+        setUpdatingEmailVisibility(true);
+        const { isEmailVisibilityChanged, errorMessage } = await setEmailVisibilityServer(newEmailVisibility);
+        if (isEmailVisibilityChanged) {
+            setEmailVisibilityErrors(null);
+            setEmailVisible(newEmailVisibility);
+        } else {
+            setEmailVisibilityErrors(errorMessage);
+        }
+        setUpdatingEmailVisibility(false);
+    }
 
     return (
         <main className="absolute flex flex-col p-4 md:p-8 lg:p-10 w-full md:w-3/4 lg:w-2/3">
@@ -114,11 +130,41 @@ export default function ProfileSettings({ username, email, bio }:
                         <div className="grow flex flex-row align-top bg-purple-100 rounded-lg px-2 lg:px-5 py-4 gap-2">
                             <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
                                 onClick={() => setProfileSettingsTab(null)} />
-                            <div className="flex flex-col divide-y-2 divide-white">
+                            <div className="flex flex-col gap-4 w-full">
                                 <div className="flex flex-row items-center gap-2">
                                     <EnvelopeIcon className="h-4" />
                                     <div>Change your email visibility</div>
                                 </div>
+                                <div className="text-black flex flex-row gap-1 items-center">
+                                    Your email is currently
+                                    <div className={`text-xl ${emailVisible ? "text-green-600" : "text-red-600"}`}>
+                                        {emailVisible ? "visible" : "invisible"}
+                                    </div>
+                                    on your user page.
+                                </div>
+                                <div className="text-xs text-gray-500">{emailVisible ?
+                                    "Toggle visibility to hide it from the world!" :
+                                    "Toggle visibility to allow other users to see your email!"
+                                }
+                                </div>
+                                <button className="mt-2 flex flex-row bg-blue-400 rounded-lg p-1.5 text-white hover:font-bold 
+                                hover:bg-blue-500 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:font-normal 
+                                aria-disabled:hover:bg-blue-400 w-fit"
+                                    onClick={() => {
+                                        updateEmailVisibility(!emailVisible);
+                                    }
+                                    }
+                                    aria-disabled={updatingEmailVisibility}
+                                    disabled={updatingEmailVisibility}
+                                >
+                                    {emailVisible ? "Make email INVISIBLE" : "Make email VISIBLE"}
+                                </button>
+                                {
+                                    !!emailVisibilityErrors && (
+                                        <div className="text-xs text-red-600">{emailVisibilityErrors}
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
                         : ""

@@ -186,6 +186,7 @@ export const getUsers = /* GraphQL */ `query GetUsers($username: ID!) {
     biography
     cognitoId
     createdAt
+    email
     emailVisible
     numberOfCanvases
     updatedAt
@@ -548,6 +549,7 @@ export const listUsers = /* GraphQL */ `query ListUsers(
       biography
       cognitoId
       createdAt
+      email
       emailVisible
       numberOfCanvases
       updatedAt
@@ -559,8 +561,8 @@ export const listUsers = /* GraphQL */ `query ListUsers(
   }
 }
 ` as GeneratedQuery<APITypes.ListUsersQueryVariables, APITypes.ListUsersQuery>;
-export const resendConfirmationCode = /* GraphQL */ `query ResendConfirmationCode($email: String!) {
-  resendConfirmationCode(email: $email) {
+export const resendConfirmationCode = /* GraphQL */ `query ResendConfirmationCode($cognitoClientId: String!, $email: String!) {
+  resendConfirmationCode(cognitoClientId: $cognitoClientId, email: $email) {
     errorMessage
     isConfirmationCodeResent
     userId
