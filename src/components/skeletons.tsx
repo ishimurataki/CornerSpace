@@ -14,3 +14,15 @@ export function CanvasViewSkeleton() {
         </div>
     )
 }
+
+export function CanvasCardSkeleton() {
+    return (
+        <div className={`${shimmer} bg-gray-500 w-full aspect-square rounded-lg relative`}>
+            <div className="absolute top-0 left-0 m-4 bg-gray-800 rounded-full w-6 h-6" />
+            <div className="p-4 absolute bottom-0 w-full rounded-b-md flex flex-col gap-2">
+                <div className="bg-white rounded-full py-2 px-4 w-40 h-6" />
+                <div className="bg-white rounded-full py-2 px-4 w-20" />
+            </div>
+        </div>
+    )
+}

@@ -4,6 +4,7 @@ import { getPopularCanvasesServer } from "@/backend-lib/actions";
 import { Suspense } from "react";
 import CanvasCardWrapper from "../studio/canvas-card-wrapper";
 import LoadMore, { loadMoreActionType } from "./load-more";
+import { CanvasCardSkeleton } from "@/components/skeletons";
 
 export const CanvasesList = async ({
     canvasIds
@@ -13,9 +14,7 @@ export const CanvasesList = async ({
     return (
         <>{canvasIds.map((canvasId) => {
             return (
-                <Suspense fallback={
-                    <div className={`bg-gray-500 w-80 md:w-96 lg:w-1/3 rounded-lg`}>
-                    </div>} key={`canvasCard-${canvasId}`}>
+                <Suspense fallback={<CanvasCardSkeleton />} key={`canvasCard-${canvasId}`}>
                     <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={false} />
                 </Suspense>
             );
