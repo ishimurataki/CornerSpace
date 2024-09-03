@@ -16,7 +16,7 @@ export default async function Followers() {
 
     const tableRows = users.map((user) => {
         return (
-            <tr key={"follow-" + user}>
+            <tr key={"follow-" + user.username}>
                 <td className="pr-10 py-1">
                     <Link className="hover:text-cyan-500" href={`user/${user.username}`}>@{user.username}</Link>
                 </td>
@@ -27,11 +27,13 @@ export default async function Followers() {
     return (
         <div className="border-2 border-black rounded-xl p-4 w-fit mt-4 ml-10">
             <table className="table-auto">
-                <tr>
-                    <th className="text-left border-b border-slate-300 pr-10">Username</th>
-                    <th className="text-left border-b border-slate-300">Follow Date</th>
-                </tr>
-                {tableRows}
+                <tbody>
+                    <tr>
+                        <th className="text-left border-b border-slate-300 pr-10">Username</th>
+                        <th className="text-left border-b border-slate-300">Follow Date</th>
+                    </tr>
+                    {tableRows}
+                </tbody>
             </table>
             {
                 users.length == 0 ? <div className="text-gray-500">No users yet</div> : ""
