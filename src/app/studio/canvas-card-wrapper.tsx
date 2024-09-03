@@ -2,18 +2,16 @@
 import { loadCanvasCardDataServer } from "@/backend-lib/actions";
 import CanvasCard from "./canvas-card";
 
-export default async function CanvasCardWrapper({ canvasId, forOwner, displayOnError = true }:
-    { canvasId: string, forOwner: boolean, displayOnError: boolean }) {
+export default async function CanvasCardWrapper({ canvasId, forOwner }:
+    { canvasId: string, forOwner: boolean }) {
     const { isCanvasLoaded, canvasCardData, errorMessage } = await loadCanvasCardDataServer(canvasId);
-    if (!isCanvasLoaded || !canvasCardData) {
-        if (!displayOnError) return;
+    if (errorMessage && errorMessage.includes("not authorized")) {
         return (
-            <div className="bg-gray-200 w-full h-full rounded-lg p-10 flex items-center justify-center">
-                An error occurred: {errorMessage}
+            <div className="bg-gray-800 text-white w-full h-full rounded-lg p-10 flex-col items-center justify-center gap-2 hidden">
+                Access to this canvas is not authorized.
             </div>
-        )
+        );
     }
-
     return (
         <CanvasCard canvasCardData={canvasCardData} canvasId={canvasId} forOwner={forOwner} />
     );

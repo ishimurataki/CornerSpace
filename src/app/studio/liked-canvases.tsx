@@ -16,7 +16,7 @@ const CanvasesList = async ({
                 <Suspense fallback={
                     <div className={`bg-gray-500 w-80 md:w-96 lg:w-1/3 rounded-lg`}>
                     </div>} key={`canvasCard-${canvasId}`}>
-                    <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={false} displayOnError={false} />
+                    <CanvasCardWrapper canvasId={canvasId} key={canvasId} forOwner={false} />
                 </Suspense>
             );
         })}</>
