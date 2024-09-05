@@ -6,7 +6,7 @@ export const auth = defineAuth({
   loginWith: {
     email: {
       verificationEmailStyle: "CODE",
-      verificationEmailSubject: 'Welcome to Cubit! Verify your email!',
+      verificationEmailSubject: 'Welcome to CornerSpace! Verify your email!',
       verificationEmailBody: (createCode) => `Use this code to confirm your account: ${createCode()}`
     },
   },
