@@ -7,12 +7,11 @@ import {
 import { z } from "zod";
 import { changeBioServer } from "@/backend-lib/actions";
 import { useState } from "react";
-
-const MAX_BIO_LENGTH = 500;
+import { USER_BIO_MAXIMUM_LENGTH } from "../../../amplify/constants";
 
 const changeBioSchema = z.object({
     newBio: z.string()
-        .max(MAX_BIO_LENGTH, "Bio can be at most 500 characters.")
+        .max(USER_BIO_MAXIMUM_LENGTH, `Bio can be at most ${USER_BIO_MAXIMUM_LENGTH} characters.`)
 });
 
 type changeBioState = {
@@ -66,8 +65,8 @@ export default function ChangeBioForm({ oldBio }: { oldBio: string | null }) {
                     placeholder="Write your bio here..."
                     onChange={(e) => {
                         const newCharacterCount = e.target.value.length;
-                        if (newCharacterCount > MAX_BIO_LENGTH) {
-                            e.target.value = e.target.value.substring(0, MAX_BIO_LENGTH);
+                        if (newCharacterCount > USER_BIO_MAXIMUM_LENGTH) {
+                            e.target.value = e.target.value.substring(0, USER_BIO_MAXIMUM_LENGTH);
                         }
                         setCharacterCount(e.target.value.length);
                     }}
@@ -98,7 +97,7 @@ export default function ChangeBioForm({ oldBio }: { oldBio: string | null }) {
             </div>
 
             <div className="text-xs text-gray-500 absolute bottom-0 right-0">
-                {`${MAX_BIO_LENGTH - characterCount} / ${MAX_BIO_LENGTH} characters remaining`}
+                {`${USER_BIO_MAXIMUM_LENGTH - characterCount} / ${USER_BIO_MAXIMUM_LENGTH} characters remaining`}
             </div>
 
             <ChangeBioButton label="Update bio" />

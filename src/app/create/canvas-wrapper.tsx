@@ -25,9 +25,7 @@ import clsx from 'clsx';
 import { HexColorPicker } from "react-colorful";
 import { Axis } from "@/lib/polar-camera";
 import { useRouter } from "next/navigation";
-
-const MAX_DESCRIPTION_LENGTH = 500;
-const MAX_TITLE_LENGTH = 100;
+import { CANVAS_DESCRIPTION_MAXIMUM_LENGTH, CANVAS_NAME_MAXIMUM_LENGTH } from "../../../amplify/constants";
 
 const canvasSizeOptions = [16, 32, 48, 64, 78, 96];
 
@@ -263,6 +261,11 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
 
     const handleSave = async () => {
         setSaving(true);
+        if (title.length === 0) {
+            setSaveError("Please provide a title for your canvas.");
+            setSaving(false);
+            return;
+        }
         const { isCanvasSaved, canvasIdNew, errorMessage } = await saveCanvas(canvasId, title, description, publicity, canvasState);
         if (isCanvasSaved && canvasIdNew) {
             canvasId = canvasIdNew;
@@ -290,15 +293,15 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                     <textarea className="h-8 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Blank Canvas"
                         onChange={(e) => {
                             const newCharacterCount = e.target.value.length;
-                            if (newCharacterCount > MAX_TITLE_LENGTH) {
-                                e.target.value = e.target.value.substring(0, MAX_TITLE_LENGTH);
+                            if (newCharacterCount > CANVAS_NAME_MAXIMUM_LENGTH) {
+                                e.target.value = e.target.value.substring(0, CANVAS_NAME_MAXIMUM_LENGTH);
                             }
                             setTitle(e.target.value);
                             setTitleCharacterCount(e.target.value.length);
                         }}>
                     </textarea>
                     <div className="text-xs text-gray-500 self-end">
-                        {`${MAX_TITLE_LENGTH - titleCharacterCount} / ${MAX_TITLE_LENGTH} characters remaining`}
+                        {`${CANVAS_NAME_MAXIMUM_LENGTH - titleCharacterCount} / ${CANVAS_NAME_MAXIMUM_LENGTH} characters remaining`}
                     </div>
                     <div className="font-bold">
                         Description:
@@ -306,15 +309,15 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                     <textarea className=" h-40 min-h-8 bg-green-100 rounded-md p-1 mb-2" placeholder="Add a description"
                         onChange={(e) => {
                             const newCharacterCount = e.target.value.length;
-                            if (newCharacterCount > MAX_DESCRIPTION_LENGTH) {
-                                e.target.value = e.target.value.substring(0, MAX_DESCRIPTION_LENGTH);
+                            if (newCharacterCount > CANVAS_DESCRIPTION_MAXIMUM_LENGTH) {
+                                e.target.value = e.target.value.substring(0, CANVAS_DESCRIPTION_MAXIMUM_LENGTH);
                             }
                             setDescription(e.target.value);
                             setDescriptionCharacterCount(e.target.value.length);
                         }}>
                     </textarea>
                     <div className="text-xs text-gray-500 self-end">
-                        {`${MAX_DESCRIPTION_LENGTH - descriptionCharacterCount} / ${MAX_DESCRIPTION_LENGTH} characters remaining`}
+                        {`${CANVAS_DESCRIPTION_MAXIMUM_LENGTH - descriptionCharacterCount} / ${CANVAS_DESCRIPTION_MAXIMUM_LENGTH} characters remaining`}
                     </div>
                     <div className="font-bold">
                         Canvas Size:
@@ -496,23 +499,23 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             defaultValue={title}
                             onChange={(e) => {
                                 const newCharacterCount = e.target.value.length;
-                                if (newCharacterCount > MAX_TITLE_LENGTH) {
-                                    e.target.value = e.target.value.substring(0, MAX_TITLE_LENGTH);
+                                if (newCharacterCount > CANVAS_NAME_MAXIMUM_LENGTH) {
+                                    e.target.value = e.target.value.substring(0, CANVAS_NAME_MAXIMUM_LENGTH);
                                 }
                                 setTitle(e.target.value);
                                 setTitleCharacterCount(e.target.value.length);
                             }}
                             className="bg-white h-8 block mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white" />
                         <div className="text-xs text-gray-500 mt-2 ml-1">
-                            {`${MAX_TITLE_LENGTH - titleCharacterCount} / ${MAX_TITLE_LENGTH} characters remaining`}
+                            {`${CANVAS_NAME_MAXIMUM_LENGTH - titleCharacterCount} / ${CANVAS_NAME_MAXIMUM_LENGTH} characters remaining`}
                         </div>
                         <textarea
                             placeholder="Add a description here"
                             defaultValue={description}
                             onChange={(e) => {
                                 const newCharacterCount = e.target.value.length;
-                                if (newCharacterCount > MAX_DESCRIPTION_LENGTH) {
-                                    e.target.value = e.target.value.substring(0, MAX_DESCRIPTION_LENGTH);
+                                if (newCharacterCount > CANVAS_DESCRIPTION_MAXIMUM_LENGTH) {
+                                    e.target.value = e.target.value.substring(0, CANVAS_DESCRIPTION_MAXIMUM_LENGTH);
                                 }
                                 setDescription(e.target.value);
                                 setDescriptionCharacterCount(e.target.value.length);
@@ -520,7 +523,7 @@ export default function CanvasWrapper({ canvasId, canvasData }: { canvasId: stri
                             className="bg-white block h-40 mt-2 p-2 w-full text-sm text-black rounded-lg border-2 border-white">
                         </textarea>
                         <div className="text-xs text-gray-500 mt-2 ml-1">
-                            {`${MAX_DESCRIPTION_LENGTH - descriptionCharacterCount} / ${MAX_DESCRIPTION_LENGTH} characters remaining`}
+                            {`${CANVAS_DESCRIPTION_MAXIMUM_LENGTH - descriptionCharacterCount} / ${CANVAS_DESCRIPTION_MAXIMUM_LENGTH} characters remaining`}
                         </div>
                         <div className="pt-2 ml-1">
                             <label className="mb-2 text-sm font-medium text-gray-900">Publicity: </label>

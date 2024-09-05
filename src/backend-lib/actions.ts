@@ -132,19 +132,6 @@ export async function resetPasswordServer(email: string, confirmationCode: strin
     }
 }
 
-function validateCanvasData(canvasData: CanvasDataSave): { valid: boolean, errorMessage: string | null } {
-
-    // TODO: complete this validation function
-    if (canvasData.dimension < 10 || canvasData.dimension > 100) {
-        return { valid: false, errorMessage: "Canvas must have side dimension at least 10 and at most 100." }
-    }
-    canvasData.backgroundColor[0] = Math.max(0.0, Math.min(1.0, canvasData.backgroundColor[0]));
-    canvasData.backgroundColor[1] = Math.max(0.0, Math.min(1.0, canvasData.backgroundColor[1]));
-    canvasData.backgroundColor[2] = Math.max(0.0, Math.min(1.0, canvasData.backgroundColor[2]));
-
-    return { valid: true, errorMessage: null };
-}
-
 export async function loadCanvasCardDataServer(canvasId: string):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
 
@@ -260,8 +247,6 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
     Promise<{ isCanvasSaved: boolean, canvasId: string | null, errorMessage: string | null }> {
     unstable_noStore();
 
-    const isNewCanvas = !canvasId;
-
     // Confirm that user is signed in
     const currentUser = await fetchUserAttributesServer();
     const signedIn = currentUser != undefined;
@@ -269,12 +254,6 @@ export async function saveCanvasServer(canvasData: CanvasDataSave, canvasId: str
 
     if (!signedIn || !username) {
         return { isCanvasSaved: false, canvasId, errorMessage: "User not authenticated." }
-    }
-
-    // Confirm that canvas data passed is valid
-    const { valid, errorMessage } = validateCanvasData(canvasData);
-    if (!valid) {
-        return { isCanvasSaved: false, canvasId, errorMessage };
     }
 
     let voxelsString: string[] = JSON.parse(canvasData.voxels);

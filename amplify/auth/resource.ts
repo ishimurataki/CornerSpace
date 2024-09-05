@@ -14,6 +14,10 @@ export const auth = defineAuth({
     preferredUsername: {
       required: true,
       mutable: false
+    },
+    email: {
+      required: true,
+      mutable: false
     }
   },
   triggers: {

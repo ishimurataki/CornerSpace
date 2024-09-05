@@ -10,6 +10,7 @@ import {
     createCanvases, updateCanvases,
     deleteCanvases, deleteCanvasSocialStats
 } from '../../graphql/mutations';
+import { CANVAS_DESCRIPTION_MAXIMUM_LENGTH, CANVAS_DESCRIPTION_MINIMUM_LENGTH, CANVAS_NAME_MAXIMUM_LENGTH, CANVAS_NAME_MINIMUM_LENGTH, CANVAS_PUBLICITY_STATES } from '../../constants';
 
 Amplify.configure(
     {
@@ -45,12 +46,43 @@ const dataClient = generateClient<Schema>({
 
 const s3Client = new S3Client();
 
+const validateCreateCanvasForUserInput = (name: string, description: string, publicity: string,
+    canvasData: string, canvasThumbail: string) => {
+    if (name.length < CANVAS_NAME_MINIMUM_LENGTH) {
+        throw new Error(`Canvas name must be at least ${CANVAS_NAME_MINIMUM_LENGTH} characters long.`);
+    }
+    if (name.length > CANVAS_NAME_MAXIMUM_LENGTH) {
+        throw new Error(`Canvas name must be at most ${CANVAS_NAME_MAXIMUM_LENGTH} characters long.`);
+    }
+    if (description.length < CANVAS_DESCRIPTION_MINIMUM_LENGTH) {
+        throw new Error(`Canvas description must be at least ${CANVAS_DESCRIPTION_MINIMUM_LENGTH} characters long.`);
+    }
+    if (description.length > CANVAS_DESCRIPTION_MAXIMUM_LENGTH) {
+        throw new Error(`Canvas description must be at most ${CANVAS_DESCRIPTION_MAXIMUM_LENGTH} characters long.`);
+    }
+    if (!CANVAS_PUBLICITY_STATES.includes(publicity)) {
+        throw new Error(`Canvas publicity must be one of the following values: ${CANVAS_PUBLICITY_STATES.toString()}`);
+    }
+
+    if (!canvasThumbail.startsWith("data:image/jpeg;base64")) {
+        throw new Error('Canvas thumbnail must be an inline base64 jpeg image.')
+    }
+}
+
 export const handler: Schema["createCanvasForUser"]["functionHandler"] = async (event, context) => {
     const { ownerUsername, canvasId, name, description, publicity, canvasData, canvasThumbail } = event.arguments;
-    const isNewCanvas = !canvasId;
-    let newCanvasId: string = canvasId ? canvasId : "";
 
     console.log(`Starting createCanvasForUser lambda function invocation for ${ownerUsername}.`)
+
+    try {
+        validateCreateCanvasForUserInput(name, description, publicity, canvasData, canvasThumbail);
+    } catch (err) {
+        if (err instanceof Error) {
+            return { isCanvasSaved: false, canvasId: null, errorMessage: `400 - Invalid argument exception: ${err.message}` };
+        }
+    }
+    const isNewCanvas = !canvasId;
+    let newCanvasId: string = canvasId ? canvasId : "";
 
     const ownerCognitoId = (event.identity as AppSyncIdentityCognito).username;
     const { data: getUserData, errors: getUserErrors } = await dataClient.graphql({

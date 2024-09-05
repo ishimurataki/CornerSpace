@@ -8,18 +8,23 @@ import {
 import { useState } from "react";
 import { z } from "zod";
 import { signUpServer } from "@/backend-lib/actions";
+import {
+    USER_PASSWORD_MINIMUM_LENGTH, USER_PREFERRED_USERNAME_MAXIMUM_LENGTH, USER_PREFERRED_USERNAME_MINIMUM_LENGTH
+} from "@/../../amplify/constants"
 
 const signUpSchema = z.object({
     username: z.string()
-        .min(4, "Must be at least 4 characters."),
+        .min(USER_PREFERRED_USERNAME_MINIMUM_LENGTH,
+            `Must be at least ${USER_PREFERRED_USERNAME_MINIMUM_LENGTH} characters.`)
+        .max(USER_PREFERRED_USERNAME_MAXIMUM_LENGTH,
+            `Must be at most ${USER_PREFERRED_USERNAME_MAXIMUM_LENGTH} characters.`),
     email: z.string()
         .email("Must be of valid format"),
     password: z.string()
-        .min(8, "Must be at least 8 characters.")
+        .min(USER_PASSWORD_MINIMUM_LENGTH, `Must be at least ${USER_PASSWORD_MINIMUM_LENGTH} characters.`)
         .refine((p) => /\d/.test(p), "Must contain at least 1 digit.")
         .refine((p) => /[a-z]/.test(p), "Must contain at least 1 lowercase letter.")
         .refine((p) => /[A-Z]/.test(p), "Must contain at least 1 uppercase letter.")
-        .refine((p) => /[-+_!@#$%^&*.,?]/.test(p), "Must contain at least of the following symbols: [-+_!@#$%^&*.,?].")
 });
 
 type signUpState = {

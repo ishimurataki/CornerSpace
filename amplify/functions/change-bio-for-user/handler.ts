@@ -5,6 +5,7 @@ import { type Schema } from "../../data/resource";
 import { env } from '$amplify/env/change-bio-for-user';
 import { getUsers } from '../../graphql/queries';
 import { updateUsers } from '../../graphql/mutations';
+import { USER_BIO_MAXIMUM_LENGTH } from '../../constants';
 
 Amplify.configure(
     {
@@ -34,16 +35,28 @@ Amplify.configure(
     }
 );
 
-const BIO_MAX_LENGTH = 500;
-
 const dataClient = generateClient<Schema>({
     authMode: "iam",
 });
 
+const validateChangeBioForUserInput = (newBio: string) => {
+    if (newBio.length > USER_BIO_MAXIMUM_LENGTH) {
+        throw new Error(`Bio name must be at most ${USER_BIO_MAXIMUM_LENGTH} characters long.`);
+    }
+}
+
 export const handler: Schema["changeBioForUser"]["functionHandler"] = async (event, context) => {
     const { username, newBio } = event.arguments;
 
-    console.log(`Starting changeBioForUser lambda function invocation for ${username}.`)
+    console.log(`Starting changeBioForUser lambda function invocation for ${username}.`);
+
+    try {
+        if (newBio) validateChangeBioForUserInput(newBio);
+    } catch (err) {
+        if (err instanceof Error) {
+            return { isBioChanged: false, errorMessage: `400 - Invalid argument exception: ${err.message}` };
+        }
+    }
 
     const ownerCognitoId = (event.identity as AppSyncIdentityCognito).username;
     const { data: getUserData, errors: getUserErrors } = await dataClient.graphql({
@@ -64,13 +77,6 @@ export const handler: Schema["changeBioForUser"]["functionHandler"] = async (eve
             isBioChanged: false,
             errorMessage: "400 - Authenticated user does not match requested username."
         };
-    }
-
-    if (newBio && newBio.length > BIO_MAX_LENGTH) {
-        return {
-            isBioChanged: false,
-            errorMessage: `400 - Bio exceeds maximum possible length of ${BIO_MAX_LENGTH} characters.`
-        }
     }
 
     const { errors: updateUserErrors } = await dataClient.graphql({

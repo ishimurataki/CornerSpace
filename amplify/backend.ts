@@ -13,6 +13,7 @@ import { canvasesStreamingEvent } from './functions/canvases-streaming-event/res
 import { canvasLikesStreamingEvent } from './functions/canvas-likes-streaming-event/resource';
 import { EventSourceMapping, StartingPosition } from 'aws-cdk-lib/aws-lambda';
 import { Stack } from 'aws-cdk-lib';
+import { USER_PREFERRED_USERNAME_MAXIMUM_LENGTH, USER_PREFERRED_USERNAME_MINIMUM_LENGTH } from './constants';
 
 const backend = defineBackend({
   auth,
@@ -27,6 +28,24 @@ const backend = defineBackend({
   canvasesStreamingEvent,
   canvasLikesStreamingEvent
 });
+
+const { cfnUserPool } = backend.auth.resources.cfnResources;
+cfnUserPool.addPropertyOverride('Schema', [
+  {
+    Name: 'preferred_username',
+    Required: true,
+    Mutable: false,
+    StringAttributeConstraints: {
+      MinLength: `${USER_PREFERRED_USERNAME_MINIMUM_LENGTH}`,
+      MaxLength: `${USER_PREFERRED_USERNAME_MAXIMUM_LENGTH}`
+    }
+  },
+  {
+    Name: 'email',
+    Required: true,
+    Mutable: true
+  }
+]);
 
 let ddbReadWritePolicy = new PolicyStatement({
   effect: Effect.ALLOW,

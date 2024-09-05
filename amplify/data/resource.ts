@@ -68,15 +68,15 @@ const schema = a
           ]),
         name: a.string().required()
           .authorization((allow) => [
-            allow.ownerDefinedIn("ownerCognitoId").to(["read", "update"])
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
           ]),
         description: a.string().required()
           .authorization((allow) => [
-            allow.ownerDefinedIn("ownerCognitoId").to(["read", "update"])
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
           ]),
         publicity: a.string().required()
           .authorization((allow) => [
-            allow.ownerDefinedIn("ownerCognitoId").to(["read", "update"])
+            allow.ownerDefinedIn("ownerCognitoId").to(["read"])
           ]),
       })
       .identifier(["ownerUsername", "canvasId"])
