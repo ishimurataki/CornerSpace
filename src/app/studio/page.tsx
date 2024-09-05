@@ -21,7 +21,7 @@ export default async function App() {
 
   return (
     <main className="absolute flex flex-col m-6 md:m-8 lg:m-10">
-      <p className="text-2xl">@{username}&apos; Studio</p>
+      <p className="text-2xl">@{username}&apos;s Studio</p>
       <Tabs
         LikedCanvasServerComponent={
           <Suspense fallback={
