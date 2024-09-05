@@ -33,9 +33,9 @@ export default function Header({ signedIn, username }: { signedIn: boolean, user
 
     return (
         <div className="w-screen pl-2 pr-4 lg:pr-10 bg-gray-900 flex justify-between items-center gap-4">
-            <div className="text-2xl lg:text-4xl flex flex-row items-center text-white hover:text-cyan-300 cursor-pointer shrink-0"
+            <div className="text-2xl lg:text-3xl flex flex-row items-center text-white hover:text-cyan-300 cursor-pointer shrink-0"
                 onClick={() => { router.push('/') }}>
-                <img src="/cubit_face.png" className="h-12 w-12 m-2 hover:w-14 hover:h-14 hover:m-1" /><span className="hidden md:block">CuBit</span>
+                <img src="/CornerSpaceLogoDark.png" className="h-12 w-12 m-2 hover:w-14 hover:h-14 hover:m-1" /><span className="hidden md:block text-cyan-100">Corner</span>Space
             </div>
             <div className="relative grow max-w-md">
                 <input type="text" placeholder="Search username..." className="py-1 px-2 rounded-md w-full focus:ring outline-cyan-300"

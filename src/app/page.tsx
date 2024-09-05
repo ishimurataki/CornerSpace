@@ -9,7 +9,7 @@ export default async function App() {
 
   return (
     <main className="absolute flex flex-col mt-4 ml-6 mr-4 md:mt-10 md:ml-16 md:mr-10 gap-1">
-      <h1 className="text-4xl">Welcome to Cubit!</h1>
+      <h1 className="text-4xl">Welcome to CornerSpace!</h1>
       <p>Glad you&apos;ve made it. Here, you can create and share voxel art to your heart&apos;s desire.</p>
 
       <h1 className="text-3xl pt-2">Create</h1>

@@ -7,8 +7,8 @@ import HeaderWrapper from "@/app/header-wrapper";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cubit",
-  description: "Online voxel-art platform",
+  title: "CornerSpace",
+  description: "Online voxel-art platform.",
 };
 
 export default function RootLayout({
