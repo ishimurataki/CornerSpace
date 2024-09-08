@@ -8,6 +8,8 @@ import Tabs from "./tabs";
 import { Suspense } from "react";
 import Following from "./following";
 import Followers from "./followers";
+import { getNumberOfCanvasesForSignedInUserServer } from "@/backend-lib/actions";
+import Link from "next/link";
 
 export default async function App() {
 
@@ -19,9 +21,20 @@ export default async function App() {
     redirect('signin');
   }
 
+  const { numberOfCanvases, errorMessage } = await getNumberOfCanvasesForSignedInUserServer();
+
+
   return (
-    <main className="absolute flex flex-col m-6 md:m-8 lg:m-10">
+    <main className="absolute flex flex-col m-6 md:m-8 lg:m-10 gap-2">
       <p className="text-2xl">@{username}&apos;s Studio</p>
+      {
+        numberOfCanvases && <div>
+          {`You have ${numberOfCanvases} canvases available.`}
+          <div className="text-sm text-gray-500">
+            Upgrade your membership plan <Link href="/profile?profileTab=ChangeMembership" className="text-blue-600 hover:text-cyan-500">here</Link> to purchase more canvases.
+          </div>
+        </div>
+      }
       <Tabs
         LikedCanvasServerComponent={
           <Suspense fallback={

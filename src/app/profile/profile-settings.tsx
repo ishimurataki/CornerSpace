@@ -2,23 +2,32 @@
 
 import {
     EnvelopeIcon, LockClosedIcon, ChevronRightIcon,
-    ChevronLeftIcon, UserIcon, IdentificationIcon
+    ChevronLeftIcon, UserIcon, IdentificationIcon,
+    Square3Stack3DIcon
 } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import UpdatePasswordForm from "./update-password-form";
 import ChangeBioForm from "./change-bio-form";
 import { setEmailVisibilityServer } from "@/backend-lib/actions";
+import { useSearchParams } from 'next/navigation'
 
 enum ProfileSettingsTabs {
     ChangePassword,
     ChangeEmailVisibility,
-    AddChangeBio
+    AddChangeBio,
+    ChangeMembership
 }
 
 export default function ProfileSettings({ username, email, bio, emailVisbility }:
     { username: string, email: string, bio: string | null, emailVisbility: boolean }) {
 
-    const [profileSettingsTab, setProfileSettingsTab] = useState<ProfileSettingsTabs | null>(null);
+    const searchParams = useSearchParams();
+    let initialProfileTab = null;
+    if (searchParams.get("profileTab") === "ChangeMembership") {
+        initialProfileTab = ProfileSettingsTabs.ChangeMembership;
+    }
+
+    const [profileSettingsTab, setProfileSettingsTab] = useState<ProfileSettingsTabs | null>(initialProfileTab);
     const [emailVisible, setEmailVisible] = useState(emailVisbility);
     const [updatingEmailVisibility, setUpdatingEmailVisibility] = useState(false);
     const [emailVisibilityErrors, setEmailVisibilityErrors] = useState<string | null>(null);
@@ -86,6 +95,19 @@ export default function ProfileSettings({ username, email, bio, emailVisbility }
                                 setProfileSettingsTab(ProfileSettingsTabs.ChangePassword);
                             }}>
                             <div>Change password</div>
+                            <ChevronRightIcon className="h-4" />
+                        </button>
+                    </div>
+                    <div className="px-4 py-2">
+                        <div className="flex flex-row items-center gap-2">
+                            <Square3Stack3DIcon className="h-4" />
+                            <div>Membership</div>
+                        </div>
+                        <button className="flex flex-row items-center justify-between text-sm text-gray-500 hover:text-black hover:bg-white rounded-lg p-1"
+                            onClick={() => {
+                                setProfileSettingsTab(ProfileSettingsTabs.ChangeMembership);
+                            }}>
+                            <div>Change membership</div>
                             <ChevronRightIcon className="h-4" />
                         </button>
                     </div>
@@ -165,6 +187,23 @@ export default function ProfileSettings({ username, email, bio, emailVisbility }
                                         </div>
                                     )
                                 }
+                            </div>
+                        </div>
+                        : ""
+                }
+                {
+                    profileSettingsTab === ProfileSettingsTabs.ChangeMembership ?
+                        <div className="grow flex flex-row align-top bg-teal-300 rounded-lg px-2 lg:px-5 py-4 gap-2">
+                            <ChevronLeftIcon className={`h-6 text-gray-400 hover:text-black lg:hidden`}
+                                onClick={() => setProfileSettingsTab(null)} />
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-row items-center gap-2">
+                                    <Square3Stack3DIcon className="h-4" />
+                                    <div>Change your membership</div>
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                    Coming soon!
+                                </div>
                             </div>
                         </div>
                         : ""

@@ -26,7 +26,7 @@ const schema = a
           .authorization((allow) => [
             allow.ownerDefinedIn("cognitoId").to(["read"])
           ]),
-        numberOfCanvases: a.integer().default(3)
+        numberOfCanvases: a.integer().default(10)
           .authorization((allow) => [
             allow.ownerDefinedIn("cognitoId").to(["read"])
           ]),
