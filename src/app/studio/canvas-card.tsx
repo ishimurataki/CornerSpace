@@ -37,7 +37,7 @@ export default function CanvasCard({ canvasCardData, canvasId, forOwner }: { can
 
     const reloadData = async () => {
         setReloading(true);
-        const { isCanvasLoaded, canvasCardData: newCanvasCardData, errorMessage } = await loadCanvasCardDataServer(canvasId);
+        const { isCanvasLoaded, canvasCardData: newCanvasCardData, errorMessage } = await loadCanvasCardDataServer(canvasId, forOwner);
         if (!isCanvasLoaded || !newCanvasCardData) {
             setReloading(false);
             return;

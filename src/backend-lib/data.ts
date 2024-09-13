@@ -1,5 +1,5 @@
 import CanvasState from "@/app/create/canvas-state";
-import { loadCanvasServer, saveCanvasServer } from "./actions";
+import { saveCanvasServer } from "./actions";
 import { rgbToHex } from "@/utils/functions";
 
 export type Voxel = {

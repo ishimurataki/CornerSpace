@@ -132,17 +132,13 @@ export async function resetPasswordServer(email: string, confirmationCode: strin
     }
 }
 
-export async function loadCanvasCardDataServer(canvasId: string):
+export async function loadCanvasCardDataServer(canvasId: string, authenticated: boolean):
     Promise<{ isCanvasLoaded: boolean, canvasCardData: CanvasCardData | null, errorMessage: string | null }> {
 
     let dataReturned = null;
     let errorsReturned = null;
 
-    const currentUser = await fetchUserAttributesServer();
-    const signedIn = currentUser != undefined;
-    const username = currentUser?.preferred_username;
-
-    if (!signedIn || !username) {
+    if (!authenticated) {
         const { data, errors } = await guestClient.queries.getCanvasCard(
             { canvasId: canvasId },
             { authMode: "identityPool" }
